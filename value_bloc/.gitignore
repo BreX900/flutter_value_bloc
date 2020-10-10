@@ -74,5 +74,5 @@ build/
 !**/ios/**/default.perspectivev3
 
 # Custom
-.lock
-.g.dart
+*.lock
+*.g.dart
