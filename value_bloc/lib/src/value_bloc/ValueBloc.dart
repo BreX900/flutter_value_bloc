@@ -5,10 +5,16 @@ abstract class ValueBloc<V, Filter extends Object>
   ValueBloc({
     LoadStatusValueBloc initialLoadStatus = LoadStatusValueBloc.loaded,
     FetchStatusValueBloc initialFetchStatus = FetchStatusValueBloc.fetching,
-  }) : super(ValueBlocState((b) => b
+    V initialValue,
+    Filter initialFilter,
+  })  : assert(initialLoadStatus != null),
+        assert(initialFetchStatus != null),
+        super(ValueBlocState((b) => b
           ..loadStatus = initialLoadStatus
           ..fetchStatus = initialFetchStatus
-          ..refreshStatus = false));
+          ..refreshStatus = false
+          ..value = initialValue
+          ..filter = initialFilter));
 
   /// Override this method for fetching value
   /// Call [emitFetched] when fetching is completed

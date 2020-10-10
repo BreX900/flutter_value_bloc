@@ -5,11 +5,16 @@ abstract class ListBloc<V, Filter extends Object>
   ListBloc({
     LoadStatusValueBloc initialLoadStatus = LoadStatusValueBloc.loaded,
     FetchStatusValueBloc initialFetchStatus = FetchStatusValueBloc.fetching,
-  }) : super(ListBlocState<V, Filter>((b) => b
+    Iterable<V> initialValues = const [],
+    Filter initialFilter,
+  })  : assert(initialLoadStatus != null),
+        assert(initialFetchStatus != null),
+        super(ListBlocState<V, Filter>((b) => b
           ..loadStatus = initialLoadStatus
           ..fetchStatus = initialFetchStatus
           ..refreshStatus = false
-          ..values));
+          ..values.replace(initialValues)
+          ..filter = initialFilter));
 
   /// Override this method for page fetch
   /// You can call [emitFetched] when fetching is completed
@@ -24,6 +29,7 @@ abstract class ListBloc<V, Filter extends Object>
   /// Call this method when fetching is completed
   /// Please pass the [offset] and [limit] param from [onFetching]
   void emitFetchedCount(int offset, int limit, Iterable<V> page, int countValues) async {
+    assert(offset != null);
     await Future.delayed(Duration.zero);
     final newOffset = (limit ?? 0) - page.length;
     emit(state.rebuild((b) => (b.refreshStatus ? (b..values.clear()) : b)

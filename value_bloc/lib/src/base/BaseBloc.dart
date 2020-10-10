@@ -51,6 +51,7 @@ abstract class _BaseBloc<S extends BaseBlocState<Filter>, Filter> extends Cubit<
     LoadStatusValueBloc loadStatus = LoadStatusValueBloc.loaded,
     bool isInstantRefresh = true,
   }) async {
+    assert(loadStatus != null && isInstantRefresh != null);
     assert(state.loadStatus.isLoaded && state.fetchStatus.isFetched);
     await Future.delayed(Duration.zero);
 
@@ -73,6 +74,7 @@ abstract class _BaseBloc<S extends BaseBlocState<Filter>, Filter> extends Cubit<
     LoadStatusValueBloc loadStatus = LoadStatusValueBloc.loaded,
     FetchStatusValueBloc fetchStatus = FetchStatusValueBloc.fetching,
   }) async {
+    assert(loadStatus != null && fetchStatus != null);
     assert(!(state.loadStatus.isLoading && state.fetchStatus.isFetching));
     await Future.delayed(Duration.zero);
 

@@ -2,7 +2,7 @@ library value_bloc;
 
 import 'package:bloc/bloc.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:meta/meta.dart';
 
 import 'src/base/BaseBlocState.dart';
 import 'src/list_bloc/ListBlocState.dart';
