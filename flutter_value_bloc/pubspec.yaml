@@ -1,0 +1,31 @@
+name: flutter_value_bloc
+description: Flatture Value Bloc
+version: 0.0.1
+author: BreX900
+homepage:
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+  flutter: ">=1.17.0 <2.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  built_collection: ^4.3.2
+
+  flutter_bloc: ^6.0.6
+
+  # value_bloc: ^0.0.1
+  value_bloc:
+    path: ../value_bloc
+
+  provider: ^4.3.2+2
+  pull_to_refresh: ^1.6.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+
+flutter:

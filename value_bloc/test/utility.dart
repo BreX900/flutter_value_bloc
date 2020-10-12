@@ -4,6 +4,10 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:test/test.dart' as test;
 
+void testPrint(Object object) {
+  print(object);
+}
+
 Future<void> runBlocTest<C extends Cubit<State>, State>({
   @required C Function() build,
   Function(C cubit) act,
@@ -17,8 +21,8 @@ Future<void> runBlocTest<C extends Cubit<State>, State>({
   var shallowEquality = false;
   await runZoned(
     () async {
-      final states = <State>[];
       final cubit = build();
+      final states = <State>[cubit.state];
       final subscription = cubit.skip(skip).listen(states.add);
       try {
         await act?.call(cubit);

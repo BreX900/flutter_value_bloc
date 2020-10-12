@@ -1,0 +1,72 @@
+import 'package:test/test.dart';
+import 'package:value_bloc/src/single/SingleValueStateDelegate.dart';
+import 'package:value_bloc/value_bloc.dart';
+
+import 'utility.dart';
+
+class TestValueBloc extends SingleValueCubit<int, Object> {
+  TestValueBloc({
+    LoadStatus loadStatus = LoadStatus.loaded,
+    FetchStatus fetchStatus = FetchStatus.fetching,
+  }) : super(isLoading: true);
+
+  @override
+  void onLoading() => emitSuccessLoaded();
+
+  @override
+  void onFetching() => emitSuccessFetched(1);
+}
+
+void main() {
+  group('Test ValueBloc', () {
+    test('Success Load and Fetch', () async {
+      final loadStatus = LoadStatus.idle;
+      final fetchStatus = FetchStatus.idle;
+      var delegate = getValueBlocState<int>();
+      await runBlocTest<SingleValueCubit<int, dynamic>, SingleValueState<int, dynamic>>(
+        build: () => TestValueBloc(
+          loadStatus: loadStatus,
+          fetchStatus: fetchStatus,
+        ),
+        act: (cubit) async {
+          print('Loading');
+          await cubit.first;
+          print('Loaded -> Fetching');
+          await cubit.skip(1).first;
+          print('Fetched');
+        },
+        expect: [
+          LoadingSingleValueState(delegate),
+          SuccessLoadedSingleValueState(delegate),
+          FetchingSingleValueState(delegate),
+          SuccessFetchedSingleValueState(delegate.rebuild((b) => b..value = 1)),
+        ],
+      );
+    });
+
+    // test('Success Auto Loaded and Fetched', () async {
+    //   var fetchState = getValueBlocState<int>();
+    //   await runBlocTest<SingleValueCubit<int, dynamic>,
+    //       SingleValueState<int, dynamic>>(
+    //     build: () => TestValueBloc(loadStatus: loadStatus),
+    //     act: (cubit) async {
+    //       await cubit.first;
+    //       print('Fetch');
+    //       await cubit.first;
+    //     },
+    //     expect: [
+    //       fetchState =
+    //           fetchState.rebuild((b) => b.loadStatus = LoadStatus.loaded),
+    //       fetchState = fetchState.rebuild((b) => b
+    //         ..fetchStatus = FetchStatus.fetched
+    //         ..value = 1)
+    //     ],
+    //   );
+    // });
+  });
+}
+
+SingleValueStateDelegate<T, Object> getValueBlocState<T>({
+  T value,
+}) =>
+    SingleValueStateDelegate<T, Object>((b) => b..value = value);

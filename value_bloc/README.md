@@ -13,7 +13,7 @@ ValueBloc allows you to display a value
 
 ```dart
 class NameValueBloc extends ValueBloc<String, Object> {
-  NameValueBloc() : super(initialLoadStatus: LoadStatusValueBloc.loading);
+  NameValueBloc() : super(initialLoadStatus: LoadStatus.loading);
 
   void onLoading() {
     // write your code for initializing bloc
@@ -45,7 +45,7 @@ graph or document database, regardless of the database used it will work
 
 ```dart
 class NamesListBloc extends ListBloc<String, Object> {
-  NamesListBloc() : super(initialFetchStatus: FetchStatusValueBloc.idle);
+  NamesListBloc() : super(initialFetchStatus: FetchStatus.idle);
 
   void onLoading() {
     // write your code for initializing bloc
