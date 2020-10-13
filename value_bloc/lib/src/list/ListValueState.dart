@@ -20,6 +20,14 @@ abstract class ListValueState<V, Filter> extends ValueState<Filter> {
       : (values.isNotEmpty ? true : null);
 
   @override
+  IdleValueState<Filter> toIdle({Filter filter}) {
+    return IdleListValueState(_delegate.rebuild((b) => b
+      ..filter = filter
+      ..countValues = null
+      ..pages.clear()));
+  }
+
+  @override
   LoadingValueState<Filter> toLoading({Filter filter, double progress = 0.0}) {
     return LoadingListValueState<V, Filter>(_delegate.rebuild((b) => b..filter = filter),
         progress: progress);
@@ -57,6 +65,11 @@ abstract class ListValueState<V, Filter> extends ValueState<Filter> {
   FailureFetchedValueState<Filter> toFailureFetched({Object error}) {
     return FailureFetchedListValueState(_delegate, error: error);
   }
+}
+
+class IdleListValueState<V, Filter> extends ListValueState<V, Filter>
+    implements IdleValueState<Filter> {
+  IdleListValueState(ListValueStateDelegate<V, Filter> delegate) : super(delegate);
 }
 
 class LoadingListValueState<V, Filter> extends ListValueState<V, Filter>

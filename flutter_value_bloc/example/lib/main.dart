@@ -1,3 +1,4 @@
+import 'package:example/list/TableNameScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
@@ -37,7 +38,13 @@ class HomeScreen extends StatelessWidget {
                 builder: (context) => SingleNameScreen(),
               )),
               child: Text('SingleValueCubit'),
-            )
+            ),
+            RaisedButton(
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => TableNameScreen(),
+              )),
+              child: Text('ListValueCubit in Table'),
+            ),
           ],
         ),
       ),

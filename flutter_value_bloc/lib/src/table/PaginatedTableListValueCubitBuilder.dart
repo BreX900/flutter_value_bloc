@@ -5,15 +5,15 @@ import 'package:value_bloc/value_bloc.dart';
 
 typedef _RowBuilder<V> = DataRow Function(V value);
 
-class PaginatedTableListCubitBuilder<C extends ListValueCubit<V, Filter>, V,
-    Filter> extends StatefulWidget {
+class PaginatedTableListValueCubitBuilder<C extends ListValueCubit<V, Filter>, V, Filter>
+    extends StatefulWidget {
   final C listCubit;
   final int rowsPerPage;
   final Widget header;
   final List<DataColumn> columns;
   final _RowBuilder<V> builder;
 
-  const PaginatedTableListCubitBuilder({
+  const PaginatedTableListValueCubitBuilder({
     Key key,
     this.listCubit,
     this.rowsPerPage = PaginatedDataTable.defaultRowsPerPage,
@@ -23,12 +23,12 @@ class PaginatedTableListCubitBuilder<C extends ListValueCubit<V, Filter>, V,
   }) : super(key: key);
 
   @override
-  _PaginatedTableListCubitBuilderState<C, V, Filter> createState() =>
-      _PaginatedTableListCubitBuilderState();
+  _PaginatedTableListValueCubitBuilderState<C, V, Filter> createState() =>
+      _PaginatedTableListValueCubitBuilderState();
 }
 
-class _PaginatedTableListCubitBuilderState<C extends ListValueCubit<V, Filter>,
-    V, Filter> extends State<PaginatedTableListCubitBuilder<C, V, Filter>> {
+class _PaginatedTableListValueCubitBuilderState<C extends ListValueCubit<V, Filter>, V,
+    Filter> extends State<PaginatedTableListValueCubitBuilder<C, V, Filter>> {
   _DataTableSource<V> _source;
 
   @override
@@ -41,7 +41,7 @@ class _PaginatedTableListCubitBuilderState<C extends ListValueCubit<V, Filter>,
 
   @override
   void didUpdateWidget(
-      covariant PaginatedTableListCubitBuilder<C, V, Filter> oldWidget) {
+      covariant PaginatedTableListValueCubitBuilder<C, V, Filter> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.builder != oldWidget.builder) {
       _source.builder = widget.builder;
@@ -59,6 +59,7 @@ class _PaginatedTableListCubitBuilderState<C extends ListValueCubit<V, Filter>,
   @override
   Widget build(BuildContext context) {
     final listCubit = widget.listCubit ?? context.bloc<C>();
+    print('Builderd');
     return BlocListener<C, ListValueState<V, Filter>>(
       cubit: listCubit,
       listener: (context, state) => _source.data = getData(state),
@@ -81,7 +82,8 @@ class _DataTableSource<V> extends DataTableSource {
   _DataTableSource({@required _Data data}) : _data = data;
 
   set data(_Data data) {
-    if (_data == _data) return;
+    print(_data == _data);
+    if (_data == data) return;
     _data = data;
     notifyListeners();
   }
@@ -103,6 +105,7 @@ class _DataTableSource<V> extends DataTableSource {
 
   @override
   DataRow getRow(int index) {
+    if (_data.values.length <= index) return DataRow(cells: [DataCell.empty]);
     return _builder(_data.values[index]);
   }
 }
@@ -123,9 +126,16 @@ class _Data<V> {
       identical(this, other) ||
       other is _Data &&
           runtimeType == other.runtimeType &&
+          values == other.values &&
           isRowCountApproximate == other.isRowCountApproximate &&
           rowCount == other.rowCount;
 
   @override
-  int get hashCode => isRowCountApproximate.hashCode ^ rowCount.hashCode;
+  int get hashCode =>
+      values.hashCode ^ isRowCountApproximate.hashCode ^ rowCount.hashCode;
+
+  @override
+  String toString() {
+    return '_Data{values: $values, isRowCountApproximate: $isRowCountApproximate, rowCount: $rowCount}';
+  }
 }

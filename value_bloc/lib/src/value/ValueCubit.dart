@@ -5,7 +5,8 @@ part of '../../value_bloc.dart';
 abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S> {
   bool _fetchAfterLoad;
 
-  ValueCubit(S state, bool isLoading, bool isFetching) : super(state) {
+  ValueCubit(S state, bool isLoading, bool isFetching, Filter initialFilter)
+      : super(_resolveState(state, isLoading, isFetching, filter: initialFilter)) {
     _resolve(isLoading, isFetching);
   }
 
@@ -59,7 +60,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
     bool isFetching = true,
   }) async {
     await Future.delayed(Duration.zero);
-    _resolveState(isLoading);
+    _resolveCurrentState(isLoading, isFetching);
   }
 
   /// This method is used for update filter and recall [onFetch] with new values and [onLoad]
@@ -67,9 +68,15 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   void updateFilter({
     @required Filter filter,
     bool isLoading = false,
+    bool isFetching = true,
   }) async {
     await Future.delayed(Duration.zero);
-    _resolveState(isLoading, filter: filter);
+    _resolveCurrentState(isLoading, isFetching, filter: filter);
+  }
+
+  void clear({bool isLoading, bool isFetching}) async {
+    await Future.delayed(Duration.zero);
+    _resolveCurrentState(isLoading, isFetching);
   }
 
   void _resolve(bool isLoading, bool isFetching) {
@@ -81,13 +88,24 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
     }
   }
 
-  void _resolveState(bool isLoading, {Filter filter}) {
-    if (isLoading) {
-      emit(state.toLoading(filter: filter) as S);
-    } else {
-      emit(state.toFetching(filter: filter) as S);
-    }
+  void _resolveCurrentState(bool isLoading, bool isFetching, {Filter filter}) {
+    emit(_resolveState<Filter>(state, isLoading, isFetching, filter: filter) as S);
     _resolve(isLoading, true);
+  }
+
+  static ValueState<Filter> _resolveState<Filter>(
+    ValueState<Filter> state,
+    bool isLoading,
+    bool isFetching, {
+    Filter filter,
+  }) {
+    if (isLoading) {
+      return state.toLoading(filter: filter);
+    } else if (isFetching) {
+      return state.toFetching(filter: filter);
+    } else {
+      return state.toIdle(filter: filter);
+    }
   }
 
   void _callOnInitialFetching();

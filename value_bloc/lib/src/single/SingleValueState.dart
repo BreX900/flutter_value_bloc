@@ -18,6 +18,13 @@ abstract class SingleValueState<V, Filter> extends ValueState<Filter> {
       : (value != null ? true : null);
 
   @override
+  IdleValueState<Filter> toIdle({Filter filter}) {
+    return IdleSingleValueState(_delegate.rebuild((b) => b
+      ..filter = filter
+      ..value = null));
+  }
+
+  @override
   LoadingValueState<Filter> toLoading({Filter filter, double progress = 0.0}) {
     return LoadingSingleValueState<V, Filter>(
         _delegate.rebuild((b) => b..filter = filter),
@@ -48,6 +55,11 @@ abstract class SingleValueState<V, Filter> extends ValueState<Filter> {
   FailureFetchedValueState<Filter> toFailureFetched({Object error}) {
     return FailureFetchedSingleValueState(_delegate, error: error);
   }
+}
+
+class IdleSingleValueState<V, Filter> extends SingleValueState<V, Filter>
+    implements IdleValueState<Filter> {
+  IdleSingleValueState(SingleValueStateDelegate<V, Filter> delegate) : super(delegate);
 }
 
 class LoadingSingleValueState<V, Filter> extends SingleValueState<V, Filter>

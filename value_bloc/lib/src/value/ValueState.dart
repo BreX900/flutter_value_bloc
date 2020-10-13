@@ -11,6 +11,8 @@ abstract class ValueState<Filter> extends Equatable {
   /// return null if the bloc is not initialized else check have all value/s
   bool get isFully => throw UnimplementedError();
 
+  IdleValueState<Filter> toIdle({Filter filter});
+
   LoadingValueState<Filter> toLoading({Filter filter, double progress = 0.0});
 
   SuccessLoadedValueState<Filter> toSuccessLoaded();
@@ -27,6 +29,8 @@ abstract class ValueState<Filter> extends Equatable {
   @override
   bool get stringify => true;
 }
+
+abstract class IdleValueState<Filter> extends ValueState<Filter> {}
 
 abstract class FailureValueState<Filter> extends ValueState<Filter> {
   Object get error;

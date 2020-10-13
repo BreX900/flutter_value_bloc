@@ -8,12 +8,11 @@ import 'package:value_bloc/src/fetchers.dart';
 
 import 'src/list/ListValueStateDelegate.dart';
 import 'src/single/SingleValueStateDelegate.dart';
-import 'src/status.dart';
 import 'src/value/ValueStateDelegate.dart';
 
 export 'package:bloc/bloc.dart';
 
-export 'src/status.dart';
+export 'src/fetchers.dart';
 
 part 'src/list/ListValueCubit.dart';
 part 'src/list/ListValueState.dart';

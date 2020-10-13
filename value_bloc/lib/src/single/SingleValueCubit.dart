@@ -7,18 +7,14 @@ abstract class SingleValueCubit<V, Filter extends Object>
     bool isFetching = true,
     V initialValue,
     Filter initialFilter,
-  }) : super(() {
-          final delegate = SingleValueStateDelegate<V, Filter>((b) => b
+  }) : super(
+          IdleSingleValueState(SingleValueStateDelegate<V, Filter>((b) => b
             ..value = initialValue
-            ..filter = initialFilter);
-          if (isLoading) {
-            return LoadingSingleValueState(delegate);
-          } else if (isFetching) {
-            return FetchingSingleValueState(delegate);
-          } else {
-            return SuccessFetchedSingleValueState(delegate);
-          }
-        }(), isLoading, isFetching);
+            ..filter = initialFilter)),
+          isLoading,
+          isFetching,
+          initialFilter,
+        );
 
   /// Override this method for fetching value
   /// Call [emitSuccessFetched] when fetching is completed

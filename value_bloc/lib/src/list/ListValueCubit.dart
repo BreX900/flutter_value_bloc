@@ -10,19 +10,14 @@ abstract class ListValueCubit<V, Filter extends Object>
     bool isFetching = true,
     Filter initialFilter,
   })  : _fetcher = fetcher ?? PageFetcher(),
-        super(() {
-          final delegate = ListValueStateDelegate<V, Filter>((b) => b
+        super(
+          IdleListValueState(ListValueStateDelegate<V, Filter>((b) => b
             ..pages
-            ..filter = initialFilter);
-
-          if (isLoading) {
-            return LoadingListValueState(delegate);
-          } else if (isFetching) {
-            return FetchingListValueState(delegate);
-          } else {
-            return SuccessFetchedListValueState(delegate);
-          }
-        }(), isLoading, isFetching);
+            ..filter = initialFilter)),
+          isLoading,
+          isFetching,
+          initialFilter,
+        );
 
   /// Override this method for page fetch
   /// You can call [emitSuccessFetched] when fetching is completed
@@ -37,7 +32,10 @@ abstract class ListValueCubit<V, Filter extends Object>
   /// Call this method when fetching is completed
   /// Please pass the [offset] and [limit] param from [onFetching]
   void emitSuccessFetchedCount(
-      FetchScheme scheme, Iterable<V> values, int countValues) async {
+    FetchScheme scheme,
+    Iterable<V> values,
+    int countValues,
+  ) async {
     assert(scheme != null);
     await Future.delayed(Duration.zero);
     _schemes.remove(scheme);
@@ -75,8 +73,12 @@ abstract class ListValueCubit<V, Filter extends Object>
   }
 
   @override
-  void updateFilter({@required Filter filter, bool isLoading = false}) {
+  void updateFilter({
+    @required Filter filter,
+    bool isLoading = false,
+    bool isFetching = true,
+  }) {
     _requiredClear = true;
-    super.updateFilter(filter: filter, isLoading: isLoading);
+    super.updateFilter(filter: filter, isLoading: isLoading, isFetching: isFetching);
   }
 }

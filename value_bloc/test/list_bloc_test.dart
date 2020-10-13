@@ -9,10 +9,7 @@ import 'utility.dart';
 class TestPagesBloc extends ListValueCubit<int, Object> {
   static final values = List.generate(100, (index) => index);
 
-  TestPagesBloc({
-    LoadStatus loadStatus = LoadStatus.loaded,
-    FetchStatus fetchStatus = FetchStatus.idle,
-  }) : super(isLoading: true, fetcher: ListFetcher(minLimit: 2));
+  TestPagesBloc() : super(isLoading: true, fetcher: ListFetcher(minLimit: 2));
 
   @override
   void onLoading() => emitSuccessLoaded();
@@ -30,7 +27,7 @@ void main() {
       var delegate = ListValueStateDelegate<int, Object>((b) => b..pages);
 
       await runBlocTest<ListValueCubit<int, dynamic>, ListValueState<int, dynamic>>(
-        build: () => TestPagesBloc(loadStatus: LoadStatus.idle)..listen(testPrint),
+        build: () => TestPagesBloc()..listen(testPrint),
         act: (cubit) async {
           // cubit.load();
           print('Loading');
