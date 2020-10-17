@@ -3,7 +3,12 @@ part of '../../value_bloc.dart';
 abstract class ValueState<Filter> extends Equatable {
   ValueStateDelegate<Filter> get _delegate;
 
+  /// you can use it for filter value/s
   Filter get filter => _delegate.filter;
+
+  /// this method verifies if the bloc is initialized
+  bool get isInitialized =>
+      _delegate.clearAfterFetch || this is FetchedValueState<Filter>;
 
   /// return null if the bloc is not initialized else check have value/s
   bool get isEmpty => throw UnimplementedError();
@@ -11,17 +16,45 @@ abstract class ValueState<Filter> extends Equatable {
   /// return null if the bloc is not initialized else check have all value/s
   bool get isFully => throw UnimplementedError();
 
+  /// this method verifies that you can call [ValueCubit.load] method
+  bool get canLoad => this is IdleValueState<Filter>;
+
+  /// this method verifies that you can call [ValueCubit.fetch] method
+  bool get canFetch =>
+      (this is LoadedValueState<Filter> || this is FetchedValueState<Filter>) &&
+      (!isEmpty && !isFully);
+
+  /// this method verifies that you can call [ValueCubit.refresh] method
+  bool get canRefresh => this is FetchedValueState<Filter>;
+
+  @mustCallSuper
+  ValueState<Filter> _toCopy(void Function(ValueStateDelegateBuilder b) updates);
+
+  @visibleForTesting
   IdleValueState<Filter> toIdle({Filter filter});
 
-  LoadingValueState<Filter> toLoading({Filter filter, double progress = 0.0});
+  @visibleForTesting
+  LoadingValueState<Filter> toLoading({
+    bool clearAfterFetch,
+    Filter filter,
+    double progress = 0.0,
+  });
 
-  SuccessLoadedValueState<Filter> toSuccessLoaded();
+  @visibleForTesting
+  LoadedValueState<Filter> toLoaded();
 
-  FailureLoadedValueState<Filter> toFailureLoaded({Object error});
+  @visibleForTesting
+  LoadFailedValueState<Filter> toLoadFailed({Object error});
 
-  FetchingValueState<Filter> toFetching({Filter filter, double progress = 0.0});
+  @visibleForTesting
+  FetchingValueState<Filter> toFetching({
+    bool clearAfterFetch,
+    Filter filter,
+    double progress = 0.0,
+  });
 
-  FailureFetchedValueState<Filter> toFailureFetched({Object error});
+  @visibleForTesting
+  FetchFailedValueState<Filter> toFetchFailed({Object error});
 
   @override
   List<Object> get props => [_delegate];
@@ -30,9 +63,7 @@ abstract class ValueState<Filter> extends Equatable {
   bool get stringify => true;
 }
 
-abstract class IdleValueState<Filter> extends ValueState<Filter> {}
-
-abstract class FailureValueState<Filter> extends ValueState<Filter> {
+abstract class FailedValueState<Filter> extends ValueState<Filter> {
   Object get error;
 
   @override
@@ -40,20 +71,27 @@ abstract class FailureValueState<Filter> extends ValueState<Filter> {
 }
 
 abstract class ProcessingValueState<Filter> extends ValueState<Filter> {
+  /// 1.00 >= progress >= 0.00
   double get progress;
 
   @override
   List<Object> get props => super.props..add(progress);
 }
 
+abstract class IdleValueState<Filter> extends ValueState<Filter> {}
+
+// ---------- Load ----------
+
 abstract class LoadingValueState<Filter> implements ProcessingValueState<Filter> {}
 
-abstract class SuccessLoadedValueState<Filter> implements ValueState<Filter> {}
+abstract class LoadedValueState<Filter> implements ValueState<Filter> {}
 
-abstract class FailureLoadedValueState<Filter> implements FailureValueState<Filter> {}
+abstract class LoadFailedValueState<Filter> implements FailedValueState<Filter> {}
+
+// ---------- FETCH ----------
 
 abstract class FetchingValueState<Filter> implements ProcessingValueState<Filter> {}
 
-abstract class FailureFetchedValueState<Filter> implements FailureValueState<Filter> {}
+abstract class FetchFailedValueState<Filter> implements FailedValueState<Filter> {}
 
-abstract class SuccessFetchedValueState<Filter> implements ValueState<Filter> {}
+abstract class FetchedValueState<Filter> implements ValueState<Filter> {}

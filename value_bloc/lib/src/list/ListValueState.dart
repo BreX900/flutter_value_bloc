@@ -5,71 +5,98 @@ abstract class ListValueState<V, Filter> extends ValueState<Filter> {
 
   ListValueState(this._delegate);
 
+  /// it is total possible value fetching
   int get countValues => _delegate.countValues;
 
+  /// results of fetches
   BuiltList<V> get values => _delegate.values;
 
+  /// it contains values
   @override
-  bool get isEmpty => this is SuccessFetchedSingleValueState<V, Filter>
-      ? values.isEmpty
-      : (values.isNotEmpty ? false : null);
+  bool get isEmpty => isInitialized ? countValues == 0 : null;
 
+  /// is possible fetch more values
   @override
-  bool get isFully => this is SuccessFetchedSingleValueState<V, Filter>
-      ? values.isNotEmpty
-      : (values.isNotEmpty ? true : null);
+  bool get isFully => isInitialized ? countValues == values.length : null;
 
+  @visibleForTesting
   @override
-  IdleValueState<Filter> toIdle({Filter filter}) {
+  IdleValueState<Filter> toIdle({bool clearAfterFetch, Filter filter}) {
     return IdleListValueState(_delegate.rebuild((b) => b
+      ..clearAfterFetch = clearAfterFetch ?? b.clearAfterFetch
       ..filter = filter
       ..countValues = null
       ..pages.clear()));
   }
 
+  @visibleForTesting
   @override
-  LoadingValueState<Filter> toLoading({Filter filter, double progress = 0.0}) {
-    return LoadingListValueState<V, Filter>(_delegate.rebuild((b) => b..filter = filter),
+  LoadingValueState<Filter> toLoading({
+    bool clearAfterFetch,
+    Filter filter,
+    double progress = 0.0,
+  }) {
+    return LoadingListValueState<V, Filter>(
+        _delegate.rebuild((b) => b
+          ..clearAfterFetch = clearAfterFetch ?? b.clearAfterFetch
+          ..filter = filter),
         progress: progress);
   }
 
+  @visibleForTesting
   @override
-  SuccessLoadedValueState<Filter> toSuccessLoaded() {
-    return SuccessLoadedListValueState(_delegate);
+  LoadedValueState<Filter> toLoaded() {
+    return LoadedListValueState(_delegate);
   }
 
+  @visibleForTesting
   @override
-  FailureLoadedValueState<Filter> toFailureLoaded({Object error}) {
-    return FailureLoadedListValueState(_delegate, error: error);
+  LoadFailedValueState<Filter> toLoadFailed({Object error}) {
+    return LoadFailedListValueState(_delegate, error: error);
   }
 
+  @visibleForTesting
   @override
-  FetchingValueState<Filter> toFetching({Filter filter, double progress = 0.0}) {
-    return FetchingListValueState(_delegate.rebuild((b) => b..filter = filter),
+  FetchingListValueState<V, Filter> toFetching({
+    bool clearAfterFetch,
+    Filter filter,
+    double progress = 0.0,
+  }) {
+    return FetchingListValueState(
+        _delegate.rebuild((b) => b
+          ..clearAfterFetch = clearAfterFetch ?? b.clearAfterFetch
+          ..filter = filter),
         progress: progress);
   }
 
-  SuccessFetchedListValueState<V, Filter> toSuccessFetched({
+  @visibleForTesting
+  FetchedListValueState<V, Filter> toSuccessFetched({
     @required FetchScheme scheme,
     @required Iterable<V> values,
     int countValues,
-    bool requiredClear = false,
   }) {
-    return SuccessFetchedListValueState(
-        _delegate.rebuild((b) => (requiredClear ? (b..pages.clear()) : b)
+    return FetchedListValueState(
+        _delegate.rebuild((b) => (b.clearAfterFetch ? (b..pages.clear()) : b)
+          ..clearAfterFetch = false
           ..pages[scheme] = values.toBuiltList()
           ..countValues = countValues));
   }
-
+  @visibleForTesting
   @override
-  FailureFetchedValueState<Filter> toFailureFetched({Object error}) {
-    return FailureFetchedListValueState(_delegate, error: error);
+  FetchFailedValueState<Filter> toFetchFailed({Object error}) {
+    return FetchFailedListValueState(_delegate, error: error);
   }
 }
 
 class IdleListValueState<V, Filter> extends ListValueState<V, Filter>
     implements IdleValueState<Filter> {
+
   IdleListValueState(ListValueStateDelegate<V, Filter> delegate) : super(delegate);
+
+  @override
+  ListValueState<V, Filter> _toCopy(_ListCopier updates) {
+    return IdleListValueState(_delegate.rebuild(updates));
+  }
 }
 
 class LoadingListValueState<V, Filter> extends ListValueState<V, Filter>
@@ -80,25 +107,35 @@ class LoadingListValueState<V, Filter> extends ListValueState<V, Filter>
       : super(delegate);
 
   @override
-  List<Object> get props => super.props..add(progress);
+  ListValueState<V, Filter> _toCopy(_ListCopier updates) {
+    return LoadingListValueState(_delegate.rebuild(updates), progress: progress);
+  }
 }
 
-class SuccessLoadedListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements SuccessLoadedValueState<Filter> {
-  SuccessLoadedListValueState(ListValueStateDelegate<V, Filter> delegate)
+class LoadedListValueState<V, Filter> extends ListValueState<V, Filter>
+    implements LoadedValueState<Filter> {
+
+  LoadedListValueState(ListValueStateDelegate<V, Filter> delegate)
       : super(delegate);
+
+  @override
+  ListValueState<V, Filter> _toCopy(_ListCopier updates) {
+    return LoadedListValueState(_delegate.rebuild(updates));
+  }
 }
 
-class FailureLoadedListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements FailureLoadedValueState<Filter> {
+class LoadFailedListValueState<V, Filter> extends ListValueState<V, Filter>
+    implements LoadFailedValueState<Filter> {
   final Object error;
 
-  FailureLoadedListValueState(ListValueStateDelegate<V, Filter> delegate,
+  LoadFailedListValueState(ListValueStateDelegate<V, Filter> delegate,
       {@required this.error})
       : super(delegate);
 
   @override
-  List<Object> get props => super.props..add(error);
+  ListValueState<V, Filter> _toCopy(_ListCopier updates) {
+    return LoadFailedListValueState(_delegate.rebuild(updates), error: error);
+  }
 }
 
 class FetchingListValueState<V, Filter> extends ListValueState<V, Filter>
@@ -108,22 +145,36 @@ class FetchingListValueState<V, Filter> extends ListValueState<V, Filter>
   FetchingListValueState(ListValueStateDelegate<V, Filter> delegate,
       {this.progress = 0.0})
       : super(delegate);
+
+  @override
+  ListValueState<V, Filter> _toCopy(_ListCopier updates) {
+    return FetchingListValueState(_delegate.rebuild(updates), progress: progress);
+  }
 }
 
-class SuccessFetchedListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements SuccessFetchedValueState<Filter> {
-  SuccessFetchedListValueState(ListValueStateDelegate<V, Filter> delegate)
+class FetchedListValueState<V, Filter> extends ListValueState<V, Filter>
+    implements FetchedValueState<Filter> {
+  FetchedListValueState(ListValueStateDelegate<V, Filter> delegate)
       : super(delegate);
+
+  @override
+  ListValueState<V, Filter> _toCopy(_ListCopier updates) {
+    return FetchedListValueState(_delegate.rebuild(updates));
+  }
 }
 
-class FailureFetchedListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements FailureFetchedValueState<Filter> {
+class FetchFailedListValueState<V, Filter> extends ListValueState<V, Filter>
+    implements FetchFailedValueState<Filter> {
   final Object error;
 
-  FailureFetchedListValueState(ListValueStateDelegate<V, Filter> delegate,
+  FetchFailedListValueState(ListValueStateDelegate<V, Filter> delegate,
       {@required this.error})
       : super(delegate);
 
   @override
-  List<Object> get props => super.props..add(error);
+  ListValueState<V, Filter> _toCopy(_ListCopier updates) {
+    return FetchFailedListValueState(_delegate.rebuild(updates), error: error);
+  }
 }
+
+typedef _ListCopier = void Function(ListValueStateDelegateBuilder b);

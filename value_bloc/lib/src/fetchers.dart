@@ -92,14 +92,23 @@ class PageFetcher extends ValueFetcher {
   }
 }
 
+/// It represent a request for retrieving a values determined by [offset] and [limit]
 class FetchScheme {
+  /// it is a start fetching position
   final int offset;
+
+  /// it is a max number of values fetching
   final int limit;
+
+  /// it is a end fetching position
   int get end => offset + limit;
 
   FetchScheme(this.offset, this.limit);
 
+  /// it check if [other] scheme is in [this] scheme
   bool contains(FetchScheme other) => offset <= other.offset && end >= other.end;
+
+  /// it check if [other] offset is in [this] scheme
   bool containsOffset(int other) => offset <= other && end > other;
 
   FetchScheme copyWith({int offset, int limit}) {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
 import 'single/SingleValueScreen.dart';
+import 'utility.dart';
 
 void main() {
   runApp(MyApp());
@@ -27,6 +28,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    FlutterError.onError = dumpErrorToConsole;
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -41,7 +43,7 @@ class HomeScreen extends StatelessWidget {
             ),
             RaisedButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => TableNameScreen(),
+                builder: (context) => TableScreen(),
               )),
               child: Text('ListValueCubit in Table'),
             ),

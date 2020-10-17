@@ -11,6 +11,8 @@ abstract class ValueStateDelegate<Filter> {
   @nullable
   Filter get filter;
 
+  bool get clearAfterFetch;
+
   static void finalizeBuilder(ValueStateDelegateBuilder b) {}
 
   ValueStateDelegate<Filter> rebuild(

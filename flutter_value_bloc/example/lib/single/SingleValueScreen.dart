@@ -15,10 +15,8 @@ class SingleNameScreen extends StatelessWidget {
         body: Center(
           child: Builder(
             builder: (context) =>
-                ViewValueCubitPlugger<SingleNameCubit, SingleValueState<String, Object>>(
-              plugins: [
-                RefresherValueCubitPlugin(valueCubit: context.bloc<SingleNameCubit>())
-              ],
+                ViewSingleValueCubitBuilder<SingleNameCubit, String, Object>(
+              plugin: RefresherValueCubitPlugin(),
               builder: (context, state) {
                 return Text('${state.value}');
               },

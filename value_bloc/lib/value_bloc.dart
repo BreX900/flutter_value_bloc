@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
+import 'package:value_bloc/src/ValueCubitObserver.dart';
 import 'package:value_bloc/src/fetchers.dart';
 
 import 'src/list/ListValueStateDelegate.dart';

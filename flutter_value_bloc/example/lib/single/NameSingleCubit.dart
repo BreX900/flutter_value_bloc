@@ -6,12 +6,12 @@ class SingleNameCubit extends SingleValueCubit<String, Object> {
   @override
   void onLoading() async {
     await Future.delayed(Duration(seconds: 2));
-    emitSuccessLoaded();
+    emitLoaded();
   }
 
   @override
   void onFetching() async {
     await Future.delayed(Duration(seconds: 1));
-    emitSuccessFetched('Mario');
+    emitFetched('Mario');
   }
 }

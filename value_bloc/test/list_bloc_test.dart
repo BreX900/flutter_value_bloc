@@ -12,11 +12,11 @@ class TestPagesBloc extends ListValueCubit<int, Object> {
   TestPagesBloc() : super(isLoading: true, fetcher: ListFetcher(minLimit: 2));
 
   @override
-  void onLoading() => emitSuccessLoaded();
+  void onLoading() => emitLoaded();
 
   @override
   void onFetching(FetchScheme scheme) {
-    emitSuccessFetched(scheme, values.getRange(scheme.offset, scheme.end));
+    emitFetched(scheme, values.getRange(scheme.offset, scheme.end));
   }
 }
 
@@ -47,22 +47,22 @@ void main() {
         },
         expect: [
           LoadingListValueState(delegate),
-          SuccessLoadedListValueState(delegate),
+          LoadedListValueState(delegate),
           FetchingListValueState(delegate),
-          SuccessFetchedListValueState(delegate = delegate.rebuild((b) =>
+          FetchedListValueState(delegate = delegate.rebuild((b) =>
               b..pages[FetchScheme(0, 2)] = TestPagesBloc.values.take(2).toBuiltList())),
           FetchingListValueState(delegate),
-          SuccessFetchedListValueState(delegate = delegate.rebuild((b) => b
+          FetchedListValueState(delegate = delegate.rebuild((b) => b
             ..pages[FetchScheme(4, 2)] =
                 TestPagesBloc.values.skip(4).take(2).toBuiltList())),
           // Refresh -> 6
           FetchingListValueState(delegate),
-          SuccessFetchedListValueState(delegate = delegate.rebuild((b) => b
+          FetchedListValueState(delegate = delegate.rebuild((b) => b
             ..pages.clear()
             ..pages[FetchScheme(0, 2)] = TestPagesBloc.values.take(2).toBuiltList())),
           // Filter -> 8
           FetchingListValueState(delegate = delegate.rebuild((b) => b..filter = filter)),
-          SuccessFetchedListValueState(delegate = delegate.rebuild((b) => b
+          FetchedListValueState(delegate = delegate.rebuild((b) => b
             ..pages.clear()
             ..pages[FetchScheme(0, 2)] = TestPagesBloc.values.take(2).toBuiltList())),
         ],

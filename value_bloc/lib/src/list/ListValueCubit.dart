@@ -12,6 +12,7 @@ abstract class ListValueCubit<V, Filter extends Object>
   })  : _fetcher = fetcher ?? PageFetcher(),
         super(
           IdleListValueState(ListValueStateDelegate<V, Filter>((b) => b
+            ..clearAfterFetch = false
             ..pages
             ..filter = initialFilter)),
           isLoading,
@@ -20,32 +21,37 @@ abstract class ListValueCubit<V, Filter extends Object>
         );
 
   /// Override this method for page fetch
-  /// You can call [emitSuccessFetched] when fetching is completed
+  /// You can call [emitFetched] when fetching is completed
   void onFetching(FetchScheme scheme);
 
   /// Call this method when fetching is completed
   /// Please pass the [offset] and [limit] param from [onFetching]
-  void emitSuccessFetched(FetchScheme scheme, Iterable<V> page) {
-    emitSuccessFetchedCount(scheme, page, page.isEmpty ? state.values.length : null);
+  void emitFetched(FetchScheme scheme, Iterable<V> page) {
+    emitFetchedCount(scheme, page, page.isEmpty ? state.values.length : null);
   }
 
   /// Call this method when fetching is completed
   /// Please pass the [offset] and [limit] param from [onFetching]
-  void emitSuccessFetchedCount(
-    FetchScheme scheme,
-    Iterable<V> values,
-    int countValues,
-  ) async {
-    assert(scheme != null);
+  void emitFetchedCount(FetchScheme scheme, Iterable<V> values, int countValues) async {
+    assert(scheme != null && values != null, 'scheme:$scheme,values:$values');
     await Future.delayed(Duration.zero);
-    _schemes.remove(scheme);
+    if (!(state is FetchingValueState<Filter> || state is FetchedValueState<Filter>)) {
+      ValueCubitObserver.instance.methodIgnored(state,
+          'emitFetchedCount(scheme:$scheme,values$values,countValues:$countValues)');
+      return;
+    }
+    // Todo: move this logic in Fetcher class
+    // ignore update if the scheme is old
+    if (!_schemes.contains(scheme)) {
+      ValueCubitObserver.instance.methodIgnored(state,
+          'emitFetchedCount(scheme:$scheme,values$values,countValues:$countValues)');
+      return;
+    }
     emit(state.toSuccessFetched(
       scheme: scheme,
       values: values,
       countValues: countValues,
-      requiredClear: _requiredClear,
     ));
-    _requiredClear = false;
   }
 
   var _schemes = <FetchScheme>[];
@@ -53,32 +59,25 @@ abstract class ListValueCubit<V, Filter extends Object>
   /// This method call the onFetching user method
   /// The call of this method is ignored if the fetchStatus is fetching or fetched
   /// if the [indexPage] is null this method fetch next page
-  void fetch({int offset, int limit}) {
-    _fetchHandler(() {
-      _schemes = _fetcher.findSchemes(state._delegate.pages, FetchScheme(offset, limit));
-      if (_schemes.isEmpty) return;
-      _schemes.forEach(onFetching);
-    });
+  void fetch({int offset, int limit}) async {
+    await Future.delayed(Duration.zero);
+    if (state.canFetch) {
+      ValueCubitObserver.instance
+          .methodIgnored(state, 'fetch(offset:$offset,limit:$limit)');
+      return;
+    }
+    final newSchemes =
+        _fetcher.findSchemes(state._delegate.pages, FetchScheme(offset, limit));
+    _schemes.addAll(newSchemes);
+    if (newSchemes.isEmpty) {
+      ValueCubitObserver.instance
+          .methodIgnored(state, 'fetch(offset:$offset,limit:$limit)');
+      return;
+    }
+    emit(state.toFetching());
+    newSchemes.forEach(onFetching);
   }
 
-  void _callOnInitialFetching() =>
+  void _onFetching() =>
       onFetching(_fetcher.initFetchScheme(state._delegate.pages, FetchScheme(0, null)));
-
-  var _requiredClear = false;
-
-  @override
-  void refresh({bool isLoading = false, bool isFetching = true}) {
-    _requiredClear = true;
-    super.refresh(isLoading: isLoading, isFetching: isFetching);
-  }
-
-  @override
-  void updateFilter({
-    @required Filter filter,
-    bool isLoading = false,
-    bool isFetching = true,
-  }) {
-    _requiredClear = true;
-    super.updateFilter(filter: filter, isLoading: isLoading, isFetching: isFetching);
-  }
 }

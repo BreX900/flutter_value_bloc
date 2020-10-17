@@ -7,90 +7,123 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
 
   ValueCubit(S state, bool isLoading, bool isFetching, Filter initialFilter)
       : super(_resolveState(state, isLoading, isFetching, filter: initialFilter)) {
-    _resolve(isLoading, isFetching);
+    if (isLoading) {
+      emit(state.toLoading() as S);
+      onLoading();
+    } else if (isFetching) {
+      emit(state.toFetching() as S);
+      _onFetching();
+    }
   }
 
   /// You can override this method for load bloc
-  /// You can call [emitSuccessLoaded] when loading is completed
+  /// You can call [emitLoaded] when loading is completed
   void onLoading() {}
 
-  void emitLoading({@required double progress}) {
+  /// You can use it for update loading progress
+  /// visit [ProcessingValueState.progress] for [progress] param
+  void emitLoading({@required double progress}) async {
+    await _wait;
+    if (state is LoadingValueState<Filter>) {
+      ValueCubitObserver.instance.methodIgnored(this, 'emitLoading(progress:$progress)');
+      return;
+    }
     emit(state.toLoading(progress: progress) as S);
   }
 
   /// You can call this method when loading is completed
-  void emitSuccessLoaded() async {
+  void emitLoaded() async {
     await Future.delayed(Duration.zero);
-    emit(state.toSuccessLoaded() as S);
+    if (state is LoadingValueState<Filter>) {
+      ValueCubitObserver.instance.methodIgnored(this, 'emitLoaded()');
+      return;
+    }
+    emit(state.toLoaded() as S);
     // When is required fetching start fetching
-    if (!_fetchAfterLoad) return;
-    fetch();
+    if (_fetchAfterLoad) fetch();
   }
 
-  void emitFailureLoaded({Object error}) async {
+  /// You can use it when the load returns a error/exception
+  void emitLoadFailed({Object error}) async {
     await Future.delayed(Duration.zero);
-    emit(state.toFailureLoaded(error: error) as S);
+    if (state is LoadingValueState<Filter>) {
+      ValueCubitObserver.instance.methodIgnored(this, 'emitLoadFailed(error:$error)');
+      return;
+    }
+    emit(state.toLoadFailed(error: error) as S);
   }
 
+  /// You can use it for update fetching progress
+  /// visit [ProcessingValueState.progress] for [progress] param
   void emitFetching({double progress}) async {
     await Future.delayed(Duration.zero);
+    if (!(state is FetchingValueState<Filter>)) {
+      ValueCubitObserver.instance
+          .methodIgnored(state, 'emitFetching(progress:$progress)');
+      return;
+    }
     emit(state.toFetching(progress: progress) as S);
   }
 
-  void emitFailureFetched({Object error}) async {
+  /// You can use it when the fetch returns a error/exception
+  void emitFetchFailed({Object error}) async {
     await Future.delayed(Duration.zero);
-    emit(state.toFailureFetched(error: error) as S);
+    if (!(state is FetchingValueState<Filter> || state is FetchedValueState<Filter>)) {
+      ValueCubitObserver.instance
+          .methodIgnored(state, 'emitFailureFetched(error:$error)');
+      return;
+    }
+    emit(state.toFetchFailed(error: error) as S);
   }
 
-  /// This method is used for call the onLoading user method
-  /// The call of this method is ignored if the loadStatus is loading or loaded
+  /// It is used for pre load cubit before fetch value/s
+  /// It call the [onLoading] user method
+  /// You can call [refresh] method for reload cubit
   void load() async {
     await Future.delayed(Duration.zero);
-    assert(!(state is LoadingValueState<Filter>));
+    if (!(state is IdleValueState<Filter>)) {
+      ValueCubitObserver.instance.methodIgnored(this, 'load()');
+      return;
+    }
     emit(state.toLoading() as S);
     onLoading();
   }
 
   void fetch();
 
-  /// This method is used for recall [onFetch] with new values and [onLoad]
+  /// It is used for recall [onFetch] or/and [onLoad]
+  /// You can use this method after call [updateFilter] for filter values
   /// Call this method when the bloc is already loaded and fetched
-  void refresh({
-    bool isLoading = false,
-    bool isFetching = true,
-  }) async {
+  void refresh({Filter filter, bool isLoading = false}) async {
     await Future.delayed(Duration.zero);
-    _resolveCurrentState(isLoading, isFetching);
-  }
-
-  /// This method is used for update filter and recall [onFetch] with new values and [onLoad]
-  /// Call this method when the bloc is not processing load and fetch
-  void updateFilter({
-    @required Filter filter,
-    bool isLoading = false,
-    bool isFetching = true,
-  }) async {
-    await Future.delayed(Duration.zero);
-    _resolveCurrentState(isLoading, isFetching, filter: filter);
-  }
-
-  void clear({bool isLoading, bool isFetching}) async {
-    await Future.delayed(Duration.zero);
-    _resolveCurrentState(isLoading, isFetching);
-  }
-
-  void _resolve(bool isLoading, bool isFetching) {
-    _fetchAfterLoad = isLoading && isFetching;
+    if (!state.isInitialized) {
+      ValueCubitObserver.instance.methodIgnored(state, 'refresh(isLoading:$isLoading)');
+      return;
+    }
     if (isLoading) {
+      emit(state.toLoading(clearAfterFetch: true) as S);
       onLoading();
-    } else if (isFetching) {
-      _callOnInitialFetching();
+    } else {
+      emit(state.toFetching(clearAfterFetch: true) as S);
+      _onFetching();
     }
   }
 
-  void _resolveCurrentState(bool isLoading, bool isFetching, {Filter filter}) {
-    emit(_resolveState<Filter>(state, isLoading, isFetching, filter: filter) as S);
-    _resolve(isLoading, true);
+  /// This method is used for update filter
+  void updateFilter({@required Filter filter}) async {
+    await Future.delayed(Duration.zero);
+    emit(state._toCopy((b) => b..filter = filter));
+  }
+
+  /// This method is used for reset the bloc to idle state
+  void clear({Filter filter}) async {
+    await Future.delayed(Duration.zero);
+    if (state is LoadingValueState<Filter>) {
+      // Todo: manage a bloc loading
+      ValueCubitObserver.instance.methodIgnored(state, 'clear(filter:$filter)');
+      return;
+    }
+    emit(state.toIdle(filter: filter) as S);
   }
 
   static ValueState<Filter> _resolveState<Filter>(
@@ -108,12 +141,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
     }
   }
 
-  void _callOnInitialFetching();
+  Future<void> _wait = Future.delayed(Duration.zero);
 
-  Future<void> _fetchHandler(void Function() onFetching) async {
-    await Future.delayed(Duration.zero);
-    assert(!(state is LoadingValueState || state is FetchingValueState));
-    emit(state.toFetching() as S);
-    onFetching();
-  }
+  void _onFetching();
 }

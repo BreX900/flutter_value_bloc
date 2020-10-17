@@ -8,10 +8,10 @@ class TestValueBloc extends SingleValueCubit<int, Object> {
   TestValueBloc() : super(isLoading: true);
 
   @override
-  void onLoading() => emitSuccessLoaded();
+  void onLoading() => emitLoaded();
 
   @override
-  void onFetching() => emitSuccessFetched(1);
+  void onFetching() => emitFetched(1);
 }
 
 void main() {
@@ -31,7 +31,7 @@ void main() {
           LoadingSingleValueState(delegate),
           SuccessLoadedSingleValueState(delegate),
           FetchingSingleValueState(delegate),
-          SuccessFetchedSingleValueState(delegate.rebuild((b) => b..value = 1)),
+          FetchedSingleValueState(delegate.rebuild((b) => b..value = 1)),
         ],
       );
     });
