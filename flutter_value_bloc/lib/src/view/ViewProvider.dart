@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_value_bloc/src/value/ViewData.dart';
+import 'package:flutter_value_bloc/src/view/ViewData.dart';
 import 'package:provider/provider.dart';
 
 class ViewDataProvider extends Provider<ViewData> {
@@ -21,7 +21,7 @@ class ViewDataProvider extends Provider<ViewData> {
     try {
       return context.watch<ViewData>();
     } on ProviderNotFoundException {
-      return const ViewData();
+      return null;
     }
   }
 }

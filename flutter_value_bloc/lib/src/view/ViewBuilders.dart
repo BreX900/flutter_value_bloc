@@ -1,13 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/value/ViewData.dart';
-import 'package:flutter_value_bloc/src/value/ViewProvider.dart';
+import 'package:flutter_value_bloc/src/view/ViewData.dart';
+import 'package:flutter_value_bloc/src/view/ViewProvider.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-abstract class ViewValueCubitPlugin<C extends ValueCubit<S, Filter>,
-    S extends ValueState<Filter>, Filter> {
-  Widget apply(C valueCubit, S builderState, Widget child);
-}
+
 
 class ViewSingleValueCubitBuilder<C extends SingleValueCubit<V, Filter>, V, Filter>
     extends ViewValueCubitBuilderBase<C, SingleValueState<V, Filter>> {
@@ -51,6 +48,12 @@ class ViewListValueCubitBuilder<C extends ListValueCubit<V, Filter>, V, Filter>
         );
 }
 
+/// This is used in [ViewValueCubitBuilderBase] for
+abstract class ViewValueCubitPlugin<C extends ValueCubit<S, Filter>,
+S extends ValueState<Filter>, Filter> {
+  Widget apply(C valueCubit, S builderState, Widget child);
+}
+
 class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>,
     S extends ValueState<dynamic>> extends StatelessWidget {
   final C valueCubit;
@@ -73,8 +76,9 @@ class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>,
   @override
   Widget build(BuildContext context) {
     final valueCubit = this.valueCubit ?? context.bloc<C>();
+    assert(valueCubit != null);
 
-    final view = ViewDataProvider.tryOf(context).copyWith(
+    final view = (ViewDataProvider.tryOf(context) ?? const ViewData()).copyWith(
       errorBuilder: errorBuilder,
       loadingBuilder: loadingBuilder,
       emptyBuilder: emptyBuilder,

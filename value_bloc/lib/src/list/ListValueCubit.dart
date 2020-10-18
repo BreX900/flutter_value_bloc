@@ -44,7 +44,7 @@ abstract class ListValueCubit<V, Filter extends Object>
     // ignore update if the scheme is old
     if (!_schemes.contains(scheme)) {
       ValueCubitObserver.instance.methodIgnored(state,
-          'emitFetchedCount(scheme:$scheme,values$values,countValues:$countValues)');
+          'emitFetchedCount(scheme:$scheme,values$values,countValues:$countValues)schemes:$_schemes');
       return;
     }
     emit(state.toSuccessFetched(
@@ -61,23 +61,27 @@ abstract class ListValueCubit<V, Filter extends Object>
   /// if the [indexPage] is null this method fetch next page
   void fetch({int offset, int limit}) async {
     await Future.delayed(Duration.zero);
-    if (state.canFetch) {
+    if (!state.canFetch) {
       ValueCubitObserver.instance
           .methodIgnored(state, 'fetch(offset:$offset,limit:$limit)');
       return;
     }
     final newSchemes =
         _fetcher.findSchemes(state._delegate.pages, FetchScheme(offset, limit));
-    _schemes.addAll(newSchemes);
     if (newSchemes.isEmpty) {
       ValueCubitObserver.instance
           .methodIgnored(state, 'fetch(offset:$offset,limit:$limit)');
       return;
     }
+    _schemes.addAll(newSchemes);
     emit(state.toFetching());
     newSchemes.forEach(onFetching);
   }
 
-  void _onFetching() =>
-      onFetching(_fetcher.initFetchScheme(state._delegate.pages, FetchScheme(0, null)));
+  void _onFetching() {
+    final initialScheme =
+        _fetcher.initFetchScheme(state._delegate.pages, FetchScheme(0, null));
+    _schemes.add(initialScheme);
+    onFetching(initialScheme);
+  }
 }

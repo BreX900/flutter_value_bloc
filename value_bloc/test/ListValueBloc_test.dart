@@ -24,7 +24,9 @@ void main() {
   group('Test PagesBloc', () {
     test('Success Fetched', () async {
       final filter = "I'm a filter";
-      var delegate = ListValueStateDelegate<int, Object>((b) => b..pages);
+      var delegate = ListValueStateDelegate<int, Object>((b) => b
+        ..clearAfterFetch = false
+        ..pages);
 
       await runBlocTest<ListValueCubit<int, dynamic>, ListValueState<int, dynamic>>(
         build: () => TestPagesBloc()..listen(testPrint),
@@ -43,7 +45,7 @@ void main() {
           await cubit.skip(1).first;
           print('Fetched -> Fetching | Update Filter');
           cubit.updateFilter(filter: filter);
-          await cubit.skip(1).first;
+          await cubit.first;
         },
         expect: [
           LoadingListValueState(delegate),
@@ -56,15 +58,17 @@ void main() {
             ..pages[FetchScheme(4, 2)] =
                 TestPagesBloc.values.skip(4).take(2).toBuiltList())),
           // Refresh -> 6
-          FetchingListValueState(delegate),
+          FetchingListValueState(delegate.rebuild((b) => b..clearAfterFetch = true)),
           FetchedListValueState(delegate = delegate.rebuild((b) => b
+            ..clearAfterFetch = false
             ..pages.clear()
             ..pages[FetchScheme(0, 2)] = TestPagesBloc.values.take(2).toBuiltList())),
           // Filter -> 8
-          FetchingListValueState(delegate = delegate.rebuild((b) => b..filter = filter)),
-          FetchedListValueState(delegate = delegate.rebuild((b) => b
-            ..pages.clear()
-            ..pages[FetchScheme(0, 2)] = TestPagesBloc.values.take(2).toBuiltList())),
+          FetchedListValueState(delegate.rebuild((b) => b..filter = filter)),
+          // FetchingListValueState(delegate = delegate.rebuild((b) => b..filter = filter)),
+          // FetchedListValueState(delegate = delegate.rebuild((b) => b
+          //   ..pages.clear()
+          //   ..pages[FetchScheme(0, 2)] = TestPagesBloc.values.take(2).toBuiltList())),
         ],
       );
     });

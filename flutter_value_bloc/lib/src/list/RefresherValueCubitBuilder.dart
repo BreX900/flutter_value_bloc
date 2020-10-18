@@ -1,9 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/value/ViewBuilders.dart';
+import 'package:flutter_value_bloc/src/view/ViewBuilders.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart' as ptr;
 import 'package:value_bloc/value_bloc.dart';
 
+
+/// This is a plugin used in [ViewValueCubitBuilderBase]
+/// and it integrate a [RefresherValueCubitBuilder]
 class RefresherValueCubitPlugin<C extends ValueCubit<S, Filter>,
     S extends ValueState<Filter>, Filter> extends ViewValueCubitPlugin<C, S, Filter> {
   final bool enablePullDown;
@@ -22,6 +25,8 @@ class RefresherValueCubitPlugin<C extends ValueCubit<S, Filter>,
   }
 }
 
+/// This is the most important component that provides drop-down refresh and up loading.
+/// It implement a [ptr.SmartRefresher] class with [ValueCubit] state logic management
 class RefresherValueCubitBuilder extends StatefulWidget {
   final ValueCubit<ValueState<dynamic>, dynamic> valueCubit;
   final bool enablePullDown;

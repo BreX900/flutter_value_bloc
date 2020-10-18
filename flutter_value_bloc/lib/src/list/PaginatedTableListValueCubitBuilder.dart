@@ -66,6 +66,7 @@ class _PaginatedTableListValueCubitBuilderState<C extends ListValueCubit<V, Filt
       listener: (context, state) => _source.data = getData(state),
       child: PaginatedDataTable(
         onPageChanged: (offset) {
+          if (listCubit.state.containsPage(offset, widget.rowsPerPage)) return;
           listCubit.fetch(offset: offset, limit: widget.rowsPerPage);
         },
         source: _source,

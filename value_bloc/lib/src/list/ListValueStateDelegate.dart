@@ -18,9 +18,6 @@ abstract class ListValueStateDelegate<V, Filter>
 
   static void _finalizeBuilder(ListValueStateDelegateBuilder b) {
     ValueStateDelegate.finalizeBuilder(b);
-    if (b.clearAfterFetch) {
-
-    }
   }
 
   /// if this defined the limit of fetching is defined
@@ -31,6 +28,4 @@ abstract class ListValueStateDelegate<V, Filter>
 
   @memoized
   BuiltList<V> get values => pages.values.expand((vls) => vls).toBuiltList();
-
-  bool _containsFetchScheme(Fet) {}
 }

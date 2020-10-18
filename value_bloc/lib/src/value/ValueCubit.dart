@@ -7,6 +7,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
 
   ValueCubit(S state, bool isLoading, bool isFetching, Filter initialFilter)
       : super(_resolveState(state, isLoading, isFetching, filter: initialFilter)) {
+    _fetchAfterLoad = isLoading && isFetching;
     if (isLoading) {
       emit(state.toLoading() as S);
       onLoading();
@@ -25,7 +26,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   void emitLoading({@required double progress}) async {
     await _wait;
     if (state is LoadingValueState<Filter>) {
-      ValueCubitObserver.instance.methodIgnored(this, 'emitLoading(progress:$progress)');
+      ValueCubitObserver.instance.methodIgnored(state, 'emitLoading(progress:$progress)');
       return;
     }
     emit(state.toLoading(progress: progress) as S);
@@ -34,8 +35,8 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   /// You can call this method when loading is completed
   void emitLoaded() async {
     await Future.delayed(Duration.zero);
-    if (state is LoadingValueState<Filter>) {
-      ValueCubitObserver.instance.methodIgnored(this, 'emitLoaded()');
+    if (!(state is LoadingValueState<Filter>)) {
+      ValueCubitObserver.instance.methodIgnored(state, 'emitLoaded()');
       return;
     }
     emit(state.toLoaded() as S);
@@ -47,7 +48,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   void emitLoadFailed({Object error}) async {
     await Future.delayed(Duration.zero);
     if (state is LoadingValueState<Filter>) {
-      ValueCubitObserver.instance.methodIgnored(this, 'emitLoadFailed(error:$error)');
+      ValueCubitObserver.instance.methodIgnored(state, 'emitLoadFailed(error:$error)');
       return;
     }
     emit(state.toLoadFailed(error: error) as S);
@@ -81,8 +82,8 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   /// You can call [refresh] method for reload cubit
   void load() async {
     await Future.delayed(Duration.zero);
-    if (!(state is IdleValueState<Filter>)) {
-      ValueCubitObserver.instance.methodIgnored(this, 'load()');
+    if (!state.canLoad) {
+      ValueCubitObserver.instance.methodIgnored(state, 'load()');
       return;
     }
     emit(state.toLoading() as S);
@@ -96,10 +97,11 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   /// Call this method when the bloc is already loaded and fetched
   void refresh({Filter filter, bool isLoading = false}) async {
     await Future.delayed(Duration.zero);
-    if (!state.isInitialized) {
+    if (!state.canRefresh) {
       ValueCubitObserver.instance.methodIgnored(state, 'refresh(isLoading:$isLoading)');
       return;
     }
+    _fetchAfterLoad = isLoading && true;
     if (isLoading) {
       emit(state.toLoading(clearAfterFetch: true) as S);
       onLoading();
@@ -112,14 +114,13 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   /// This method is used for update filter
   void updateFilter({@required Filter filter}) async {
     await Future.delayed(Duration.zero);
-    emit(state._toCopy((b) => b..filter = filter));
+    emit(state._toCopy((b) => b..filter = filter) as S);
   }
 
   /// This method is used for reset the bloc to idle state
   void clear({Filter filter}) async {
     await Future.delayed(Duration.zero);
     if (state is LoadingValueState<Filter>) {
-      // Todo: manage a bloc loading
       ValueCubitObserver.instance.methodIgnored(state, 'clear(filter:$filter)');
       return;
     }

@@ -15,4 +15,20 @@ class Person {
     @required this.name,
     @required this.surname,
   });
+
+  @override
+  String toString() {
+    return 'Person{name: $name, surname: $surname}';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Person &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          surname == other.surname;
+
+  @override
+  int get hashCode => name.hashCode ^ surname.hashCode;
 }

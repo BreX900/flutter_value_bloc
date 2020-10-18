@@ -22,10 +22,10 @@ abstract class ValueState<Filter> extends Equatable {
   /// this method verifies that you can call [ValueCubit.fetch] method
   bool get canFetch =>
       (this is LoadedValueState<Filter> || this is FetchedValueState<Filter>) &&
-      (!isEmpty && !isFully);
+      (isEmpty != true && isFully != true);
 
   /// this method verifies that you can call [ValueCubit.refresh] method
-  bool get canRefresh => this is FetchedValueState<Filter>;
+  bool get canRefresh => isInitialized;
 
   @mustCallSuper
   ValueState<Filter> _toCopy(void Function(ValueStateDelegateBuilder b) updates);

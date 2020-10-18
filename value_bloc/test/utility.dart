@@ -19,10 +19,11 @@ Future<void> runBlocTest<C extends Cubit<State>, State>({
 }) async {
   final unhandledErrors = <Object>[];
   var shallowEquality = false;
+  final states = <State>[];
   await runZoned(
     () async {
       final cubit = build();
-      final states = <State>[cubit.state];
+      states.add(cubit.state);
       final subscription = cubit.skip(skip).listen(states.add);
       try {
         await act?.call(cubit);
@@ -30,6 +31,7 @@ Future<void> runBlocTest<C extends Cubit<State>, State>({
         unhandledErrors.add(
           error is CubitUnhandledErrorException ? error.error : error,
         );
+        print(states);
       }
       if (wait != null) await Future<void>.delayed(wait);
       await Future<void>.delayed(Duration.zero);
@@ -42,6 +44,7 @@ Future<void> runBlocTest<C extends Cubit<State>, State>({
       await verify?.call(cubit);
     },
     onError: (Object error) {
+      print(states);
       if (error is CubitUnhandledErrorException) {
         unhandledErrors.add(error.error);
       } else if (shallowEquality && error is test.TestFailure) {

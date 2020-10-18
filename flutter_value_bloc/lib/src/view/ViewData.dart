@@ -22,15 +22,17 @@ class ViewData {
   });
 
   static Widget _buildError(BuildContext context, Object error) {
-    return Text('$error');
+    return Center(child: Text('$error'));
   }
 
   static Widget _buildLoading(BuildContext context, double progress) {
-    return CircularProgressIndicator(value: progress == 0.0 ? null : progress);
+    return Center(
+      child: CircularProgressIndicator(value: progress == 0.0 ? null : progress),
+    );
   }
 
   static Widget _buildEmpty(BuildContext context) {
-    return Text('Empty');
+    return Center(child: Text('Empty'));
   }
 
   ViewData copyWith({

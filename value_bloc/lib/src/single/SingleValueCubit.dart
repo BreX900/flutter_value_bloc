@@ -36,7 +36,7 @@ abstract class SingleValueCubit<V, Filter extends Object>
   /// The call of this method is ignored if the fetchStatus is fetching or fetched
   void fetch() async {
     await Future.delayed(Duration.zero);
-    if (!(state is LoadedValueState<Filter>)) {
+    if (!state.canFetch) {
       ValueCubitObserver.instance.methodIgnored(state, 'fetch()');
       return;
     }

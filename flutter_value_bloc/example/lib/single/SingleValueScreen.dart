@@ -3,8 +3,8 @@ import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
 import 'NameSingleCubit.dart';
 
-class SingleNameScreen extends StatelessWidget {
-  const SingleNameScreen({Key key}) : super(key: key);
+class SingleScreen extends StatelessWidget {
+  const SingleScreen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -13,14 +13,11 @@ class SingleNameScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(),
         body: Center(
-          child: Builder(
-            builder: (context) =>
-                ViewSingleValueCubitBuilder<SingleNameCubit, String, Object>(
-              plugin: RefresherValueCubitPlugin(),
-              builder: (context, state) {
-                return Text('${state.value}');
-              },
-            ),
+          child: ViewSingleValueCubitBuilder<SingleNameCubit, String, Object>(
+            plugin: RefresherValueCubitPlugin(),
+            builder: (context, state) {
+              return Text('${state.value}');
+            },
           ),
         ),
       ),

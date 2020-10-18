@@ -85,7 +85,8 @@ class PageFetcher extends ValueFetcher {
     final start = (scheme.offset / valuesPerPage).floor();
     final end = (scheme.end / valuesPerPage).ceil();
     final schemes = List.generate(end - start, (index) {
-      return FetchScheme(index * valuesPerPage, valuesPerPage);
+      return FetchScheme(
+          (start * valuesPerPage) + (index * valuesPerPage), valuesPerPage);
     });
     // Remove already exist scheme in state
     return schemes..removeWhere(values.containsKey);

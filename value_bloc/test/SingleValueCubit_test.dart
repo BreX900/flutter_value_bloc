@@ -61,4 +61,6 @@ void main() {
 SingleValueStateDelegate<T, Object> getValueBlocState<T>({
   T value,
 }) =>
-    SingleValueStateDelegate<T, Object>((b) => b..value = value);
+    SingleValueStateDelegate<T, Object>((b) => b
+      ..clearAfterFetch = false
+      ..value = value);

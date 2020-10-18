@@ -19,6 +19,10 @@ abstract class ListValueState<V, Filter> extends ValueState<Filter> {
   @override
   bool get isFully => isInitialized ? countValues == values.length : null;
 
+  bool containsPage(int offset, int limit) {
+    return _delegate.pages.keys.any((s) => s.contains(FetchScheme(offset, limit)));
+  }
+
   @visibleForTesting
   @override
   IdleValueState<Filter> toIdle({bool clearAfterFetch, Filter filter}) {
@@ -81,6 +85,7 @@ abstract class ListValueState<V, Filter> extends ValueState<Filter> {
           ..pages[scheme] = values.toBuiltList()
           ..countValues = countValues));
   }
+
   @visibleForTesting
   @override
   FetchFailedValueState<Filter> toFetchFailed({Object error}) {
@@ -90,7 +95,6 @@ abstract class ListValueState<V, Filter> extends ValueState<Filter> {
 
 class IdleListValueState<V, Filter> extends ListValueState<V, Filter>
     implements IdleValueState<Filter> {
-
   IdleListValueState(ListValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
@@ -114,9 +118,7 @@ class LoadingListValueState<V, Filter> extends ListValueState<V, Filter>
 
 class LoadedListValueState<V, Filter> extends ListValueState<V, Filter>
     implements LoadedValueState<Filter> {
-
-  LoadedListValueState(ListValueStateDelegate<V, Filter> delegate)
-      : super(delegate);
+  LoadedListValueState(ListValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
   ListValueState<V, Filter> _toCopy(_ListCopier updates) {
@@ -154,8 +156,7 @@ class FetchingListValueState<V, Filter> extends ListValueState<V, Filter>
 
 class FetchedListValueState<V, Filter> extends ListValueState<V, Filter>
     implements FetchedValueState<Filter> {
-  FetchedListValueState(ListValueStateDelegate<V, Filter> delegate)
-      : super(delegate);
+  FetchedListValueState(ListValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
   ListValueState<V, Filter> _toCopy(_ListCopier updates) {
