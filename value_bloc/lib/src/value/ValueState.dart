@@ -1,4 +1,4 @@
-part of '../../value_bloc.dart';
+part of 'ValueCubit.dart';
 
 abstract class ValueState<Filter> extends Equatable {
   ValueStateDelegate<Filter> get _delegate;

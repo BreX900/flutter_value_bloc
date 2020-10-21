@@ -1,4 +1,4 @@
-part of '../../value_bloc.dart';
+part of '../value/ValueCubit.dart';
 
 abstract class ListValueState<V, Filter> extends ValueState<Filter> {
   final ListValueStateDelegate<V, Filter> _delegate;

@@ -6,6 +6,9 @@ export 'package:value_bloc/value_bloc.dart';
 
 export 'src/list/PaginatedTableListValueCubitBuilder.dart';
 export 'src/list/RefresherValueCubitBuilder.dart';
+export 'src/value_view/ValueViewBuilder.dart';
+export 'src/value_view/ValueViewData.dart';
+export 'src/value_view/ValueViewProvider.dart';
 export 'src/view/ViewBuilders.dart';
 export 'src/view/ViewData.dart';
 export 'src/view/ViewProvider.dart';

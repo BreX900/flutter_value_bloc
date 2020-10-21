@@ -1,4 +1,18 @@
-part of '../../value_bloc.dart';
+import 'package:bloc/bloc.dart';
+import 'package:built_collection/built_collection.dart';
+import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
+import 'package:value_bloc/src/ValueCubitObserver.dart';
+import 'package:value_bloc/src/fetchers.dart';
+import 'package:value_bloc/src/list/ListValueStateDelegate.dart';
+import 'package:value_bloc/src/single/SingleValueStateDelegate.dart';
+import 'package:value_bloc/src/value/ValueStateDelegate.dart';
+
+part '../list/ListValueCubit.dart';
+part '../list/ListValueState.dart';
+part '../single/SingleValueCubit.dart';
+part '../single/SingleValueState.dart';
+part 'ValueState.dart';
 
 /// if loadingStatus is loading automatic start loading
 /// if fetchStatus is fetching automatic start fetching

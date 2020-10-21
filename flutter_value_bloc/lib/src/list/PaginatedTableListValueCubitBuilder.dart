@@ -5,6 +5,7 @@ import 'package:value_bloc/value_bloc.dart';
 
 typedef _RowBuilder<V> = DataRow Function(V value);
 
+/// Build a [PaginatedDataTable] with [ListValueCubit]
 class PaginatedTableListValueCubitBuilder<C extends ListValueCubit<V, Filter>, V, Filter>
     extends StatefulWidget {
   final C listCubit;

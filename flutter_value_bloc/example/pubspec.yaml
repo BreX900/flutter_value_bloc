@@ -1,6 +1,5 @@
 name: example
-description: A new Flutter project.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+description: Example
 version: 1.0.0+1
 
 environment:
@@ -12,8 +11,9 @@ dependencies:
 
   cupertino_icons: ^1.0.0
 
-  value_bloc:
-    path: ../../value_bloc
+  value_bloc: ^0.1.0
+  # value_bloc:
+  #  path: ../value_bloc
 
   flutter_value_bloc:
     path: ../../flutter_value_bloc

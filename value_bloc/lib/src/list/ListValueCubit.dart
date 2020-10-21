@@ -1,4 +1,4 @@
-part of '../../value_bloc.dart';
+part of '../value/ValueCubit.dart';
 
 abstract class ListValueCubit<V, Filter extends Object>
     extends ValueCubit<ListValueState<V, Filter>, Filter> {

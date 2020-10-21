@@ -1,3 +1,4 @@
-## [0.0.1] - TODO: Add release date.
-
-* TODO: Describe initial release.
+## 0.1.0
+Initial Version of the library
+- Includes a widget for build a view with single value
+- Includes a widgets for build a scroll view and table

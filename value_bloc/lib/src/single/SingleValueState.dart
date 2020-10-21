@@ -1,5 +1,4 @@
-part of '../../value_bloc.dart';
-
+part of '../value/ValueCubit.dart';
 
 abstract class SingleValueState<V, Filter> extends ValueState<Filter> {
   final SingleValueStateDelegate<V, Filter> _delegate;
@@ -139,8 +138,7 @@ class FetchingSingleValueState<V, Filter> extends SingleValueState<V, Filter>
 
 class FetchedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
     implements FetchedValueState<Filter> {
-  FetchedSingleValueState(SingleValueStateDelegate<V, Filter> delegate)
-      : super(delegate);
+  FetchedSingleValueState(SingleValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
   SingleValueState<V, Filter> _toCopy(_SingleCopier updates) {

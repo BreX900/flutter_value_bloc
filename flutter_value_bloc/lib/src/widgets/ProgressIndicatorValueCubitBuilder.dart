@@ -3,6 +3,7 @@ import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
 typedef _IndicatorBuilder = Widget Function(BuildContext context, double progress);
 
+@visibleForTesting
 class ProgressIndicatorValueCubitBuilder extends StatelessWidget {
   final _IndicatorBuilder builder;
 
@@ -36,7 +37,7 @@ class ProgressIndicatorValueCubitBuilder extends StatelessWidget {
         if (state is ProcessingValueState<dynamic>) {
           return builder(context, state.progress);
         }
-        return builder(context, 1.0);
+        return builder(context, null);
       },
     );
   }

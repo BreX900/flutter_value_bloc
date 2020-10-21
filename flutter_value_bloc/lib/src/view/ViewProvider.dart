@@ -2,6 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_value_bloc/src/view/ViewData.dart';
 import 'package:provider/provider.dart';
 
+/// It provider in [ViewBuilder], [SingleViewValueCubitBuilder] or
+/// [ListViewValueCubitBuilder] the defaults builders
 class ViewDataProvider extends Provider<ViewData> {
   ViewDataProvider({
     @required Create<ViewData> create,

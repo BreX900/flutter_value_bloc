@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 
+/// It build a widget for showing a progress
+/// Ex. Center(child: CircularProgressIndicator(value: progress))
 typedef ViewLoaderBuilder = Widget Function(BuildContext context, double progress);
+
+/// It build a widget for showing a error
+/// Ex. Center(child: Text('$error'))
 typedef ViewErrorBuilder = Widget Function(BuildContext context, Object error);
+
+/// It build a widget for showing a empty list or empty screen
+/// Center(child: Text('Empty'))
 typedef ViewEmptyBuilder = Widget Function(BuildContext context);
 
+/// It defines default [ViewErrorBuilder], [ViewLoaderBuilder], [ViewEmptyBuilder]
 class ViewData {
   final ViewErrorBuilder errorBuilder;
   final ViewLoaderBuilder loadingBuilder;

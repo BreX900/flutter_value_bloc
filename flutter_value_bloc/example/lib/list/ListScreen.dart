@@ -14,7 +14,7 @@ class ListScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text('List with ListValueCubit'),
         ),
-        body: ViewListValueCubitBuilder<ListPersonCubit, Person, Object>(
+        body: ListViewValueCubitBuilder<ListPersonCubit, Person, Object>(
           plugin: RefresherValueCubitPlugin(),
           builder: (context, state) => ListView.separated(
             itemCount: state.values.length,

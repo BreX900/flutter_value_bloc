@@ -13,7 +13,7 @@ class SingleScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(),
         body: Center(
-          child: ViewSingleValueCubitBuilder<SingleNameCubit, String, Object>(
+          child: SingleViewValueCubitBuilder<SingleNameCubit, String, Object>(
             plugin: RefresherValueCubitPlugin(),
             builder: (context, state) {
               return Text('${state.value}');

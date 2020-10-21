@@ -1,9 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/view/ViewBuilders.dart';
+import 'package:flutter_value_bloc/src/value_view/ValueViewBuilder.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart' as ptr;
 import 'package:value_bloc/value_bloc.dart';
-
 
 /// This is a plugin used in [ViewValueCubitBuilderBase]
 /// and it integrate a [RefresherValueCubitBuilder]
