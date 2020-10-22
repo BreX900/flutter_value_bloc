@@ -1,8 +1,11 @@
 name: value_bloc
 description: A predictable state management library that helps implement a fetch data from database or another storage
-version: 0.1.0
-author: BreX900
-homepage: https://github.com/BreX900/flutter_value_bloc/tree/master/value_bloc
+version: 0.2.0
+repository: https://github.com/BreX900/flutter_value_bloc/tree/master/value_bloc
+issue_tracker: https://github.com/BreX900/flutter_value_bloc/issues
+homepage: https://github.com/BreX900/flutter_value_bloc/
+
+# pub publish --dry-run
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
