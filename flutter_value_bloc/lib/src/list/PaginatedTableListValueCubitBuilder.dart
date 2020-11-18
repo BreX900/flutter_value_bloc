@@ -28,22 +28,21 @@ class PaginatedTableListValueCubitBuilder<C extends ListValueCubit<V, Filter>, V
       _PaginatedTableListValueCubitBuilderState();
 }
 
-class _PaginatedTableListValueCubitBuilderState<C extends ListValueCubit<V, Filter>, V,
-    Filter> extends State<PaginatedTableListValueCubitBuilder<C, V, Filter>> {
+class _PaginatedTableListValueCubitBuilderState<C extends ListValueCubit<V, Filter>, V, Filter>
+    extends State<PaginatedTableListValueCubitBuilder<C, V, Filter>> {
   _DataTableSource<V> _source;
 
   @override
   void initState() {
     super.initState();
     _source = _DataTableSource<V>(
-      data: getData((context.bloc<C>() ?? widget.listCubit).state),
+      data: getData((context.read<C>() ?? widget.listCubit).state),
       builder: widget.builder,
     );
   }
 
   @override
-  void didUpdateWidget(
-      covariant PaginatedTableListValueCubitBuilder<C, V, Filter> oldWidget) {
+  void didUpdateWidget(covariant PaginatedTableListValueCubitBuilder<C, V, Filter> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.builder != oldWidget.builder) {
       _source.builder = widget.builder;
@@ -60,7 +59,7 @@ class _PaginatedTableListValueCubitBuilderState<C extends ListValueCubit<V, Filt
 
   @override
   Widget build(BuildContext context) {
-    final listCubit = widget.listCubit ?? context.bloc<C>();
+    final listCubit = widget.listCubit ?? context.read<C>();
 
     return BlocListener<C, ListValueState<V, Filter>>(
       cubit: listCubit,
@@ -137,8 +136,7 @@ class _Data<V> {
           rowCount == other.rowCount;
 
   @override
-  int get hashCode =>
-      values.hashCode ^ isRowCountApproximate.hashCode ^ rowCount.hashCode;
+  int get hashCode => values.hashCode ^ isRowCountApproximate.hashCode ^ rowCount.hashCode;
 
   @override
   String toString() {

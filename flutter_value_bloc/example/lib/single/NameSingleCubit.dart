@@ -1,4 +1,4 @@
-import 'package:value_bloc/value_bloc.dart';
+import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
 class SingleNameCubit extends SingleValueCubit<String, Object> {
   SingleNameCubit() : super(isLoading: true);

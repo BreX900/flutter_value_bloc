@@ -1,3 +1,6 @@
+## 0.2.1
+Fix IDE suggestions
+
 ## 0.2.0
 Fix not public *.g.dart files
 

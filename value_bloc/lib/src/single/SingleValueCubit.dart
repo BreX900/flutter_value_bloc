@@ -1,4 +1,8 @@
-part of '../value/ValueCubit.dart';
+import '../ValueCubitObserver.dart';
+import '../value/ValueCubit.dart';
+import '../value/ValueState.dart';
+import 'SingleValueState.dart';
+import 'SingleValueStateDelegate.dart';
 
 abstract class SingleValueCubit<V, Filter extends Object>
     extends ValueCubit<SingleValueState<V, Filter>, Filter> {
@@ -25,8 +29,7 @@ abstract class SingleValueCubit<V, Filter extends Object>
   void emitFetched(V value) async {
     await Future.delayed(Duration.zero);
     if (!(state is FetchingValueState<Filter> || state is FetchedValueState<Filter>)) {
-      ValueCubitObserver.instance
-          .methodIgnored(state, 'emitSuccessFetched(value:$value)');
+      ValueCubitObserver.instance.methodIgnored(state, 'emitSuccessFetched(value:$value)');
       return;
     }
     emit(state.toFetched(value));
@@ -45,5 +48,5 @@ abstract class SingleValueCubit<V, Filter extends Object>
   }
 
   @override
-  void _onFetching() => onFetching();
+  void firstFetchingHandle() => onFetching();
 }

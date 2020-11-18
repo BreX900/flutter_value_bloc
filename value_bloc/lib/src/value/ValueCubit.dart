@@ -1,18 +1,8 @@
 import 'package:bloc/bloc.dart';
-import 'package:built_collection/built_collection.dart';
-import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:value_bloc/src/ValueCubitObserver.dart';
-import 'package:value_bloc/src/fetchers.dart';
-import 'package:value_bloc/src/list/ListValueStateDelegate.dart';
-import 'package:value_bloc/src/single/SingleValueStateDelegate.dart';
-import 'package:value_bloc/src/value/ValueStateDelegate.dart';
 
-part '../list/ListValueCubit.dart';
-part '../list/ListValueState.dart';
-part '../single/SingleValueCubit.dart';
-part '../single/SingleValueState.dart';
-part 'ValueState.dart';
+import 'ValueState.dart';
 
 /// if loadingStatus is loading automatic start loading
 /// if fetchStatus is fetching automatic start fetching
@@ -27,7 +17,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
       onLoading();
     } else if (isFetching) {
       emit(state.toFetching() as S);
-      _onFetching();
+      firstFetchingHandle();
     }
   }
 
@@ -73,8 +63,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   void emitFetching({double progress}) async {
     await Future.delayed(Duration.zero);
     if (!(state is FetchingValueState<Filter>)) {
-      ValueCubitObserver.instance
-          .methodIgnored(state, 'emitFetching(progress:$progress)');
+      ValueCubitObserver.instance.methodIgnored(state, 'emitFetching(progress:$progress)');
       return;
     }
     emit(state.toFetching(progress: progress) as S);
@@ -84,8 +73,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
   void emitFetchFailed({Object error}) async {
     await Future.delayed(Duration.zero);
     if (!(state is FetchingValueState<Filter> || state is FetchedValueState<Filter>)) {
-      ValueCubitObserver.instance
-          .methodIgnored(state, 'emitFailureFetched(error:$error)');
+      ValueCubitObserver.instance.methodIgnored(state, 'emitFailureFetched(error:$error)');
       return;
     }
     emit(state.toFetchFailed(error: error) as S);
@@ -121,14 +109,14 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
       onLoading();
     } else {
       emit(state.toFetching(clearAfterFetch: true) as S);
-      _onFetching();
+      firstFetchingHandle();
     }
   }
 
   /// This method is used for update filter
   void updateFilter({@required Filter filter}) async {
     await Future.delayed(Duration.zero);
-    emit(state._toCopy((b) => b..filter = filter) as S);
+    emit(state.copy((b) => b..filter = filter) as S);
   }
 
   /// This method is used for reset the bloc to idle state
@@ -158,5 +146,6 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
 
   Future<void> _wait = Future.delayed(Duration.zero);
 
-  void _onFetching();
+  @protected
+  void firstFetchingHandle();
 }

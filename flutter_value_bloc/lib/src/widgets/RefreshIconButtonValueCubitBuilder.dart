@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:value_bloc/value_bloc.dart';
 
-class RefreshIconButtonValueCubitBuilder<
-    C extends ValueCubit<ValueState<dynamic>, dynamic>> extends StatelessWidget {
+class RefreshIconButtonValueCubitBuilder<C extends ValueCubit<ValueState<dynamic>, dynamic>>
+    extends StatelessWidget {
   final C valueCubit;
   final bool isLoading;
   final Widget icon;
@@ -16,14 +17,13 @@ class RefreshIconButtonValueCubitBuilder<
 
   @override
   Widget build(BuildContext context) {
-    final valueCubit = this.valueCubit ?? context.bloc<C>();
+    final valueCubit = this.valueCubit ?? context.read<C>();
 
     return BlocBuilder<C, ValueState<dynamic>>(
       cubit: valueCubit,
       builder: (context, state) {
         return IconButton(
-          onPressed:
-              state.canRefresh ? () => valueCubit.refresh(isLoading: isLoading) : null,
+          onPressed: state.canRefresh ? () => valueCubit.refresh(isLoading: isLoading) : null,
           icon: icon,
         );
       },

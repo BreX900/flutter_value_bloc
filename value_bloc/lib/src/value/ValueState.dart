@@ -1,4 +1,7 @@
-part of 'ValueCubit.dart';
+import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
+
+import 'ValueStateDelegate.dart';
 
 abstract class ValueState<Filter> extends Equatable {
   ValueStateDelegate<Filter> get _delegate;
@@ -7,8 +10,7 @@ abstract class ValueState<Filter> extends Equatable {
   Filter get filter => _delegate.filter;
 
   /// this method verifies if the bloc is initialized
-  bool get isInitialized =>
-      _delegate.clearAfterFetch || this is FetchedValueState<Filter>;
+  bool get isInitialized => _delegate.clearAfterFetch || this is FetchedValueState<Filter>;
 
   /// return null if the bloc is not initialized else check have value/s
   bool get isEmpty => throw UnimplementedError();
@@ -28,32 +30,32 @@ abstract class ValueState<Filter> extends Equatable {
   bool get canRefresh => isInitialized;
 
   @mustCallSuper
-  ValueState<Filter> _toCopy(void Function(ValueStateDelegateBuilder b) updates);
+  ValueState<Filter> copy(void Function(ValueStateDelegateBuilder b) updates);
 
-  @visibleForTesting
+  /// Internal method
   IdleValueState<Filter> toIdle({Filter filter});
 
-  @visibleForTesting
+  /// Internal method
   LoadingValueState<Filter> toLoading({
     bool clearAfterFetch,
     Filter filter,
     double progress = 0.0,
   });
 
-  @visibleForTesting
+  /// Internal method
   LoadedValueState<Filter> toLoaded();
 
-  @visibleForTesting
+  /// Internal method
   LoadFailedValueState<Filter> toLoadFailed({Object error});
 
-  @visibleForTesting
+  /// Internal method
   FetchingValueState<Filter> toFetching({
     bool clearAfterFetch,
     Filter filter,
     double progress = 0.0,
   });
 
-  @visibleForTesting
+  /// Internal method
   FetchFailedValueState<Filter> toFetchFailed({Object error});
 
   @override

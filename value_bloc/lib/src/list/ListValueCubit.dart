@@ -1,4 +1,10 @@
-part of '../value/ValueCubit.dart';
+import 'package:value_bloc/src/ValueCubitObserver.dart';
+
+import '../fetchers.dart';
+import '../value/ValueCubit.dart';
+import '../value/ValueState.dart';
+import 'ListValueState.dart';
+import 'ListValueStateDelegate.dart';
 
 abstract class ListValueCubit<V, Filter extends Object>
     extends ValueCubit<ListValueState<V, Filter>, Filter> {
@@ -36,8 +42,8 @@ abstract class ListValueCubit<V, Filter extends Object>
     assert(scheme != null && values != null, 'scheme:$scheme,values:$values');
     await Future.delayed(Duration.zero);
     if (!(state is FetchingValueState<Filter> || state is FetchedValueState<Filter>)) {
-      ValueCubitObserver.instance.methodIgnored(state,
-          'emitFetchedCount(scheme:$scheme,values$values,countValues:$countValues)');
+      ValueCubitObserver.instance.methodIgnored(
+          state, 'emitFetchedCount(scheme:$scheme,values$values,countValues:$countValues)');
       return;
     }
     // Todo: move this logic in Fetcher class
@@ -62,15 +68,12 @@ abstract class ListValueCubit<V, Filter extends Object>
   void fetch({int offset, int limit}) async {
     await Future.delayed(Duration.zero);
     if (!state.canFetch) {
-      ValueCubitObserver.instance
-          .methodIgnored(state, 'fetch(offset:$offset,limit:$limit)');
+      ValueCubitObserver.instance.methodIgnored(state, 'fetch(offset:$offset,limit:$limit)');
       return;
     }
-    final newSchemes =
-        _fetcher.findSchemes(state._delegate.pages, FetchScheme(offset, limit));
+    final newSchemes = _fetcher.findSchemes(state.pages, FetchScheme(offset, limit));
     if (newSchemes.isEmpty) {
-      ValueCubitObserver.instance
-          .methodIgnored(state, 'fetch(offset:$offset,limit:$limit)');
+      ValueCubitObserver.instance.methodIgnored(state, 'fetch(offset:$offset,limit:$limit)');
       return;
     }
     _schemes.addAll(newSchemes);
@@ -78,9 +81,8 @@ abstract class ListValueCubit<V, Filter extends Object>
     newSchemes.forEach(onFetching);
   }
 
-  void _onFetching() {
-    final initialScheme =
-        _fetcher.initFetchScheme(state._delegate.pages, FetchScheme(0, null));
+  void firstFetchingHandle() {
+    final initialScheme = _fetcher.initFetchScheme(state.pages, FetchScheme(0, null));
     _schemes.add(initialScheme);
     onFetching(initialScheme);
   }

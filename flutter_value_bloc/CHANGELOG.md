@@ -1,3 +1,6 @@
+## 0.3.0
+Update dependencies
+
 ## 0.2.0
 Fix not public *.g.dart files
 

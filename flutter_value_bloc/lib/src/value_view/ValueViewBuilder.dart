@@ -48,8 +48,8 @@ class ListViewValueCubitBuilder<C extends ListValueCubit<V, Filter>, V, Filter>
 }
 
 /// This is a plugin for wrapping a child in [ViewValueCubitBuilderBase]
-abstract class ViewValueCubitPlugin<C extends ValueCubit<S, Filter>,
-    S extends ValueState<Filter>, Filter> {
+abstract class ViewValueCubitPlugin<C extends ValueCubit<S, Filter>, S extends ValueState<Filter>,
+    Filter> {
   Widget apply(C valueCubit, S builderState, Widget child);
 }
 
@@ -57,8 +57,8 @@ abstract class ViewValueCubitPlugin<C extends ValueCubit<S, Filter>,
 ///
 /// This is a view builder with default [ValueViewErrorBuilder],
 /// [ValueViewLoaderBuilder], [ValueViewEmptyBuilder] for [ValueCubit]
-class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>,
-    S extends ValueState<dynamic>> extends StatelessWidget {
+class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>, S extends ValueState<dynamic>>
+    extends StatelessWidget {
   final C valueCubit;
   final ViewValueCubitPlugin plugin;
   final BlocWidgetBuilder<FailedValueState> errorBuilder;
@@ -78,7 +78,7 @@ class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>,
 
   @override
   Widget build(BuildContext context) {
-    final valueCubit = this.valueCubit ?? context.bloc<C>();
+    final valueCubit = this.valueCubit ?? context.read<C>();
     assert(valueCubit != null);
 
     final view = ValueViewDataProvider.tryOf(context).copyWith(
