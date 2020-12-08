@@ -15,18 +15,20 @@ class ListScreen extends StatelessWidget {
           title: Text('List with ListValueCubit'),
         ),
         body: ListViewValueCubitBuilder<ListPersonCubit, Person, Object>(
-          plugin: RefresherValueCubitPlugin(),
-          builder: (context, state) => ListView.separated(
-            itemCount: state.values.length,
-            separatorBuilder: (context, index) => Divider(),
-            itemBuilder: (context, index) {
-              final person = state.values[index];
+          plugin: RefresherValueCubitPlugin(enablePullUp: true),
+          builder: (context, state) {
+            return ListView.separated(
+              itemCount: state.values.length,
+              separatorBuilder: (context, index) => Divider(),
+              itemBuilder: (context, index) {
+                final person = state.values[index];
 
-              return ListTile(
-                title: Text('${person.name} ${person.surname}'),
-              );
-            },
-          ),
+                return ListTile(
+                  title: Text('${person.name} ${person.surname}'),
+                );
+              },
+            );
+          },
         ),
       ),
     );

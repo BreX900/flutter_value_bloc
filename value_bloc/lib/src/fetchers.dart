@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:built_collection/built_collection.dart';
-import 'package:value_bloc/value_bloc.dart';
 
 /// This class permit a custom fetching for [ListValueCubit]
 abstract class ValueFetcher {
@@ -17,21 +16,17 @@ abstract class ValueFetcher {
   int getInitialLimit(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme);
 
   FetchScheme initFetchScheme(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
-    if (scheme.offset == null)
-      scheme = scheme.copyWith(offset: getInitialOffset(values, scheme));
-    if (scheme.limit == null)
-      scheme = scheme.copyWith(limit: getInitialLimit(values, scheme));
+    if (scheme.offset == null) scheme = scheme.copyWith(offset: getInitialOffset(values, scheme));
+    if (scheme.limit == null) scheme = scheme.copyWith(limit: getInitialLimit(values, scheme));
     return scheme;
   }
 
   /// Find a more [FetchScheme] for elaboration a user [ListValueCubit.onFetching]
-  List<FetchScheme> findSchemes(
-      BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
+  List<FetchScheme> findSchemes(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
     return onFindSchemes(values, initFetchScheme(values, scheme));
   }
 
-  List<FetchScheme> onFindSchemes(
-      BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme);
+  List<FetchScheme> onFindSchemes(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme);
 }
 
 /// This class perform a fetch ignoring different limit pagination
@@ -42,11 +37,9 @@ class ListFetcher extends ValueFetcher {
 
   ListFetcher({this.minLimit = 20});
 
-  int getInitialLimit(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) =>
-      minLimit;
+  int getInitialLimit(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) => minLimit;
 
-  List<FetchScheme> onFindSchemes(
-      BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
+  List<FetchScheme> onFindSchemes(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
     int offset;
     final schemes = <FetchScheme>[];
     for (var i = scheme.offset; i < scheme.end; i++) {
@@ -58,8 +51,7 @@ class ListFetcher extends ValueFetcher {
         schemes.add(FetchScheme(offset, i - offset));
       }
     }
-    if (offset != null)
-      schemes.add(FetchScheme(offset, max(scheme.end - offset, minLimit)));
+    if (offset != null) schemes.add(FetchScheme(offset, max(scheme.end - offset, minLimit)));
     return schemes;
   }
 }
@@ -76,17 +68,14 @@ class PageFetcher extends ValueFetcher {
     int valuesPerPage,
   }) : this.valuesPerPage = valuesPerPage ?? defaultValuePerPage;
 
-  int getInitialLimit(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) =>
-      valuesPerPage;
+  int getInitialLimit(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) => valuesPerPage;
 
-  List<FetchScheme> onFindSchemes(
-      BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
+  List<FetchScheme> onFindSchemes(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
     // Generate a scheme based on page
     final start = (scheme.offset / valuesPerPage).floor();
     final end = (scheme.end / valuesPerPage).ceil();
     final schemes = List.generate(end - start, (index) {
-      return FetchScheme(
-          (start * valuesPerPage) + (index * valuesPerPage), valuesPerPage);
+      return FetchScheme((start * valuesPerPage) + (index * valuesPerPage), valuesPerPage);
     });
     // Remove already exist scheme in state
     return schemes..removeWhere(values.containsKey);

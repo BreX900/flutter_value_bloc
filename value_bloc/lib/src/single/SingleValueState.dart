@@ -1,20 +1,22 @@
 import 'package:meta/meta.dart';
-
-import '../value/ValueState.dart';
-import 'SingleValueStateDelegate.dart';
+import 'package:value_bloc/src/single/SingleValueStateDelegate.dart';
+import 'package:value_bloc/src/value/ValueState.dart';
 
 abstract class SingleValueState<V, Filter> extends ValueState<Filter> {
   final SingleValueStateDelegate<V, Filter> _delegate;
 
-  SingleValueState(this._delegate);
+  SingleValueState(this._delegate) : super(_delegate);
 
   V get value => _delegate.value;
 
   @override
-  bool get isEmpty => isInitialized ? null : value == null;
+  bool get isInitialized => _delegate.clearAfterFetch || this is FetchedValueState<Filter>;
 
   @override
-  bool get isFully => isInitialized ? null : value != null;
+  bool get isEmpty => isInitialized ? value == null : null;
+
+  @override
+  bool get isFully => isInitialized ? value != null : null;
 
   /// Internal method
   @override
@@ -76,8 +78,13 @@ abstract class SingleValueState<V, Filter> extends ValueState<Filter> {
   }
 }
 
+mixin FailedSingleValueState<V, Filter> on SingleValueState<V, Filter>, FailedValueState<Filter> {}
+
+mixin ProcessingSingleValueState<V, Filter>
+    on SingleValueState<V, Filter>, ProcessingValueState<Filter> {}
+
 class IdleSingleValueState<V, Filter> extends SingleValueState<V, Filter>
-    implements IdleValueState<Filter> {
+    with IdleValueState<Filter> {
   IdleSingleValueState(SingleValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
@@ -87,7 +94,10 @@ class IdleSingleValueState<V, Filter> extends SingleValueState<V, Filter>
 }
 
 class LoadingSingleValueState<V, Filter> extends SingleValueState<V, Filter>
-    implements LoadingValueState<Filter> {
+    with
+        ProcessingValueState<Filter>,
+        LoadingValueState<Filter>,
+        ProcessingSingleValueState<V, Filter> {
   final double progress;
 
   LoadingSingleValueState(SingleValueStateDelegate<V, Filter> delegate, {this.progress = 0.0})
@@ -100,7 +110,7 @@ class LoadingSingleValueState<V, Filter> extends SingleValueState<V, Filter>
 }
 
 class SuccessLoadedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
-    implements LoadedValueState<Filter> {
+    with LoadedValueState<Filter> {
   SuccessLoadedSingleValueState(SingleValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
@@ -110,7 +120,7 @@ class SuccessLoadedSingleValueState<V, Filter> extends SingleValueState<V, Filte
 }
 
 class LoadFailedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
-    implements LoadFailedValueState<Filter> {
+    with FailedValueState, LoadFailedValueState<Filter>, FailedSingleValueState<V, Filter> {
   final Object error;
 
   LoadFailedSingleValueState(SingleValueStateDelegate<V, Filter> delegate, {@required this.error})
@@ -123,7 +133,7 @@ class LoadFailedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
 }
 
 class FetchingSingleValueState<V, Filter> extends SingleValueState<V, Filter>
-    implements FetchingValueState<Filter> {
+    with ProcessingValueState, FetchingValueState<Filter>, ProcessingSingleValueState<V, Filter> {
   final double progress;
 
   FetchingSingleValueState(SingleValueStateDelegate<V, Filter> delegate, {this.progress = 0.0})
@@ -136,7 +146,7 @@ class FetchingSingleValueState<V, Filter> extends SingleValueState<V, Filter>
 }
 
 class FetchedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
-    implements FetchedValueState<Filter> {
+    with FetchedValueState<Filter> {
   FetchedSingleValueState(SingleValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
@@ -146,7 +156,7 @@ class FetchedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
 }
 
 class FetchFailedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
-    implements FetchFailedValueState<Filter> {
+    with FailedValueState, FetchFailedValueState, FailedSingleValueState<V, Filter> {
   final Object error;
 
   FetchFailedSingleValueState(SingleValueStateDelegate<V, Filter> delegate, {@required this.error})

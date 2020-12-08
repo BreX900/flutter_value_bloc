@@ -1,4 +1,4 @@
-import '../value_bloc.dart';
+import 'package:value_bloc/src/value/ValueState.dart';
 
 class ValueCubitObserver {
   static bool isEnabledPrintMethodIgnored = false;

@@ -1,3 +1,9 @@
+## 0.4.0
+Fix some bugs in `RefresherValueCubitBuilder` and `ValueViewCubitBuilder`
+
+## 0.2.1
+Replace read<Bloc>() with BlocProvider.of<Bloc>()
+
 ## 0.3.0
 Update dependencies
 

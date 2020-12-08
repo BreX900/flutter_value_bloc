@@ -1,8 +1,8 @@
-import '../ValueCubitObserver.dart';
-import '../value/ValueCubit.dart';
-import '../value/ValueState.dart';
-import 'SingleValueState.dart';
-import 'SingleValueStateDelegate.dart';
+import 'package:value_bloc/src/ValueCubitObserver.dart';
+import 'package:value_bloc/src/single/SingleValueState.dart';
+import 'package:value_bloc/src/single/SingleValueStateDelegate.dart';
+import 'package:value_bloc/src/value/ValueCubit.dart';
+import 'package:value_bloc/src/value/ValueState.dart';
 
 abstract class SingleValueCubit<V, Filter extends Object>
     extends ValueCubit<SingleValueState<V, Filter>, Filter> {

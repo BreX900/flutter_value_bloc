@@ -1,14 +1,13 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:meta/meta.dart';
-
-import '../fetchers.dart';
-import '../value/ValueState.dart';
-import 'ListValueStateDelegate.dart';
+import 'package:value_bloc/src/fetchers.dart';
+import 'package:value_bloc/src/list/ListValueStateDelegate.dart';
+import 'package:value_bloc/src/value/ValueState.dart';
 
 abstract class ListValueState<V, Filter> extends ValueState<Filter> {
   final ListValueStateDelegate<V, Filter> _delegate;
 
-  ListValueState(this._delegate);
+  ListValueState(this._delegate) : super(_delegate);
 
   /// it is total possible value fetching
   int get countValues => _delegate.countValues;
@@ -16,7 +15,10 @@ abstract class ListValueState<V, Filter> extends ValueState<Filter> {
   BuiltMap<FetchScheme, BuiltList<V>> get pages => _delegate.pages;
 
   /// results of fetches
-  BuiltList<V> get values => _delegate.values;
+  BuiltMap<int, V> get values => _delegate.values;
+
+  @override
+  bool get isInitialized => _delegate.clearAfterFetch || pages.length > 0 || countValues != null;
 
   /// it contains values
   @override
@@ -100,8 +102,12 @@ abstract class ListValueState<V, Filter> extends ValueState<Filter> {
   }
 }
 
-class IdleListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements IdleValueState<Filter> {
+mixin FailedListValueState<V, Filter> on ListValueState<V, Filter>, FailedValueState<Filter> {}
+
+mixin ProcessingListValueState<V, Filter>
+    on ListValueState<V, Filter>, ProcessingValueState<Filter> {}
+
+class IdleListValueState<V, Filter> extends ListValueState<V, Filter> with IdleValueState<Filter> {
   IdleListValueState(ListValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
@@ -111,7 +117,7 @@ class IdleListValueState<V, Filter> extends ListValueState<V, Filter>
 }
 
 class LoadingListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements LoadingValueState<Filter> {
+    with ProcessingValueState, LoadingValueState<Filter>, ProcessingListValueState<V, Filter> {
   final double progress;
 
   LoadingListValueState(ListValueStateDelegate<V, Filter> delegate, {this.progress = 0.0})
@@ -124,7 +130,7 @@ class LoadingListValueState<V, Filter> extends ListValueState<V, Filter>
 }
 
 class LoadedListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements LoadedValueState<Filter> {
+    with LoadedValueState<Filter> {
   LoadedListValueState(ListValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
@@ -134,7 +140,7 @@ class LoadedListValueState<V, Filter> extends ListValueState<V, Filter>
 }
 
 class LoadFailedListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements LoadFailedValueState<Filter> {
+    with FailedValueState, LoadFailedValueState<Filter>, FailedListValueState<V, Filter> {
   final Object error;
 
   LoadFailedListValueState(ListValueStateDelegate<V, Filter> delegate, {@required this.error})
@@ -147,7 +153,7 @@ class LoadFailedListValueState<V, Filter> extends ListValueState<V, Filter>
 }
 
 class FetchingListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements FetchingValueState<Filter> {
+    with ProcessingValueState, FetchingValueState<Filter>, ProcessingListValueState<V, Filter> {
   final double progress;
 
   FetchingListValueState(ListValueStateDelegate<V, Filter> delegate, {this.progress = 0.0})
@@ -160,7 +166,7 @@ class FetchingListValueState<V, Filter> extends ListValueState<V, Filter>
 }
 
 class FetchedListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements FetchedValueState<Filter> {
+    with FetchedValueState<Filter> {
   FetchedListValueState(ListValueStateDelegate<V, Filter> delegate) : super(delegate);
 
   @override
@@ -170,7 +176,7 @@ class FetchedListValueState<V, Filter> extends ListValueState<V, Filter>
 }
 
 class FetchFailedListValueState<V, Filter> extends ListValueState<V, Filter>
-    implements FetchFailedValueState<Filter> {
+    with FailedValueState, FetchFailedValueState<Filter>, FailedListValueState<V, Filter> {
   final Object error;
 
   FetchFailedListValueState(ListValueStateDelegate<V, Filter> delegate, {@required this.error})

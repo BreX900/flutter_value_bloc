@@ -1,10 +1,9 @@
 import 'package:value_bloc/src/ValueCubitObserver.dart';
-
-import '../fetchers.dart';
-import '../value/ValueCubit.dart';
-import '../value/ValueState.dart';
-import 'ListValueState.dart';
-import 'ListValueStateDelegate.dart';
+import 'package:value_bloc/src/fetchers.dart';
+import 'package:value_bloc/src/list/ListValueState.dart';
+import 'package:value_bloc/src/list/ListValueStateDelegate.dart';
+import 'package:value_bloc/src/value/ValueCubit.dart';
+import 'package:value_bloc/src/value/ValueState.dart';
 
 abstract class ListValueCubit<V, Filter extends Object>
     extends ValueCubit<ListValueState<V, Filter>, Filter> {
@@ -46,7 +45,6 @@ abstract class ListValueCubit<V, Filter extends Object>
           state, 'emitFetchedCount(scheme:$scheme,values$values,countValues:$countValues)');
       return;
     }
-    // Todo: move this logic in Fetcher class
     // ignore update if the scheme is old
     if (!_schemes.contains(scheme)) {
       ValueCubitObserver.instance.methodIgnored(state,
@@ -60,7 +58,7 @@ abstract class ListValueCubit<V, Filter extends Object>
     ));
   }
 
-  var _schemes = <FetchScheme>[];
+  var _schemes = <FetchScheme>{};
 
   /// This method call the onFetching user method
   /// The call of this method is ignored if the fetchStatus is fetching or fetched

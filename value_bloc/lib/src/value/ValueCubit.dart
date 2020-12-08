@@ -1,8 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:value_bloc/src/ValueCubitObserver.dart';
-
-import 'ValueState.dart';
+import 'package:value_bloc/src/value/ValueState.dart';
 
 /// if loadingStatus is loading automatic start loading
 /// if fetchStatus is fetching automatic start fetching

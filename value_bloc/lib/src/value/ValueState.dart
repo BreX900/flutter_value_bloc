@@ -1,16 +1,17 @@
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
-
-import 'ValueStateDelegate.dart';
+import 'package:value_bloc/src/value/ValueStateDelegate.dart';
 
 abstract class ValueState<Filter> extends Equatable {
-  ValueStateDelegate<Filter> get _delegate;
+  final ValueStateDelegate<Filter> _delegate;
+
+  ValueState(this._delegate);
 
   /// you can use it for filter value/s
   Filter get filter => _delegate.filter;
 
-  /// this method verifies if the bloc is initialized
-  bool get isInitialized => _delegate.clearAfterFetch || this is FetchedValueState<Filter>;
+  /// this method verifies if the bloc is initialized. After first fetch
+  bool get isInitialized;
 
   /// return null if the bloc is not initialized else check have value/s
   bool get isEmpty => throw UnimplementedError();
@@ -28,6 +29,8 @@ abstract class ValueState<Filter> extends Equatable {
 
   /// this method verifies that you can call [ValueCubit.refresh] method
   bool get canRefresh => isInitialized;
+
+  bool get isRefreshing => _delegate.clearAfterFetch;
 
   @mustCallSuper
   ValueState<Filter> copy(void Function(ValueStateDelegateBuilder b) updates);
@@ -65,14 +68,14 @@ abstract class ValueState<Filter> extends Equatable {
   bool get stringify => true;
 }
 
-abstract class FailedValueState<Filter> extends ValueState<Filter> {
+mixin FailedValueState<Filter> on ValueState<Filter> {
   Object get error;
 
   @override
   List<Object> get props => super.props..add(error);
 }
 
-abstract class ProcessingValueState<Filter> extends ValueState<Filter> {
+mixin ProcessingValueState<Filter> on ValueState<Filter> {
   /// 1.00 >= progress >= 0.00
   double get progress;
 
@@ -80,20 +83,20 @@ abstract class ProcessingValueState<Filter> extends ValueState<Filter> {
   List<Object> get props => super.props..add(progress);
 }
 
-abstract class IdleValueState<Filter> extends ValueState<Filter> {}
+mixin IdleValueState<Filter> on ValueState<Filter> {}
 
 // ---------- Load ----------
 
-abstract class LoadingValueState<Filter> implements ProcessingValueState<Filter> {}
+mixin LoadingValueState<Filter> on ProcessingValueState<Filter> {}
 
-abstract class LoadedValueState<Filter> implements ValueState<Filter> {}
+mixin LoadedValueState<Filter> on ValueState<Filter> {}
 
-abstract class LoadFailedValueState<Filter> implements FailedValueState<Filter> {}
+mixin LoadFailedValueState<Filter> on FailedValueState<Filter> {}
 
 // ---------- FETCH ----------
 
-abstract class FetchingValueState<Filter> implements ProcessingValueState<Filter> {}
+mixin FetchingValueState<Filter> on ProcessingValueState<Filter> {}
 
-abstract class FetchFailedValueState<Filter> implements FailedValueState<Filter> {}
+mixin FetchFailedValueState<Filter> on FailedValueState<Filter> {}
 
-abstract class FetchedValueState<Filter> implements ValueState<Filter> {}
+mixin FetchedValueState<Filter> on ValueState<Filter> {}

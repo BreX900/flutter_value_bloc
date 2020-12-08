@@ -6,8 +6,8 @@ import 'package:value_bloc/value_bloc.dart';
 
 /// This is a plugin used in [ViewValueCubitBuilderBase]
 /// and it integrate a [RefresherValueCubitBuilder]
-class RefresherValueCubitPlugin<C extends ValueCubit<S, Filter>,
-    S extends ValueState<Filter>, Filter> extends ViewValueCubitPlugin<C, S, Filter> {
+class RefresherValueCubitPlugin<C extends ValueCubit<S, Filter>, S extends ValueState<Filter>,
+    Filter> extends ViewValueCubitPlugin<C, S, Filter> {
   final bool enablePullDown;
   final bool enablePullUp;
 
@@ -70,7 +70,7 @@ class _RefresherValueCubitBuilderState extends State<RefresherValueCubitBuilder>
   }
 
   ptr.RefreshStatus _getRefreshStatus(ValueState state) {
-    if (state is ProcessingValueState) {
+    if (state.isRefreshing) {
       return ptr.RefreshStatus.refreshing;
     } else {
       return ptr.RefreshStatus.completed;
@@ -79,7 +79,7 @@ class _RefresherValueCubitBuilderState extends State<RefresherValueCubitBuilder>
 
   ptr.LoadStatus _getLoadStatus(ValueState state) {
     assert(state.isFully != null, 'Not support for $state');
-    if (widget.enablePullUp) return ptr.LoadStatus.idle;
+    if (!widget.enablePullUp) return ptr.LoadStatus.idle;
     if (state.isFully) {
       return ptr.LoadStatus.noMore;
     } else if (state is FetchingValueState) {

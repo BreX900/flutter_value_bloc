@@ -1,3 +1,9 @@
+## 0.4.2
+Improve imports
+
+## 0.4.0
+Fix some bugs and added ValueState.isReloading get
+
 ## 0.2.1
 Fix IDE suggestions
 

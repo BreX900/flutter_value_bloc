@@ -11,7 +11,7 @@ dependencies:
 
   cupertino_icons: ^1.0.0
 
-  value_bloc: ^0.2.1
+  value_bloc: ^0.4.1
 #  value_bloc:
 #    path: ../../value_bloc
 

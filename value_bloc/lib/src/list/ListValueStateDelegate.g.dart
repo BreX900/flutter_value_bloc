@@ -16,7 +16,7 @@ class _$ListValueStateDelegate<V, Filter>
   final Filter filter;
   @override
   final bool clearAfterFetch;
-  BuiltList<V> __values;
+  BuiltMap<int, V> __values;
 
   factory _$ListValueStateDelegate(
           [void Function(ListValueStateDelegateBuilder<V, Filter>) updates]) =>
@@ -42,7 +42,7 @@ class _$ListValueStateDelegate<V, Filter>
   }
 
   @override
-  BuiltList<V> get values => __values ??= super.values;
+  BuiltMap<int, V> get values => __values ??= super.values;
 
   @override
   ListValueStateDelegate<V, Filter> rebuild(

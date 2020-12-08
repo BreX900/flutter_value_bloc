@@ -36,7 +36,7 @@ class _PaginatedTableListValueCubitBuilderState<C extends ListValueCubit<V, Filt
   void initState() {
     super.initState();
     _source = _DataTableSource<V>(
-      data: getData((context.read<C>() ?? widget.listCubit).state),
+      data: getData((BlocProvider.of<C>(context) ?? widget.listCubit).state),
       builder: widget.builder,
     );
   }
@@ -59,7 +59,7 @@ class _PaginatedTableListValueCubitBuilderState<C extends ListValueCubit<V, Filt
 
   @override
   Widget build(BuildContext context) {
-    final listCubit = widget.listCubit ?? context.read<C>();
+    final listCubit = widget.listCubit ?? BlocProvider.of<C>(context);
 
     return BlocListener<C, ListValueState<V, Filter>>(
       cubit: listCubit,
@@ -88,7 +88,6 @@ class _DataTableSource<V> extends DataTableSource {
         _builder = builder;
 
   set data(_Data data) {
-    print(_data == _data);
     if (_data == data) return;
     _data = data;
     notifyListeners();
@@ -116,7 +115,7 @@ class _DataTableSource<V> extends DataTableSource {
 }
 
 class _Data<V> {
-  final BuiltList<V> values;
+  final BuiltMap<int, V> values;
   final bool isRowCountApproximate;
   final int rowCount;
 

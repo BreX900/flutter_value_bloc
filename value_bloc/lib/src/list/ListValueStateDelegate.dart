@@ -7,8 +7,7 @@ part 'ListValueStateDelegate.g.dart';
 
 abstract class ListValueStateDelegate<V, Filter>
     implements
-        Built<ListValueStateDelegate<V, Filter>,
-            ListValueStateDelegateBuilder<V, Filter>>,
+        Built<ListValueStateDelegate<V, Filter>, ListValueStateDelegateBuilder<V, Filter>>,
         ValueStateDelegate<Filter> {
   ListValueStateDelegate._();
 
@@ -27,5 +26,19 @@ abstract class ListValueStateDelegate<V, Filter>
   BuiltMap<FetchScheme, BuiltList<V>> get pages;
 
   @memoized
-  BuiltList<V> get values => pages.values.expand((vls) => vls).toBuiltList();
+  BuiltMap<int, V> get values {
+    final b = MapBuilder<int, V>();
+
+    for (var e in pages.entries) {
+      final scheme = e.key;
+      final page = e.value;
+      var i = scheme.offset;
+      for (var value in page) {
+        b[i] = value;
+        i++;
+      }
+    }
+
+    return b.build();
+  }
 }

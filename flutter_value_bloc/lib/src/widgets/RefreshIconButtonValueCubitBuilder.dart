@@ -17,7 +17,7 @@ class RefreshIconButtonValueCubitBuilder<C extends ValueCubit<ValueState<dynamic
 
   @override
   Widget build(BuildContext context) {
-    final valueCubit = this.valueCubit ?? context.read<C>();
+    final valueCubit = this.valueCubit ?? BlocProvider.of<C>(context);
 
     return BlocBuilder<C, ValueState<dynamic>>(
       cubit: valueCubit,

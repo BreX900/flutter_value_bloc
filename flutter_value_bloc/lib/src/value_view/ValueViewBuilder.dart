@@ -78,7 +78,7 @@ class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>, S extends Valu
 
   @override
   Widget build(BuildContext context) {
-    final valueCubit = this.valueCubit ?? context.read<C>();
+    final valueCubit = this.valueCubit ?? BlocProvider.of<C>(context);
     assert(valueCubit != null);
 
     final view = ValueViewDataProvider.tryOf(context).copyWith(
@@ -94,18 +94,17 @@ class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>, S extends Valu
 
         /// build a error widget if the state have a error
         if (state is FailedValueState) {
-          current = view.errorBuilder(context, state.error);
+          current = view.errorBuilder(context, state);
         } else if (!state.isInitialized) {
           /// build a loading widget if the state is not initilized
           current = view.loadingBuilder(context, state);
         } else if (state.isEmpty) {
           /// build a empty widget if the state not have a value/s
           current = view.emptyBuilder(context, state);
+        } else if (plugin != null) {
+          current = plugin.apply(valueCubit, state, builder(context, state));
         }
-
         current ??= builder(context, state);
-
-        if (plugin != null) current = plugin.apply(valueCubit, state, current);
 
         return current;
       },
