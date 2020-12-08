@@ -37,6 +37,7 @@ abstract class SingleValueCubit<V, Filter extends Object>
 
   /// This method call the onFetching user method
   /// The call of this method is ignored if the fetchStatus is fetching or fetched
+  @override
   void fetch() async {
     await Future.delayed(Duration.zero);
     if (!state.canFetch) {

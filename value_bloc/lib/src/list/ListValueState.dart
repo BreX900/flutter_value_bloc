@@ -118,6 +118,7 @@ class IdleListValueState<V, Filter> extends ListValueState<V, Filter> with IdleV
 
 class LoadingListValueState<V, Filter> extends ListValueState<V, Filter>
     with ProcessingValueState, LoadingValueState<Filter>, ProcessingListValueState<V, Filter> {
+  @override
   final double progress;
 
   LoadingListValueState(ListValueStateDelegate<V, Filter> delegate, {this.progress = 0.0})
@@ -141,6 +142,7 @@ class LoadedListValueState<V, Filter> extends ListValueState<V, Filter>
 
 class LoadFailedListValueState<V, Filter> extends ListValueState<V, Filter>
     with FailedValueState, LoadFailedValueState<Filter>, FailedListValueState<V, Filter> {
+  @override
   final Object error;
 
   LoadFailedListValueState(ListValueStateDelegate<V, Filter> delegate, {@required this.error})
@@ -154,6 +156,7 @@ class LoadFailedListValueState<V, Filter> extends ListValueState<V, Filter>
 
 class FetchingListValueState<V, Filter> extends ListValueState<V, Filter>
     with ProcessingValueState, FetchingValueState<Filter>, ProcessingListValueState<V, Filter> {
+  @override
   final double progress;
 
   FetchingListValueState(ListValueStateDelegate<V, Filter> delegate, {this.progress = 0.0})
@@ -177,6 +180,7 @@ class FetchedListValueState<V, Filter> extends ListValueState<V, Filter>
 
 class FetchFailedListValueState<V, Filter> extends ListValueState<V, Filter>
     with FailedValueState, FetchFailedValueState<Filter>, FailedListValueState<V, Filter> {
+  @override
   final Object error;
 
   FetchFailedListValueState(ListValueStateDelegate<V, Filter> delegate, {@required this.error})

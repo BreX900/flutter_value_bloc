@@ -143,7 +143,7 @@ abstract class ValueCubit<S extends ValueState<Filter>, Filter> extends Cubit<S>
     }
   }
 
-  Future<void> _wait = Future.delayed(Duration.zero);
+  Future<void> get _wait => Future.delayed(Duration.zero);
 
   @protected
   void firstFetchingHandle();

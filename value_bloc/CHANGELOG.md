@@ -1,3 +1,6 @@
+## 0.4.3
+Added `analysis_options.yaml`
+
 ## 0.4.2
 Improve imports
 

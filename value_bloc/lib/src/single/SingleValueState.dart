@@ -98,6 +98,7 @@ class LoadingSingleValueState<V, Filter> extends SingleValueState<V, Filter>
         ProcessingValueState<Filter>,
         LoadingValueState<Filter>,
         ProcessingSingleValueState<V, Filter> {
+  @override
   final double progress;
 
   LoadingSingleValueState(SingleValueStateDelegate<V, Filter> delegate, {this.progress = 0.0})
@@ -121,6 +122,7 @@ class SuccessLoadedSingleValueState<V, Filter> extends SingleValueState<V, Filte
 
 class LoadFailedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
     with FailedValueState, LoadFailedValueState<Filter>, FailedSingleValueState<V, Filter> {
+  @override
   final Object error;
 
   LoadFailedSingleValueState(SingleValueStateDelegate<V, Filter> delegate, {@required this.error})
@@ -134,6 +136,7 @@ class LoadFailedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
 
 class FetchingSingleValueState<V, Filter> extends SingleValueState<V, Filter>
     with ProcessingValueState, FetchingValueState<Filter>, ProcessingSingleValueState<V, Filter> {
+  @override
   final double progress;
 
   FetchingSingleValueState(SingleValueStateDelegate<V, Filter> delegate, {this.progress = 0.0})
@@ -157,6 +160,7 @@ class FetchedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
 
 class FetchFailedSingleValueState<V, Filter> extends SingleValueState<V, Filter>
     with FailedValueState, FetchFailedValueState, FailedSingleValueState<V, Filter> {
+  @override
   final Object error;
 
   FetchFailedSingleValueState(SingleValueStateDelegate<V, Filter> delegate, {@required this.error})

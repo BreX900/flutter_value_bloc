@@ -55,7 +55,7 @@ class ValueViewData {
     BlocWidgetBuilder<ProcessingValueState> loadingBuilder,
     BlocWidgetBuilder<ValueState> emptyBuilder,
   }) {
-    return new ValueViewData(
+    return ValueViewData(
       errorBuilder: errorBuilder ?? this.errorBuilder,
       loadingBuilder: loadingBuilder ?? this.loadingBuilder,
       emptyBuilder: emptyBuilder ?? this.emptyBuilder,

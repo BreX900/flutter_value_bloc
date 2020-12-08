@@ -58,11 +58,12 @@ abstract class ListValueCubit<V, Filter extends Object>
     ));
   }
 
-  var _schemes = <FetchScheme>{};
+  final _schemes = <FetchScheme>{};
 
   /// This method call the onFetching user method
   /// The call of this method is ignored if the fetchStatus is fetching or fetched
   /// if the [indexPage] is null this method fetch next page
+  @override
   void fetch({int offset, int limit}) async {
     await Future.delayed(Duration.zero);
     if (!state.canFetch) {
@@ -79,6 +80,7 @@ abstract class ListValueCubit<V, Filter extends Object>
     newSchemes.forEach(onFetching);
   }
 
+  @override
   void firstFetchingHandle() {
     final initialScheme = _fetcher.initFetchScheme(state.pages, FetchScheme(0, null));
     _schemes.add(initialScheme);

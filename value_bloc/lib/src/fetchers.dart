@@ -37,8 +37,10 @@ class ListFetcher extends ValueFetcher {
 
   ListFetcher({this.minLimit = 20});
 
+  @override
   int getInitialLimit(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) => minLimit;
 
+  @override
   List<FetchScheme> onFindSchemes(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
     int offset;
     final schemes = <FetchScheme>[];
@@ -66,10 +68,12 @@ class PageFetcher extends ValueFetcher {
 
   PageFetcher({
     int valuesPerPage,
-  }) : this.valuesPerPage = valuesPerPage ?? defaultValuePerPage;
+  }) : valuesPerPage = valuesPerPage ?? defaultValuePerPage;
 
+  @override
   int getInitialLimit(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) => valuesPerPage;
 
+  @override
   List<FetchScheme> onFindSchemes(BuiltMap<FetchScheme, dynamic> values, FetchScheme scheme) {
     // Generate a scheme based on page
     final start = (scheme.offset / valuesPerPage).floor();

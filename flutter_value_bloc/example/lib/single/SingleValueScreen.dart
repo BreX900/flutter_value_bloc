@@ -1,7 +1,6 @@
+import 'package:example/single/NameSingleCubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-
-import 'NameSingleCubit.dart';
 
 class SingleScreen extends StatelessWidget {
   const SingleScreen({Key key}) : super(key: key);

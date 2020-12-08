@@ -72,7 +72,7 @@ void main() {
       );
     });
 
-    test("test values without schemes", () {
+    test('test values without schemes', () {
       final state = FetchedListValueState(ListValueStateDelegate<int, Object>((b) => b
         ..clearAfterFetch = false
         ..pages));
@@ -80,7 +80,7 @@ void main() {
       expect(state.values, BuiltMap<int, int>());
     });
 
-    test("test values with single scheme", () {
+    test('test values with single scheme', () {
       final state = FetchedListValueState(ListValueStateDelegate<int, Object>((b) => b
         ..clearAfterFetch = false
         ..pages.addAll({
@@ -95,7 +95,7 @@ void main() {
           }));
     });
 
-    test("test values with more schemes", () {
+    test('test values with more schemes', () {
       final state = FetchedListValueState(ListValueStateDelegate<int, Object>((b) => b
         ..clearAfterFetch = false
         ..pages.addAll({

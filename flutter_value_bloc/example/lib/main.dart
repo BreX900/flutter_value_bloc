@@ -1,10 +1,9 @@
 import 'package:example/list/ListScreen.dart';
 import 'package:example/list/TableScreen.dart';
+import 'package:example/single/SingleValueScreen.dart';
 import 'package:example/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-
-import 'single/SingleValueScreen.dart';
 
 void main() {
   runApp(MyApp());

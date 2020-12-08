@@ -49,7 +49,7 @@ class ViewData {
     ViewErrorBuilder errorBuilder,
     ViewEmptyBuilder emptyBuilder,
   }) {
-    return new ViewData.raw(
+    return ViewData.raw(
       loadingBuilder: loadingBuilder ?? this.loadingBuilder,
       errorBuilder: errorBuilder ?? this.errorBuilder,
       emptyBuilder: emptyBuilder ?? this.emptyBuilder,

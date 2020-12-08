@@ -9,10 +9,11 @@ abstract class SayHello {
 }
 
 class Child extends Father implements SayHello {
+  @override
   void sayHello() => print('Hello');
 }
 
-main() {
+void main() {
   test('emptyTest', () {
     expect(true, true);
 
