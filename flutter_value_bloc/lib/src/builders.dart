@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-/// it extends [BlocBuilder] for use with [SingleValueCubit]
-class SingleValueCubitBuilder<C extends SingleValueCubit<V, Filter>, V, Filter>
+/// it extends [BlocBuilder] for use with [ValueCubit]
+class SingleValueCubitBuilder<C extends ValueCubit<V, Filter>, V, Filter>
     extends BlocBuilder<C, SingleValueState<V, Filter>> {
   SingleValueCubitBuilder({
     C cubit,

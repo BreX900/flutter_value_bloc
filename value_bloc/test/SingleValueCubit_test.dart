@@ -4,7 +4,7 @@ import 'package:value_bloc/value_bloc.dart';
 
 import 'utility.dart';
 
-class TestValueBloc extends SingleValueCubit<int, Object> {
+class TestValueBloc extends ValueCubit<int, Object> {
   TestValueBloc() : super(isLoading: true);
 
   @override
@@ -18,7 +18,7 @@ void main() {
   group('Test ValueBloc', () {
     test('Success Load and Fetch', () async {
       var delegate = getValueBlocState<int>();
-      await runBlocTest<SingleValueCubit<int, dynamic>, SingleValueState<int, dynamic>>(
+      await runBlocTest<ValueCubit<int, dynamic>, CubitState<int, dynamic>>(
         build: () => TestValueBloc(),
         act: (cubit) async {
           print('Loading');
@@ -30,8 +30,8 @@ void main() {
         expect: [
           LoadingSingleValueState(delegate),
           SuccessLoadedSingleValueState(delegate),
-          FetchingSingleValueState(delegate),
-          FetchedSingleValueState(delegate.rebuild((b) => b..value = 1)),
+          ValueCubitFetching(delegate),
+          ValueCubitFetched(delegate.rebuild((b) => b..value = 1)),
         ],
       );
     });

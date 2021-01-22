@@ -1,6 +1,6 @@
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
-class SingleNameCubit extends SingleValueCubit<String, Object> {
+class SingleNameCubit extends ValueCubit<String, Object> {
   SingleNameCubit() : super(isLoading: true);
 
   @override

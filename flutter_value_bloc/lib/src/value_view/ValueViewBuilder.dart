@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_value_bloc/src/value_view/ValueViewProvider.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-/// it is a [ViewValueCubitBuilderBase] for [SingleValueCubit]
-class SingleViewValueCubitBuilder<C extends SingleValueCubit<V, Filter>, V, Filter>
+/// it is a [ViewValueCubitBuilderBase] for [ValueCubit]
+class SingleViewValueCubitBuilder<C extends ValueCubit<V, Filter>, V, Filter>
     extends ViewValueCubitBuilderBase<C, SingleValueState<V, Filter>> {
   const SingleViewValueCubitBuilder({
     Key key,

@@ -1,0 +1,16 @@
+name: example
+description: Example for value_bloc package
+version: 0.5.0-dev.0
+repository: https://github.com/BreX900/flutter_value_bloc/tree/master/value_bloc
+issue_tracker: https://github.com/BreX900/flutter_value_bloc/issues
+homepage: https://github.com/BreX900/flutter_value_bloc/
+
+# flutter pub publish --dry-run
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  value_bloc: 0.5.0-dev.2
+
+dev_dependencies:
