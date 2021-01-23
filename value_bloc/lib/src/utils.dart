@@ -1,12 +1,8 @@
 import 'package:meta/meta.dart';
-import 'package:value_bloc/src/utils.internal.dart';
-
-typedef Fetcher<V> = Stream<FetchEvent<V>> Function();
+import 'package:value_bloc/src/internalUtils.dart';
 
 abstract class FetchEvent<V> {
   FetchEvent._();
-
-  factory FetchEvent.fetching({@required double progress}) = FetchingEvent;
 
   factory FetchEvent.empty() = FetchEmptyEvent;
 

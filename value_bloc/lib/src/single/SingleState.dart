@@ -1,113 +1,118 @@
-part of 'ValueCubit.dart';
+part of 'SingleCubit.dart';
 
-abstract class CubitState<Value, Filter, ExtraData> {
+typedef ValueFetcher<V> = Stream<FetchEvent<V>> Function();
+
+abstract class SingleCubitState<Value, Filter, ExtraData> with EquatableMixin {
   final Filter filter;
-  final bool hasValue;
   final Value value;
   final ExtraData extraData;
 
-  CubitState({
+  SingleCubitState({
     @required this.filter,
-    @required this.hasValue,
     @required this.value,
     @required this.extraData,
-  }) : assert(hasValue != null);
+  });
 
-  CubitState<Value, Filter, ExtraData> toFetchingWithExtraData({
+  SingleCubitState<Value, Filter, ExtraData> toFilteredFetching({
     double progress = 0.0,
     Filter filter,
   }) {
-    return ValueCubitFetching(
+    return SingleCubitFetching(
       filter: filter,
-      hasValue: hasValue,
       value: value,
-      progress: progress,
       extraData: extraData,
     );
   }
 
-  CubitState<Value, Filter, ExtraData> toFetching({double progress = 0.0}) {
-    return ValueCubitFetching(
+  SingleCubitState<Value, Filter, ExtraData> toFetching({double progress = 0.0}) {
+    return SingleCubitFetching(
       filter: filter,
-      hasValue: hasValue,
       value: value,
-      progress: progress,
       extraData: extraData,
     );
   }
 
-  CubitState<Value, Filter, ExtraData> toFetchFailed({
-    bool canFetchAgain = false,
-    Object failure,
-  }) {
-    return ValueCubitFetchFailed(
+  SingleCubitState<Value, Filter, ExtraData> toFailed({Object failure}) {
+    return SingleCubitFailed(
       filter: filter,
-      hasValue: hasValue,
       value: value,
-      canFetchAgain: canFetchAgain,
       failure: failure,
       extraData: extraData,
     );
   }
 
-  CubitState<Value, Filter, ExtraData> toFetched({@required bool hasValue, @required Value value}) {
-    return ValueCubitFetched(
+  SingleCubitState<Value, Filter, ExtraData> toEmptyFetched() {
+    return SingleCubitFetched(
       filter: filter,
-      hasValue: hasValue,
+      isEmpty: true,
+      value: null,
+      extraData: extraData,
+    );
+  }
+
+  SingleCubitState<Value, Filter, ExtraData> toValueFetched({@required Value value}) {
+    return SingleCubitFetched(
+      filter: filter,
+      isEmpty: false,
       value: value,
       extraData: extraData,
     );
   }
+
+  @override
+  List<Object> get props => [filter, value, extraData];
 }
 
-class ValueCubitFetching<Value, Filter, ExtraData> extends CubitState<Value, Filter, ExtraData> {
-  final double progress;
-
-  ValueCubitFetching({
+class SingleCubitFetching<Value, Filter, ExtraData>
+    extends SingleCubitState<Value, Filter, ExtraData> {
+  SingleCubitFetching({
     Filter filter,
-    @required bool hasValue,
     Value value,
-    this.progress = 0.0,
     ExtraData extraData,
   }) : super(
           filter: filter,
-          hasValue: hasValue,
           value: value,
           extraData: extraData,
         );
 }
 
-class ValueCubitFetchFailed<Value, Filter, ExtraData> extends CubitState<Value, Filter, ExtraData> {
-  final bool canFetchAgain;
+class SingleCubitFailed<Value, Filter, ExtraData>
+    extends SingleCubitState<Value, Filter, ExtraData> {
   final Object failure;
 
-  ValueCubitFetchFailed({
+  SingleCubitFailed({
     Filter filter,
-    @required bool hasValue,
     Value value,
-    @required this.canFetchAgain,
     this.failure,
     ExtraData extraData,
   }) : super(
           filter: filter,
-          hasValue: hasValue,
           value: value,
           extraData: extraData,
         );
+
+  @override
+  List<Object> get props => super.props..add(failure);
 }
 
-class ValueCubitFetched<Value, Filter, ExtraData> extends CubitState<Value, Filter, ExtraData> {
-  ValueCubitFetched({
+class SingleCubitFetched<Value, Filter, ExtraData>
+    extends SingleCubitState<Value, Filter, ExtraData> {
+  final bool isEmpty;
+
+  SingleCubitFetched({
     Filter filter,
-    @required bool hasValue,
+    @required this.isEmpty,
     @required Value value,
     ExtraData extraData,
-  }) : super(
+  })  : assert(isEmpty != null),
+        super(
           filter: filter,
-          hasValue: hasValue,
           value: value,
           extraData: extraData,
         );
+
+  @override
+  List<Object> get props => super.props..add(isEmpty);
 }
 
 // abstract class SingleValueState<V, Filter> extends ValueState<Filter> {

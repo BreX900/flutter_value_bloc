@@ -11,6 +11,6 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
-  value_bloc: 0.5.0-dev.2
+  value_bloc: 0.5.0-dev.3
 
 dev_dependencies:

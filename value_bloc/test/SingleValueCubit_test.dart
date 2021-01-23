@@ -1,37 +1,37 @@
+import 'package:equatable/equatable.dart';
 import 'package:test/test.dart';
-import 'package:value_bloc/src/single/SingleValueStateDelegate.dart';
+import 'package:value_bloc/ignore.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 import 'utility.dart';
 
-class TestValueBloc extends ValueCubit<int, Object> {
-  TestValueBloc() : super(isLoading: true);
-
-  @override
-  void onLoading() => emitLoaded();
-
-  @override
-  void onFetching() => emitFetched(1);
-}
-
 void main() {
+  EquatableConfig.stringify = true;
+
   group('Test ValueBloc', () {
     test('Success Load and Fetch', () async {
-      var delegate = getValueBlocState<int>();
-      await runBlocTest<ValueCubit<int, dynamic>, CubitState<int, dynamic>>(
-        build: () => TestValueBloc(),
-        act: (cubit) async {
-          print('Loading');
-          await cubit.first;
-          print('Loaded -> Fetching');
-          await cubit.skip(1).first;
-          print('Fetched');
-        },
-        expect: [
-          LoadingSingleValueState(delegate),
-          SuccessLoadedSingleValueState(delegate),
-          ValueCubitFetching(delegate),
-          ValueCubitFetched(delegate.rebuild((b) => b..value = 1)),
+      SingleCubitState<int, int, $> state = SingleCubitFetching();
+      await runCubitTest<SingleCubit<int, int, $>, SingleCubitState<int, int, $>>(
+        build: () => SingleCubit<int, int, $>(
+          fetcher: () async* {
+            yield FetchEvent.fetched(value: 1);
+          },
+        )..listen(print),
+        tests: [
+          CubitTest(
+            expect: [
+              state,
+              state,
+              state = state.toValueFetched(value: 1),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.applyFilter(filter: 999),
+            expect: [
+              state = state.toFilteredFetching(filter: 999),
+              state = state.toValueFetched(value: 1),
+            ],
+          ),
         ],
       );
     });
@@ -57,10 +57,3 @@ void main() {
     // });
   });
 }
-
-SingleValueStateDelegate<T, Object> getValueBlocState<T>({
-  T value,
-}) =>
-    SingleValueStateDelegate<T, Object>((b) => b
-      ..clearAfterFetch = false
-      ..value = value);

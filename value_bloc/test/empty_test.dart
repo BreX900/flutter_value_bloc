@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
-import 'package:value_bloc/src/single/ValueState.dart';
-import 'package:value_bloc/src/value/ValueState.dart';
+import 'package:value_bloc/src/single/SingleState.dart';
+import 'package:value_bloc/src/value/SingleState.dart';
 
 class Father {}
 

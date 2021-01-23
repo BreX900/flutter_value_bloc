@@ -38,13 +38,13 @@ void main() {
           // cubit.fetch(limit: 4);
           await cubit.skip(1).first;
           print('Fetched -> Fetching');
-          cubit.fetch(offset: 4);
+          cubit.fetch(startAt: 4);
           await cubit.skip(1).first;
           print('Fetched -> Fetching | Refresh');
           cubit.refresh();
           await cubit.skip(1).first;
           print('Fetched -> Fetching | Update Filter');
-          cubit.updateFilter(filter: filter);
+          cubit.applyFilter(filter: filter);
           await cubit.first;
         },
         expect: [
