@@ -11,30 +11,28 @@ part 'SingleState.dart';
 
 class SingleCubit<Value, Filter, ExtraData>
     extends Cubit<SingleCubitState<Value, Filter, ExtraData>> {
-  final _fetcherSubject = BehaviorSubject<ValueFetcher<Value>>();
+  final _fetcherSubject = BehaviorSubject<ValueFetcher<Value, Filter, ExtraData>>();
   StreamSubscription _fetcherSub;
 
   SingleCubit._({
-    @required ValueFetcher<Value> fetcher,
+    @required ValueFetcher<Value, Filter, ExtraData> fetcher,
     @required bool isEmpty,
     @required Value value,
   }) : super(isEmpty
             ? SingleCubitFetched(isEmpty: isEmpty, value: value)
             : SingleCubitFetching(value: value)) {
     if (fetcher != null) _fetcherSubject.add(fetcher);
-    _fetcherSub = Rx.combineLatest2<ValueFetcher<Value>, SingleCubitState<Value, Filter, ExtraData>,
-        _Data<Value, Filter>>(
+    _fetcherSub = Rx.combineLatest2<ValueFetcher<Value, Filter, ExtraData>,
+        SingleCubitState<Value, Filter, ExtraData>, _Data<Value, Filter, ExtraData>>(
       _fetcherSubject,
-      startWith(state).distinct((p, n) {
-        return p.filter == n.filter;
-      }),
+      startWith(state).distinct((p, n) => p.filter == n.filter),
       (fetcher, state) {
-        return _Data(state.filter, fetcher);
+        return _Data(state, fetcher);
       },
     ).switchMap((data) {
       if (data.fetcher == null) return Stream.empty();
       emit(state.toFetching());
-      return data.fetcher();
+      return data.fetcher(data.state);
     }).listen((event) {
       if (event is FetchEmptyEvent<Value>) {
         emit(state.toEmptyFetched());
@@ -46,18 +44,19 @@ class SingleCubit<Value, Filter, ExtraData>
     });
   }
 
-  SingleCubit({ValueFetcher<Value> fetcher})
+  SingleCubit({ValueFetcher<Value, Filter, ExtraData> fetcher})
       : this._(fetcher: fetcher, value: null, isEmpty: false);
 
   SingleCubit.of({
-    ValueFetcher<Value> fetcher,
+    ValueFetcher<Value, Filter, ExtraData> fetcher,
     @required Value value,
   }) : this._(fetcher: fetcher, value: value, isEmpty: false);
 
-  SingleCubit.empty({ValueFetcher<Value> fetcher})
+  SingleCubit.empty({ValueFetcher<Value, Filter, ExtraData> fetcher})
       : this._(fetcher: fetcher, value: null, isEmpty: true);
 
-  void applyFetcher({@required ValueFetcher<Value> fetcher, bool canFetch = true}) {
+  void applyFetcher(
+      {@required ValueFetcher<Value, Filter, ExtraData> fetcher, bool canFetch = true}) {
     if (_fetcherSubject.value == fetcher) return;
     emit(state.toFetching());
     _fetcherSubject.add(fetcher);
@@ -77,30 +76,24 @@ class SingleCubit<Value, Filter, ExtraData>
     _fetcherSub.cancel();
     return super.close();
   }
-
-  @override
-  void onChange(Change<SingleCubitState<Value, Filter, ExtraData>> change) {
-    print(change);
-    super.onChange(change);
-  }
 }
 
-class _Data<Value, Filter> {
-  final Filter filter;
-  final ValueFetcher<Value> fetcher;
+class _Data<Value, Filter, ExtraData> {
+  final SingleCubitState<Value, Filter, ExtraData> state;
+  final ValueFetcher<Value, Filter, ExtraData> fetcher;
 
-  _Data(this.filter, this.fetcher);
+  _Data(this.state, this.fetcher);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is _Data &&
           runtimeType == other.runtimeType &&
-          filter == other.filter &&
+          state == other.state &&
           fetcher == other.fetcher;
 
   @override
-  int get hashCode => filter.hashCode ^ fetcher.hashCode;
+  int get hashCode => state.hashCode ^ fetcher.hashCode;
 }
 
 // abstract class SingleValueCubit<V, Filter extends Object>

@@ -1,6 +1,7 @@
 part of 'MultiCubit.dart';
 
-typedef ListFetcher<Value> = Stream<FetchEvent<Iterable<Value>>> Function(int offset, int limit);
+typedef ListFetcher<Value, Filter, ExtraData> = Stream<FetchEvent<Iterable<Value>>> Function(
+    MultiCubitState<Value, Filter, ExtraData> state, FetchScheme scheme);
 
 abstract class MultiCubitState<Value, Filter, ExtraData> with EquatableMixin {
   final Filter filter;
@@ -101,10 +102,11 @@ abstract class MultiCubitState<Value, Filter, ExtraData> with EquatableMixin {
         return MapEntry(scheme.startAt + index, values[index]);
       }));
     });
+    print([scheme.endAt, newAllValues.keys.last]);
     return MultiCubitFetched(
       filter: filter,
-      countValues:
-          countValues ?? newAllValues.keys.last < scheme.endAt ? newAllValues.keys.last : null,
+      countValues: countValues ??
+          ((scheme.endAt - 1) > newAllValues.keys.last ? newAllValues.keys.last : null),
       allValues: newAllValues,
       extraData: extraData,
       schemeFetched: scheme,

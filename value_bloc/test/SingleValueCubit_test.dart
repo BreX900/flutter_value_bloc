@@ -9,12 +9,12 @@ void main() {
   EquatableConfig.stringify = true;
 
   group('Test ValueBloc', () {
-    test('Success Load and Fetch', () async {
+    test('Success Fetch and Filtering', () async {
       SingleCubitState<int, int, $> state = SingleCubitFetching();
       await runCubitTest<SingleCubit<int, int, $>, SingleCubitState<int, int, $>>(
         build: () => SingleCubit<int, int, $>(
-          fetcher: () async* {
-            yield FetchEvent.fetched(value: 1);
+          fetcher: (state) async* {
+            yield FetchEvent.fetched(value: (state.filter ?? 0) + 1);
           },
         )..listen(print),
         tests: [
@@ -29,7 +29,7 @@ void main() {
             act: (c) => c.applyFilter(filter: 999),
             expect: [
               state = state.toFilteredFetching(filter: 999),
-              state = state.toValueFetched(value: 1),
+              state = state.toValueFetched(value: 1000),
             ],
           ),
         ],

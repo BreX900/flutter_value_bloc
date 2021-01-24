@@ -1,6 +1,7 @@
 part of 'SingleCubit.dart';
 
-typedef ValueFetcher<V> = Stream<FetchEvent<V>> Function();
+typedef ValueFetcher<Value, Filter, ExtraData> = Stream<FetchEvent<Value>> Function(
+    SingleCubitState<Value, Filter, ExtraData> state);
 
 abstract class SingleCubitState<Value, Filter, ExtraData> with EquatableMixin {
   final Filter filter;

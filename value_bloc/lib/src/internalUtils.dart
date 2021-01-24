@@ -19,20 +19,20 @@ class FetchedEvent<V> implements FetchEvent<V> {
 
 /// It represent a request for retrieving a values determined by [startAt] and [length]
 class FetchScheme {
-  /// it is a start fetching position
+  /// it is a first position
   final int startAt;
 
-  /// it is a max number of values fetching
+  /// it is a positions count
   final int length;
 
-  /// it is a end fetching position
+  /// it is a position after last position
   int get endAt => startAt + length;
 
   FetchScheme(this.startAt, this.length)
-      : assert(startAt != null, '"$startAt"'),
-        assert(length != null && length > 0, '"$length"');
+      : assert(startAt != null, 'startAt is "$startAt"'),
+        assert(length != null && length > 0, 'length is "$length"');
 
-  FetchScheme.of(int startAt, int end) : this(startAt, startAt - end);
+  FetchScheme.of(int startAt, int endAt) : this(startAt, endAt - startAt);
 
   /// it check if [other] scheme is in [this] scheme
   bool contains(FetchScheme other) => startAt <= other.startAt && endAt >= other.endAt;
@@ -75,5 +75,5 @@ class FetchScheme {
   int get hashCode => startAt.hashCode ^ length.hashCode;
 
   @override
-  String toString() => 'Scheme(offset: $startAt, limit: $length)';
+  String toString() => 'Scheme(offset: $startAt, length: $length)';
 }
