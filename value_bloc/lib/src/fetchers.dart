@@ -123,3 +123,61 @@
 //   @override
 //   String toString() => 'Scheme(offset: $offset, limit: $limit)';
 // }
+
+import 'package:built_collection/built_collection.dart';
+import 'package:value_bloc/src/internalUtils.dart';
+
+abstract class ListFetcherPlugin {
+  const ListFetcherPlugin();
+
+  BuiltSet<ListSection> update(BuiltSet<ListSection> schemes, ListSection newScheme);
+}
+
+/// Merge the new scheme in queue without reply the offset
+/// It ignore scheme and offset if it already exist in queue
+class SimpleListFetcherPlugin extends ListFetcherPlugin {
+  const SimpleListFetcherPlugin();
+
+  /// find in queue the first scheme contains the offset
+  ListSection findContainer(BuiltSet<ListSection> queue, int offset) {
+    return queue.firstWhere((s) => s.containsOffset(offset), orElse: () => null);
+  }
+
+  /// find in the queue for the first possible not-existent scheme offset
+  ///
+  /// Returns null if the offset exist
+  int findFirstNotExistOffset(BuiltSet<ListSection> queue, ListSection scheme) {
+    for (var i = scheme.startAt; i < scheme.endAt; i++) {
+      final container = findContainer(queue, i);
+      if (container == null) return i;
+    }
+    return null;
+  }
+
+  /// find in the queue for the first possible existent scheme offset
+  ///
+  /// Returns null if the offset not exist
+  int findFirstExistOffset(BuiltSet<ListSection> queue, ListSection scheme) {
+    for (var i = scheme.startAt; i < scheme.endAt; i++) {
+      final container = findContainer(queue, i);
+      if (container != null) return i;
+    }
+    return null;
+  }
+
+  @override
+  BuiltSet<ListSection> update(BuiltSet<ListSection> queue, ListSection scheme) {
+    do {
+      final newStartAt = findFirstNotExistOffset(queue, scheme);
+      if (newStartAt == null) return queue;
+      final startScheme = scheme.mergeWith(startAt: newStartAt);
+      final newEndAt = findFirstExistOffset(queue, startScheme);
+      final newScheme = newEndAt == null ? startScheme : startScheme.mergeWith(endAt: newEndAt);
+
+      queue = queue.rebuild((b) => b.add(newScheme));
+      scheme = newScheme.endAt >= scheme.endAt ? null : scheme.mergeWith(startAt: newScheme.endAt);
+    } while (scheme != null);
+
+    return queue;
+  }
+}

@@ -10,17 +10,19 @@ import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/src/utils.dart';
 
+import '../fetchers.dart';
+
 part 'MultiState.dart';
 
 class MultiCubit<Value, Filter, ExtraData>
     extends Cubit<MultiCubitState<Value, Filter, ExtraData>> {
   final ListFetcherPlugin _fetcherPlugin;
   final _fetcherSubject = BehaviorSubject<ListFetcher<Value, Filter, ExtraData>>();
-  final _schemesSubject = BehaviorSubject<BuiltSet<FetchScheme>>.seeded(BuiltSet.build((b) {
+  final _schemesSubject = BehaviorSubject<BuiltSet<ListSection>>.seeded(BuiltSet.build((b) {
     b.withBase(() => HashSet());
   }));
   StreamSubscription _sub;
-  final _subs = CompositeMapSubscription<FetchScheme>();
+  final _subs = CompositeMapSubscription<ListSection>();
 
   MultiCubit({
     ListFetcherPlugin fetcherPlugin = const SimpleListFetcherPlugin(),
@@ -54,26 +56,28 @@ class MultiCubit<Value, Filter, ExtraData>
 
       // Add new subscriptions for every new scheme
       newSchemes.forEach((scheme) {
-        _subs.add(scheme, dataStream.switchMap((data) {
-          if (data.fetcher == null) return Stream.empty();
+        _subs.add(
+            scheme,
+            dataStream.switchMap((data) {
+              if (data.fetcher == null) return Stream.empty();
 
-          emit(state.toFetching());
+              emit(state.toFetching());
 
-          return data.fetcher(data.state, scheme);
-        }).listen((event) {
-          if (event is FetchEmptyEvent<Iterable<Value>>) {
-            emit(state.toEmptyFetched(scheme: scheme));
-          } else if (event is FetchFailedEvent<Iterable<Value>>) {
-            emit(state.toFetchFailed());
-          } else if (event is FetchedEvent<Iterable<Value>>) {
-            emit(state.toFetched(values: event.value.toBuiltList(), scheme: scheme));
-          }
-        }));
+              return data.fetcher(data.state, scheme);
+            }).listen((event) {
+              if (event is FetchEmptyEvent<Iterable<Value>>) {
+                emit(state.toEmptyFetched(scheme: scheme));
+              } else if (event is FetchFailedEvent<Iterable<Value>>) {
+                emit(state.toFetchFailed());
+              } else if (event is FetchedEvent<Iterable<Value>>) {
+                emit(state.toFetched(values: event.value.toBuiltList(), scheme: scheme));
+              }
+            }));
       });
     });
   }
 
-  void fetch({@required FetchScheme scheme}) {
+  void fetch({@required ListSection scheme}) {
     final newSchemes = _fetcherPlugin.update(_schemesSubject.value, scheme);
     _schemesSubject.add(newSchemes);
   }
@@ -114,59 +118,4 @@ class _Data<Value, Filter, ExtraData> {
 
   @override
   int get hashCode => state.hashCode ^ fetcher.hashCode;
-}
-
-abstract class ListFetcherPlugin {
-  const ListFetcherPlugin();
-
-  BuiltSet<FetchScheme> update(BuiltSet<FetchScheme> schemes, FetchScheme newScheme);
-}
-
-/// Merge the new scheme in queue without reply the offset
-/// It ignore scheme and offset if it already exist in queue
-class SimpleListFetcherPlugin extends ListFetcherPlugin {
-  const SimpleListFetcherPlugin();
-
-  /// find in queue the first scheme contains the offset
-  FetchScheme findContainer(BuiltSet<FetchScheme> queue, int offset) {
-    return queue.firstWhere((s) => s.containsOffset(offset), orElse: () => null);
-  }
-
-  /// find in the queue for the first possible not-existent scheme offset
-  ///
-  /// Returns null if the offset exist
-  int findFirstNotExistOffset(BuiltSet<FetchScheme> queue, FetchScheme scheme) {
-    for (var i = scheme.startAt; i < scheme.endAt; i++) {
-      final container = findContainer(queue, i);
-      if (container == null) return i;
-    }
-    return null;
-  }
-
-  /// find in the queue for the first possible existent scheme offset
-  ///
-  /// Returns null if the offset not exist
-  int findFirstExistOffset(BuiltSet<FetchScheme> queue, FetchScheme scheme) {
-    for (var i = scheme.startAt; i < scheme.endAt; i++) {
-      final container = findContainer(queue, i);
-      if (container != null) return i;
-    }
-    return null;
-  }
-
-  @override
-  BuiltSet<FetchScheme> update(BuiltSet<FetchScheme> queue, FetchScheme scheme) {
-    do {
-      final newStartAt = findFirstNotExistOffset(queue, scheme);
-      if (newStartAt == null) return queue;
-      final startScheme = scheme.mergeWith(startAt: newStartAt);
-      final newEndAt = findFirstExistOffset(queue, startScheme);
-      final newScheme = newEndAt == null ? startScheme : startScheme.mergeWith(endAt: newEndAt);
-
-      queue = queue.rebuild((b) => b.add(newScheme));
-      scheme = newScheme.endAt >= scheme.endAt ? null : scheme.mergeWith(startAt: newScheme.endAt);
-    } while (scheme != null);
-
-    return queue;
-  }
 }

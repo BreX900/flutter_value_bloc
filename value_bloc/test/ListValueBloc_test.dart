@@ -24,7 +24,7 @@ void main() {
       await runCubitTest<MultiCubit<int, int, $>, MultiCubitState<int, int, $>>(
         build: () => MultiCubit<int, int, $>(
           fetcher: (state, scheme) async* {
-            if (scheme == FetchScheme(0, 10)) {
+            if (scheme == ListSection(0, 10)) {
               yield FetchEvent.fetched(value: values.take(10));
             } else {
               yield FetchEvent.fetched(value: values.skip(10).take(5));
@@ -33,32 +33,32 @@ void main() {
         )..listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(scheme: FetchScheme(0, 10)),
+            act: (c) => c.fetch(scheme: ListSection(0, 10)),
             expect: [
               state,
               state,
               state = state.toFetched(
-                  values: values.take(10).toBuiltList(), scheme: FetchScheme(0, 10)),
+                  values: values.take(10).toBuiltList(), scheme: ListSection(0, 10)),
             ],
           ),
           CubitTest(
             // Fetch partial second page
-            act: (c) => c.fetch(scheme: FetchScheme(10, 10)),
+            act: (c) => c.fetch(scheme: ListSection(10, 10)),
             expect: [
               state.toFetching(),
               state = state.toFetched(
                 values: values.skip(10).take(5).toBuiltList(),
-                scheme: FetchScheme(10, 10),
+                scheme: ListSection(10, 10),
               ),
             ],
           ),
           CubitTest(
-            act: (c) => c.applyFilter(scheme: FetchScheme(0, 10)),
+            act: (c) => c.applyFilter(scheme: ListSection(0, 10)),
             expect: [
               state,
               state,
               state = state.toFetched(
-                  values: values.take(10).toBuiltList(), scheme: FetchScheme(0, 10)),
+                  values: values.take(10).toBuiltList(), scheme: ListSection(0, 10)),
             ],
           ),
         ],

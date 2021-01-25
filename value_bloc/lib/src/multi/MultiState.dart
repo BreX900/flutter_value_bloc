@@ -1,7 +1,7 @@
 part of 'MultiCubit.dart';
 
 typedef ListFetcher<Value, Filter, ExtraData> = Stream<FetchEvent<Iterable<Value>>> Function(
-    MultiCubitState<Value, Filter, ExtraData> state, FetchScheme scheme);
+    MultiCubitState<Value, Filter, ExtraData> state, ListSection scheme);
 
 abstract class MultiCubitState<Value, Filter, ExtraData> with EquatableMixin {
   final Filter filter;
@@ -21,23 +21,23 @@ abstract class MultiCubitState<Value, Filter, ExtraData> with EquatableMixin {
 
   final ExtraData extraData;
 
-  BuiltSet<FetchScheme> _$schemes;
-  BuiltSet<FetchScheme> get _schemes {
+  BuiltSet<ListSection> _$schemes;
+  BuiltSet<ListSection> get _schemes {
     if (_$schemes != null) return _$schemes;
-    if (allValues.isEmpty) return _$schemes ??= BuiltSet<FetchScheme>();
+    if (allValues.isEmpty) return _$schemes ??= BuiltSet<ListSection>();
 
-    final schemes = <FetchScheme>[];
+    final schemes = <ListSection>[];
     int startAt = allValues.keys.first;
     int endAt = allValues.keys.first - 1;
     for (var i in allValues.keys) {
       endAt += 1;
       if (endAt != i) {
-        schemes.add(FetchScheme.of(startAt, endAt));
+        schemes.add(ListSection.of(startAt, endAt));
         startAt = i;
         endAt = i - 1;
       }
     }
-    schemes.add(FetchScheme.of(startAt, endAt));
+    schemes.add(ListSection.of(startAt, endAt));
     return _$schemes = schemes.toBuiltSet();
   }
 
@@ -48,7 +48,7 @@ abstract class MultiCubitState<Value, Filter, ExtraData> with EquatableMixin {
     @required this.extraData,
   });
 
-  bool containsFetchScheme(FetchScheme scheme) {
+  bool containsFetchScheme(ListSection scheme) {
     return _schemes.any((s) => s.contains(scheme));
   }
 
@@ -83,7 +83,7 @@ abstract class MultiCubitState<Value, Filter, ExtraData> with EquatableMixin {
     );
   }
 
-  MultiCubitState<Value, Filter, ExtraData> toEmptyFetched({@required FetchScheme scheme}) {
+  MultiCubitState<Value, Filter, ExtraData> toEmptyFetched({@required ListSection scheme}) {
     return MultiCubitFetched(
       filter: filter,
       countValues: allValues.keys.last,
@@ -95,14 +95,13 @@ abstract class MultiCubitState<Value, Filter, ExtraData> with EquatableMixin {
 
   MultiCubitState<Value, Filter, ExtraData> toFetched({
     @required BuiltList<Value> values,
-    @required FetchScheme scheme,
+    @required ListSection scheme,
   }) {
     final newAllValues = allValues.rebuild((b) {
       b.addEntries(List.generate(values.length, (index) {
         return MapEntry(scheme.startAt + index, values[index]);
       }));
     });
-    print([scheme.endAt, newAllValues.keys.last]);
     return MultiCubitFetched(
       filter: filter,
       countValues: countValues ??
@@ -154,7 +153,7 @@ class MultiCubitFailed<Value, Filter, ExtraData> extends MultiCubitState<Value, 
 
 class MultiCubitFetched<Value, Filter, ExtraData>
     extends MultiCubitState<Value, Filter, ExtraData> {
-  final FetchScheme schemeFetched;
+  final ListSection schemeFetched;
 
   MultiCubitFetched({
     @required Filter filter,

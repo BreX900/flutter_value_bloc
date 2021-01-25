@@ -10,69 +10,69 @@ void main() {
     final ListFetcherPlugin fetcher = SimpleListFetcherPlugin();
 
     test('Add scheme before an exist scheme', () {
-      final schemes = BuiltSet<FetchScheme>.build((b) {
+      final schemes = BuiltSet<ListSection>.build((b) {
         b
           ..withBase(() => HashSet())
-          ..addAll([FetchScheme(5, 10)]);
+          ..addAll([ListSection(5, 10)]);
       });
-      final res = fetcher.update(schemes, FetchScheme(0, 10));
-      expect(res, BuiltSet<FetchScheme>([FetchScheme(0, 5), FetchScheme(5, 10)]));
+      final res = fetcher.update(schemes, ListSection(0, 10));
+      expect(res, BuiltSet<ListSection>([ListSection(0, 5), ListSection(5, 10)]));
     });
 
     test('Add scheme before exist scheme with similar scheme', () {
-      final schemes = BuiltSet<FetchScheme>.build((b) {
+      final schemes = BuiltSet<ListSection>.build((b) {
         b
           ..withBase(() => HashSet())
-          ..addAll([FetchScheme(5, 10)]);
+          ..addAll([ListSection(5, 10)]);
       });
-      final res = fetcher.update(schemes, FetchScheme(0, 15));
+      final res = fetcher.update(schemes, ListSection(0, 15));
       expect(
         res,
-        BuiltSet<FetchScheme>([
-          FetchScheme(0, 5),
-          FetchScheme(5, 10),
+        BuiltSet<ListSection>([
+          ListSection(0, 5),
+          ListSection(5, 10),
         ]),
       );
     });
 
     test('Add scheme before and after exist scheme', () {
-      final schemes = BuiltSet<FetchScheme>.build((b) {
+      final schemes = BuiltSet<ListSection>.build((b) {
         b
           ..withBase(() => HashSet())
-          ..addAll([FetchScheme(5, 5)]);
+          ..addAll([ListSection(5, 5)]);
       });
-      final res = fetcher.update(schemes, FetchScheme(0, 15));
+      final res = fetcher.update(schemes, ListSection(0, 15));
       expect(
         res,
-        BuiltSet<FetchScheme>([
-          FetchScheme(0, 5),
-          FetchScheme(5, 5),
-          FetchScheme(10, 5),
+        BuiltSet<ListSection>([
+          ListSection(0, 5),
+          ListSection(5, 5),
+          ListSection(10, 5),
         ]),
       );
     });
 
     test('Add schemes in separate locations', () {
-      final schemes = BuiltSet<FetchScheme>.build((b) {
+      final schemes = BuiltSet<ListSection>.build((b) {
         b
           ..withBase(() => HashSet())
-          ..addAll([FetchScheme(15, 5)]);
+          ..addAll([ListSection(15, 5)]);
       });
-      final beforeRes = fetcher.update(schemes, FetchScheme(5, 5));
+      final beforeRes = fetcher.update(schemes, ListSection(5, 5));
       expect(
         beforeRes,
-        BuiltSet<FetchScheme>([
-          FetchScheme(5, 5),
-          FetchScheme(15, 5),
+        BuiltSet<ListSection>([
+          ListSection(5, 5),
+          ListSection(15, 5),
         ]),
       );
-      final afterRes = fetcher.update(beforeRes, FetchScheme(25, 5));
+      final afterRes = fetcher.update(beforeRes, ListSection(25, 5));
       expect(
         afterRes,
-        BuiltSet<FetchScheme>([
-          FetchScheme(5, 5),
-          FetchScheme(15, 5),
-          FetchScheme(25, 5),
+        BuiltSet<ListSection>([
+          ListSection(5, 5),
+          ListSection(15, 5),
+          ListSection(25, 5),
         ]),
       );
     });
