@@ -1,11 +1,11 @@
 part of 'ListCubit.dart';
 
-abstract class ListCubitState<Value, ExtraData> with EquatableMixin {
+abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   final int valuesCount;
-  final BuiltList<Value> allValues;
+  final BuiltMap<int, Value> allValues;
   final ExtraData extraData;
 
-  ListCubitState({
+  IterableCubitState({
     @required this.valuesCount,
     @required this.allValues,
     @required this.extraData,
@@ -13,31 +13,40 @@ abstract class ListCubitState<Value, ExtraData> with EquatableMixin {
 
   BuiltList<Value> _values;
   BuiltList<Value> get values {
-    return _values ??= allValues.takeWhile((value) => value != null).toBuiltList();
+    if (_values == null) {
+      final values = <Value>[];
+      for (var i = 0; allValues.containsKey(i); i++) {
+        values.add(allValues[i]);
+      }
+      _values = values.toBuiltList();
+    }
+    return _values;
   }
 
-  ListCubitState<Value, ExtraData> toUpdating() {
-    return ListCubitUpdating(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
+  IterableCubitState<Value, ExtraData> toUpdating() {
+    return IterableCubitUpdating(
+        valuesCount: valuesCount, allValues: allValues, extraData: extraData);
   }
 
-  ListCubitState<Value, ExtraData> toUpdated({int valuesCount, BuiltList<Value> allValues}) {
-    return ListCubitUpdated(
+  IterableCubitState<Value, ExtraData> toUpdated(
+      {int valuesCount, BuiltMap<int, Value> allValues}) {
+    return IterableCubitUpdated(
       valuesCount: valuesCount ?? this.valuesCount,
       allValues: allValues ?? this.allValues,
       extraData: extraData,
     );
   }
 
-  ListCubitState<Value, ExtraData> toEmpty() {
-    return ListCubitEmpty(
+  IterableCubitState<Value, ExtraData> toIdle() {
+    return IterableCubitIdle(
       oldAllValues: allValues,
       allValues: allValues.rebuild((b) => b.clear()),
       extraData: extraData,
     );
   }
 
-  ListCubitState<Value, ExtraData> toRemoved({@required BuiltList<Value> allValues}) {
-    return ListCubitRemoved(
+  IterableCubitState<Value, ExtraData> toRemoved({@required BuiltMap<int, Value> allValues}) {
+    return IterableCubitRemoved(
       valuesCount: valuesCount,
       allValues: allValues,
       extraData: extraData,
@@ -45,8 +54,8 @@ abstract class ListCubitState<Value, ExtraData> with EquatableMixin {
     );
   }
 
-  ListCubitState<Value, ExtraData> toAdded({@required BuiltList<Value> allValues}) {
-    return ListCubitAdded(
+  IterableCubitState<Value, ExtraData> toAdded({@required BuiltMap<int, Value> allValues}) {
+    return IterableCubitAdded(
       valuesCount: valuesCount,
       allValues: allValues,
       extraData: extraData,
@@ -59,20 +68,20 @@ abstract class ListCubitState<Value, ExtraData> with EquatableMixin {
 }
 
 /// The job list is being updated
-class ListCubitUpdating<Value, ExtraData> extends ListCubitState<Value, ExtraData> {
-  ListCubitUpdating({
+class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+  IterableCubitUpdating({
     int valuesCount,
-    @required BuiltList<Value> allValues,
+    @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
   }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
 }
 
-class ListCubitUpdateFailed<Value, ExtraData> extends ListCubitState<Value, ExtraData> {
+class IterableCubitUpdateFailed<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
   final Object failure;
 
-  ListCubitUpdateFailed({
+  IterableCubitUpdateFailed({
     int valuesCount,
-    @required BuiltList<Value> allValues,
+    @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
     this.failure,
   }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
@@ -84,10 +93,10 @@ class ListCubitUpdateFailed<Value, ExtraData> extends ListCubitState<Value, Extr
 /// The job list has been updated
 /// [ListCubit] The old values have been replaced by the new ones
 /// [MultiCubit] New values have been added to the previous values
-class ListCubitUpdated<Value, ExtraData> extends ListCubitState<Value, ExtraData> {
-  ListCubitUpdated({
+class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+  IterableCubitUpdated({
     int valuesCount,
-    @required BuiltList<Value> allValues,
+    @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
   }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
 }
@@ -96,33 +105,33 @@ class ListCubitUpdated<Value, ExtraData> extends ListCubitState<Value, ExtraData
 /// [ListCubit] All values have been removed
 /// [MultiCubit] All values have been removed and you call fetch when receive this state
 ///              it is a initial State
-class ListCubitEmpty<Value, ExtraData> extends ListCubitState<Value, ExtraData> {
-  final BuiltList<Value> oldAllValues;
+class IterableCubitIdle<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+  final BuiltMap<int, Value> oldAllValues;
 
-  ListCubitEmpty({
-    @required this.oldAllValues,
-    @required BuiltList<Value> allValues,
+  IterableCubitIdle({
+    @required BuiltMap<int, Value> allValues,
     @required ExtraData extraData,
+    @required this.oldAllValues,
   }) : super(valuesCount: null, allValues: allValues, extraData: extraData);
 }
 
-class ListCubitAdded<Value, ExtraData> extends ListCubitState<Value, ExtraData> {
-  final BuiltList<Value> oldAllValues;
+class IterableCubitAdded<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+  final BuiltMap<int, Value> oldAllValues;
 
-  ListCubitAdded({
+  IterableCubitAdded({
     int valuesCount,
-    @required BuiltList<Value> allValues,
+    @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
     @required this.oldAllValues,
   }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
 }
 
-class ListCubitRemoved<Value, ExtraData> extends ListCubitState<Value, ExtraData> {
-  final BuiltList<Value> oldAllValues;
+class IterableCubitRemoved<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+  final BuiltMap<int, Value> oldAllValues;
 
-  ListCubitRemoved({
+  IterableCubitRemoved({
     int valuesCount,
-    @required BuiltList<Value> allValues,
+    @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
     @required this.oldAllValues,
   }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:meta/meta.dart';
 import 'package:value_bloc/src/utils.dart';
 
 // class FetchEmptyEvent<V> implements FetchEvent<V> {
@@ -8,13 +7,18 @@ import 'package:value_bloc/src/utils.dart';
 // }
 
 class FetchFailedEvent<V> implements FetchEvent<V> {
-  FetchFailedEvent();
+  final Object failure;
+
+  FetchFailedEvent({this.failure});
 }
 
 class FetchedEvent<V> implements FetchEvent<V> {
   final V value;
+  final int total;
 
-  FetchedEvent({@required this.value});
+  FetchedEvent(this.value, {this.total});
+
+  bool get hasValue => total != null ? total != 0 : value != null;
 }
 
 /// It represent a request for retrieving a values determined by [startAt] and [length]

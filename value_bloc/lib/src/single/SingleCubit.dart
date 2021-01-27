@@ -55,8 +55,10 @@ class SingleCubit<Value, Filter, ExtraData>
   SingleCubit.empty({ValueFetcher<Value, Filter, ExtraData> fetcher})
       : this._(fetcher: fetcher, value: null, isEmpty: true);
 
-  void applyFetcher(
-      {@required ValueFetcher<Value, Filter, ExtraData> fetcher, bool canFetch = true}) {
+  void applyFetcher({
+    @required ValueFetcher<Value, Filter, ExtraData> fetcher,
+    bool canFetch = true,
+  }) {
     if (_fetcherSubject.value == fetcher) return;
     emit(state.toFetching());
     _fetcherSubject.add(fetcher);
