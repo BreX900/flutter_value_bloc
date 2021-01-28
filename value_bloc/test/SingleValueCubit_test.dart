@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:test/test.dart';
 import 'package:value_bloc/ignore.dart';
+import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 import 'utility.dart';
@@ -8,52 +9,72 @@ import 'utility.dart';
 void main() {
   EquatableConfig.stringify = true;
 
-  group('Test ValueBloc', () {
-    test('Success Fetch and Filtering', () async {
-      SingleCubitState<int, int, $> state = SingleCubitFetching();
-      await runCubitTest<SingleCubit<int, int, $>, SingleCubitState<int, int, $>>(
-        build: () => SingleCubit<int, int, $>(
-          fetcher: (state) async* {
-            yield FetchEvent.fetched(value: (state.filter ?? 0) + 1);
-          },
-        )..listen(print),
+  group('Test ObjectCubit', () {
+    test('Test basic ValueCubit', () async {
+      ObjectCubitState<int, $> state = ObjectCubitIdle();
+      await runCubitTest<ValueCubit<int, $>, ObjectCubitState<int, $>>(
+        build: () => ValueCubit<int, $>()..listen(print),
         tests: [
           CubitTest(
+            act: (c) => c.update(value: 1),
             expect: [
-              state,
-              state,
-              state = state.toValueFetched(value: 1),
+              state = state.toUpdating(),
+              state = state.toUpdated(hasValue: true, value: 1),
             ],
           ),
           CubitTest(
-            act: (c) => c.applyFilter(filter: 999),
+            act: (c) => c.clear(),
             expect: [
-              state = state.toFilteredFetching(filter: 999),
-              state = state.toValueFetched(value: 1000),
+              state = state.toUpdated(hasValue: false, value: null),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.reset(),
+            expect: [
+              state = state.toUpdating(),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.update(value: 2),
+            expect: [
+              state = state.toUpdated(hasValue: true, value: 2),
             ],
           ),
         ],
       );
     });
 
-    // test('Success Auto Loaded and Fetched', () async {
-    //   var fetchState = getValueBlocState<int>();
-    //   await runBlocTest<SingleValueCubit<int, dynamic>,
-    //       SingleValueState<int, dynamic>>(
-    //     build: () => TestValueBloc(loadStatus: loadStatus),
-    //     act: (cubit) async {
-    //       await cubit.first;
-    //       print('Fetch');
-    //       await cubit.first;
-    //     },
-    //     expect: [
-    //       fetchState =
-    //           fetchState.rebuild((b) => b.loadStatus = LoadStatus.loaded),
-    //       fetchState = fetchState.rebuild((b) => b
-    //         ..fetchStatus = FetchStatus.fetched
-    //         ..value = 1)
-    //     ],
-    //   );
-    // });
+    test('Test basic SingleCubit', () async {
+      ObjectCubitState<int, $> state = ObjectCubitIdle();
+      await runCubitTest<SingleCubit<int, $>, ObjectCubitState<int, $>>(
+        build: () => SingleCubit<int, $>(
+          fetcher: () async* {
+            yield ObjectFetchEvent.fetched(1);
+          },
+        )..listen(print),
+        tests: [
+          CubitTest(
+            expect: [
+              state,
+              state = state.toUpdating(),
+              state = state.toUpdated(hasValue: true, value: 1),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.reset(),
+            expect: [
+              state = state.toIdle(),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.fetch(),
+            expect: [
+              state = state.toUpdating(),
+              state = state.toUpdated(hasValue: true, value: 1),
+            ],
+          ),
+        ],
+      );
+    });
   });
 }

@@ -130,7 +130,7 @@ import 'package:value_bloc/src/internalUtils.dart';
 abstract class ListFetcherPlugin {
   const ListFetcherPlugin();
 
-  BuiltSet<ListSection> update(BuiltSet<ListSection> schemes, ListSection newScheme);
+  BuiltSet<IterableSection> update(BuiltSet<IterableSection> schemes, IterableSection newScheme);
 }
 
 /// Merge the new scheme in queue without reply the offset
@@ -139,14 +139,14 @@ class SimpleListFetcherPlugin extends ListFetcherPlugin {
   const SimpleListFetcherPlugin();
 
   /// find in queue the first scheme contains the offset
-  ListSection findContainer(BuiltSet<ListSection> queue, int offset) {
+  IterableSection findContainer(BuiltSet<IterableSection> queue, int offset) {
     return queue.firstWhere((s) => s.containsOffset(offset), orElse: () => null);
   }
 
   /// find in the queue for the first possible not-existent scheme offset
   ///
   /// Returns null if the offset exist
-  int findFirstNotExistOffset(BuiltSet<ListSection> queue, ListSection scheme) {
+  int findFirstNotExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
     for (var i = scheme.startAt; i < scheme.endAt; i++) {
       final container = findContainer(queue, i);
       if (container == null) return i;
@@ -157,7 +157,7 @@ class SimpleListFetcherPlugin extends ListFetcherPlugin {
   /// find in the queue for the first possible existent scheme offset
   ///
   /// Returns null if the offset not exist
-  int findFirstExistOffset(BuiltSet<ListSection> queue, ListSection scheme) {
+  int findFirstExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
     for (var i = scheme.startAt; i < scheme.endAt; i++) {
       final container = findContainer(queue, i);
       if (container != null) return i;
@@ -166,7 +166,7 @@ class SimpleListFetcherPlugin extends ListFetcherPlugin {
   }
 
   @override
-  BuiltSet<ListSection> update(BuiltSet<ListSection> queue, ListSection scheme) {
+  BuiltSet<IterableSection> update(BuiltSet<IterableSection> queue, IterableSection scheme) {
     do {
       final newStartAt = findFirstNotExistOffset(queue, scheme);
       if (newStartAt == null) return queue;

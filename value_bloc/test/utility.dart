@@ -69,7 +69,7 @@ class CubitTest<C extends Cubit<S>, S> {
 
 Future<void> runCubitTest<C extends Cubit<State>, State>({
   @required C Function() build,
-  Duration wait = const Duration(seconds: 2),
+  Duration wait = Duration.zero,
   int skip = 0,
   Iterable<CubitTest<C, State>> tests,
   Function(C cubit) verify,
@@ -92,8 +92,9 @@ Future<void> runCubitTest<C extends Cubit<State>, State>({
         );
         print([allStates, currentStates]);
       }
-      if (wait != null) await Future<void>.delayed(wait);
-      await Future<void>.delayed(Duration.zero);
+
+      await Future<void>.delayed(wait);
+
       if (t.expect != null) {
         shallowEquality = '${[allStates, currentStates]}' == '${[allStates, t.expect]}';
         test.expect([allStates, currentStates], [allStates, t.expect]);

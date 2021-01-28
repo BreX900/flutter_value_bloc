@@ -13,54 +13,58 @@ void main() {
   EquatableConfig.stringify = true;
   final values = List.generate(100, (index) => index);
 
-  group('Test PagesBloc', () {
+  group('Test IterableCubit', () {
     test('Success Fetch two page and filter', () async {
-      MultiCubitState<int, int, $> state = MultiCubitFetching<int, int, $>(
-        filter: null,
-        countValues: null,
+      IterableCubitState<int, $> state = IterableCubitIdle<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
       );
-      await runCubitTest<MultiCubit<int, int, $>, MultiCubitState<int, int, $>>(
-        build: () => MultiCubit<int, int, $>(
-          fetcher: (state, scheme) async* {
-            if (scheme == ListSection(0, 10)) {
-              yield FetchEvent.fetched(value: values.take(10));
+      await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
+        build: () => MultiCubit<int, $>(
+          fetcher: (selection) async* {
+            if (selection == IterableSection(0, 10)) {
+              yield IterableFetchEvent.fetched(values.take(10));
             } else {
-              yield FetchEvent.fetched(value: values.skip(10).take(5));
+              yield IterableFetchEvent.fetched(values.skip(10).take(5));
             }
           },
         )..listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(scheme: ListSection(0, 10)),
+            act: (c) => c.fetch(selection: IterableSection(0, 10)),
             expect: [
               state,
-              state,
-              state = state.toFetched(
-                  values: values.take(10).toBuiltList(), scheme: ListSection(0, 10)),
-            ],
-          ),
-          CubitTest(
-            // Fetch partial second page
-            act: (c) => c.fetch(scheme: ListSection(10, 10)),
-            expect: [
-              state.toFetching(),
-              state = state.toFetched(
-                values: values.skip(10).take(5).toBuiltList(),
-                scheme: ListSection(10, 10),
+              state = state.toUpdating(),
+              state = state.toUpdated(
+                allValues:
+                    state.allValues.rebuild((b) => b.addAll(values.take(10).toList().asMap())),
               ),
             ],
           ),
           CubitTest(
-            act: (c) => c.applyFilter(scheme: ListSection(0, 10)),
+            // Fetch partial second page
+            act: (c) => c.fetch(selection: IterableSection(10, 10)),
             expect: [
-              state,
-              state,
-              state = state.toFetched(
-                  values: values.take(10).toBuiltList(), scheme: ListSection(0, 10)),
+              state.toUpdating(),
+              state = state.toUpdated(
+                allValues: state.allValues.rebuild((b) => b.addAll(values
+                    .skip(10)
+                    .take(5)
+                    .toList()
+                    .asMap()
+                    .map((key, value) => MapEntry(key + 10, value)))),
+              ),
             ],
           ),
+          // CubitTest(
+          //   act: (c) => c.applyFilter(scheme: IterableSection(0, 10)),
+          //   expect: [
+          //     state,
+          //     state,
+          //     state = state.toFetched(
+          //         values: values.take(10).toBuiltList(), scheme: IterableSection(0, 10)),
+          //   ],
+          // ),
         ],
       );
     });

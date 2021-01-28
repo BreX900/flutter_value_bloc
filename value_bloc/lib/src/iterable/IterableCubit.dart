@@ -11,9 +11,7 @@ import 'package:value_bloc/src/fetchers.dart';
 import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/src/utils.dart';
 
-part 'ListState.dart';
-
-typedef ListFetcher<Value> = Stream<FetchEvent<Value>> Function(ListSection section);
+part 'IterableState.dart';
 
 abstract class IterableCubit<Value, ExtraData> extends Cubit<IterableCubitState<Value, ExtraData>> {
   IterableCubit(IterableCubitState<Value, ExtraData> state) : super(state);
@@ -38,7 +36,7 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
               ));
 
   // ==================================================
-  //                          UI
+  //                    CUBIT / UI
   // ==================================================
 
   void update({@required Iterable<Value> values}) {
@@ -67,19 +65,24 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   }
 }
 
+typedef ListFetcher<Value> = Stream<IterableFetchEvent<Iterable<Value>>> Function(
+  IterableSection section,
+);
+
 class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   final ListFetcherPlugin _fetcherPlugin;
 
   final _fetcherSubject = BehaviorSubject<ListFetcher<Value>>();
-  final _schemesSubject = BehaviorSubject<BuiltSet<ListSection>>.seeded(BuiltSet.build((b) {
+  final _selectionsSubject = BehaviorSubject<BuiltSet<IterableSection>>.seeded(BuiltSet.build((b) {
     b.withBase(() => HashSet());
   }));
 
   StreamSubscription _sub;
-  final _subs = CompositeMapSubscription<ListSection>();
+  final _subs = CompositeMapSubscription<IterableSection>();
 
   MultiCubit({
     ListFetcherPlugin fetcherPlugin = const SimpleListFetcherPlugin(),
+    ListFetcher<Value> fetcher,
     Map<int, Value> initialAllValues,
     ExtraData initialExtraData,
   })  : _fetcherPlugin = fetcherPlugin,
@@ -89,9 +92,9 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
             if (initialAllValues != null) b.addAll(initialAllValues);
           }),
           extraData: initialExtraData,
-          oldAllValues: null,
         )) {
-    _sub = _schemesSubject.pairwise().listen((vls) {
+    if (fetcher != null) _fetcherSubject.add(fetcher);
+    _sub = _selectionsSubject.pairwise().listen((vls) {
       final newSchemes = vls.last.without(vls.first);
       final oldSchemes = vls.first.without(vls.last);
 
@@ -115,21 +118,23 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
           if (fetcher == null) return Stream.empty();
           return fetcher(scheme);
         }).listen((event) {
-          if (event is FetchFailedEvent<Iterable<Value>>) {
-          } else if (event is FetchedEvent<Iterable<Value>>) {
-            final page = event.value;
+          if (event is FailedFetchEvent<Iterable<Value>>) {
+            emit(state.toUpdateFailed(failure: event.failure));
+          } else if (event is IterableFetchedEvent<Iterable<Value>>) {
+            final page = event.values;
 
             emit(state.toUpdated(
               allValues: state.allValues.rebuild((b) {
                 try {
-                  for (var i = scheme.startAt; i < scheme.endAt; i++) {
-                    b[i] = page.elementAt(i);
+                  for (var i = 0; i < scheme.length; i++) {
+                    b[i + scheme.startAt] = page.elementAt(i);
                   }
                 } on IndexError {
                   // ignore: empty_catches
                 }
               }),
-              valuesCount: scheme.endAt - 1 < page.length ? page.length : state.valuesCount,
+              length:
+                  event.total ?? state.length ?? (scheme.endAt < page.length ? page.length : null),
             ));
           }
         }).addToByKey(_subs, scheme);
@@ -148,17 +153,17 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   }
 
   // ==================================================
-  //                          UI
+  //                         UI
   // ==================================================
 
-  void fetch({@required ListSection scheme}) {
-    final newSchemes = _fetcherPlugin.update(_schemesSubject.value, scheme);
-    _schemesSubject.add(newSchemes);
+  void fetch({@required IterableSection selection}) {
+    final newSchemes = _fetcherPlugin.update(_selectionsSubject.value, selection);
+    _selectionsSubject.add(newSchemes);
   }
 
   @override
   void reset() async {
-    _schemesSubject.add(_schemesSubject.value.rebuild((b) => b.clear()));
+    _selectionsSubject.add(_selectionsSubject.value.rebuild((b) => b.clear()));
     emit(state.toIdle());
   }
 
@@ -171,7 +176,7 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
     _subs.dispose();
     _sub.cancel();
     _fetcherSubject.close();
-    _schemesSubject.close();
+    _selectionsSubject.close();
     return super.close();
   }
 }

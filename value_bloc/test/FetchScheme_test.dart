@@ -4,11 +4,11 @@ import 'package:value_bloc/src/internalUtils.dart';
 void main() {
   group('FetchScheme tests', () {
     test('P1', () {
-      final res = ListSection(0, 15).mergeWith(startAt: ListSection(0, 5).endAt);
+      final res = IterableSection(0, 15).mergeWith(startAt: IterableSection(0, 5).endAt);
 
       expect(
         res,
-        ListSection(5, 10),
+        IterableSection(5, 10),
       );
     });
   });

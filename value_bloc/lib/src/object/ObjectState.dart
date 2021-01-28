@@ -1,25 +1,25 @@
 part of 'ObjectCubit.dart';
 
-abstract class ObjectState<Value, ExtraData> extends Equatable {
+abstract class ObjectCubitState<Value, ExtraData> extends Equatable {
   final bool hasValue;
   final Value value;
   final ExtraData extraData;
 
-  const ObjectState({
+  const ObjectCubitState({
     @required this.hasValue,
     @required this.value,
     @required this.extraData,
   });
 
-  ObjectState<Value, ExtraData> toIdle() {
+  ObjectCubitState<Value, ExtraData> toIdle() {
     return ObjectCubitIdle(extraData: extraData);
   }
 
-  ObjectState<Value, ExtraData> toUpdating() {
+  ObjectCubitState<Value, ExtraData> toUpdating() {
     return ObjectCubitUpdating(hasValue: hasValue, value: value, extraData: extraData);
   }
 
-  ObjectState<Value, ExtraData> toUpdateFailed({@required Object failure}) {
+  ObjectCubitState<Value, ExtraData> toUpdateFailed({@required Object failure}) {
     return ObjectCubitUpdateFailed(
       hasValue: hasValue,
       value: value,
@@ -28,7 +28,7 @@ abstract class ObjectState<Value, ExtraData> extends Equatable {
     );
   }
 
-  ObjectState<Value, ExtraData> toUpdated({@required bool hasValue, @required Value value}) {
+  ObjectCubitState<Value, ExtraData> toUpdated({@required bool hasValue, @required Value value}) {
     return ObjectCubitUpdated(hasValue: hasValue, value: value, extraData: extraData);
   }
 
@@ -36,35 +36,35 @@ abstract class ObjectState<Value, ExtraData> extends Equatable {
   List<Object> get props => [hasValue, value];
 }
 
-class ObjectCubitIdle<Value, ExtraData> extends ObjectState<Value, ExtraData> {
+class ObjectCubitIdle<Value, ExtraData> extends ObjectCubitState<Value, ExtraData> {
   ObjectCubitIdle({
-    @required ExtraData extraData,
+    ExtraData extraData,
   }) : super(hasValue: null, value: null, extraData: extraData);
 }
 
-class ObjectCubitUpdating<Value, ExtraData> extends ObjectState<Value, ExtraData> {
+class ObjectCubitUpdating<Value, ExtraData> extends ObjectCubitState<Value, ExtraData> {
   ObjectCubitUpdating({
     @required bool hasValue,
     @required Value value,
-    @required ExtraData extraData,
+    ExtraData extraData,
   }) : super(hasValue: hasValue, value: value, extraData: extraData);
 }
 
-class ObjectCubitUpdateFailed<Value, ExtraData> extends ObjectState<Value, ExtraData> {
+class ObjectCubitUpdateFailed<Value, ExtraData> extends ObjectCubitState<Value, ExtraData> {
   final Object failure;
 
   ObjectCubitUpdateFailed({
     @required bool hasValue,
     @required Value value,
-    @required ExtraData extraData,
-    @required this.failure,
+    ExtraData extraData,
+    this.failure,
   }) : super(hasValue: hasValue, value: value, extraData: extraData);
 }
 
-class ObjectCubitUpdated<Value, ExtraData> extends ObjectState<Value, ExtraData> {
+class ObjectCubitUpdated<Value, ExtraData> extends ObjectCubitState<Value, ExtraData> {
   ObjectCubitUpdated({
     @required bool hasValue,
     @required Value value,
-    @required ExtraData extraData,
+    ExtraData extraData,
   }) : super(hasValue: hasValue, value: value, extraData: extraData);
 }

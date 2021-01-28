@@ -9,8 +9,8 @@ import 'package:value_bloc/src/utils.dart';
 
 part 'ObjectState.dart';
 
-abstract class ObjectCubit<Value, ExtraData> extends Cubit<ObjectState<Value, ExtraData>> {
-  ObjectCubit(ObjectState<Value, ExtraData> state) : super(state);
+abstract class ObjectCubit<Value, ExtraData> extends Cubit<ObjectCubitState<Value, ExtraData>> {
+  ObjectCubit(ObjectCubitState<Value, ExtraData> state) : super(state);
 
   void reset();
 }
@@ -29,6 +29,10 @@ class ValueCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
     ExtraData initialExtraData,
   }) : super(ObjectCubitUpdated(hasValue: false, value: null, extraData: initialExtraData));
 
+  // ==================================================
+  //                    CUBIT / UI
+  // ==================================================
+
   void update({@required Value value}) {
     emit(state.toUpdated(hasValue: true, value: value));
   }
@@ -43,26 +47,28 @@ class ValueCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
   }
 }
 
-typedef ValueFetcher<Value> = Stream<FetchEvent<Value>> Function();
+typedef ValueFetcher<Value> = Stream<ObjectFetchEvent<Value>> Function();
 
 class SingleCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
   final _fetcherSubject = BehaviorSubject<ValueFetcher<Value>>();
   StreamSubscription _fetcherSub;
 
   SingleCubit._(
-    ObjectState<Value, ExtraData> state, {
+    ObjectCubitState<Value, ExtraData> state, {
     @required ValueFetcher<Value> fetcher,
   }) : super(state) {
     if (fetcher != null) _fetcherSubject.add(fetcher);
-    _fetcherSub = _fetcherSubject.doOnCancel(() {
+    _fetcherSub = _fetcherSubject.doOnData((_) {
       emit(state.toUpdating());
     }).switchMap((fetcher) {
       return fetcher();
     }).listen((event) {
-      if (event is FetchFailedEvent<Value>) {
+      if (event is FailedFetchEvent<Value>) {
         emit(state.toUpdateFailed(failure: event.failure));
-      } else if (event is FetchedEvent<Value>) {
-        emit(state.toUpdated(hasValue: event.hasValue, value: event.value));
+      } else if (event is EmptyFetchEvent<Value>) {
+        emit(state.toUpdated(hasValue: false, value: null));
+      } else if (event is ObjectFetchedEvent<Value>) {
+        emit(state.toUpdated(hasValue: true, value: event.value));
       }
     });
   }
@@ -93,6 +99,10 @@ class SingleCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
     assert(fetcher != null);
     if (_fetcherSubject.value == fetcher) return;
     _fetcherSubject.add(fetcher);
+  }
+
+  void fetch() {
+    _fetcherSubject.add(_fetcherSubject.value);
   }
 
   @override

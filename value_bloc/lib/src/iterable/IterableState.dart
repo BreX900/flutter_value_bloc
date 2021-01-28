@@ -1,12 +1,12 @@
-part of 'ListCubit.dart';
+part of 'IterableCubit.dart';
 
 abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
-  final int valuesCount;
+  final int length;
   final BuiltMap<int, Value> allValues;
   final ExtraData extraData;
 
   IterableCubitState({
-    @required this.valuesCount,
+    @required this.length,
     @required this.allValues,
     @required this.extraData,
   });
@@ -25,13 +25,27 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
 
   IterableCubitState<Value, ExtraData> toUpdating() {
     return IterableCubitUpdating(
-        valuesCount: valuesCount, allValues: allValues, extraData: extraData);
+      length: length,
+      allValues: allValues,
+      extraData: extraData,
+    );
   }
 
-  IterableCubitState<Value, ExtraData> toUpdated(
-      {int valuesCount, BuiltMap<int, Value> allValues}) {
+  IterableCubitState<Value, ExtraData> toUpdateFailed({Object failure}) {
+    return IterableCubitUpdateFailed(
+      length: length,
+      allValues: allValues,
+      extraData: extraData,
+      failure: failure,
+    );
+  }
+
+  IterableCubitState<Value, ExtraData> toUpdated({
+    int length,
+    BuiltMap<int, Value> allValues,
+  }) {
     return IterableCubitUpdated(
-      valuesCount: valuesCount ?? this.valuesCount,
+      length: length ?? this.length,
       allValues: allValues ?? this.allValues,
       extraData: extraData,
     );
@@ -39,7 +53,6 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
 
   IterableCubitState<Value, ExtraData> toIdle() {
     return IterableCubitIdle(
-      oldAllValues: allValues,
       allValues: allValues.rebuild((b) => b.clear()),
       extraData: extraData,
     );
@@ -47,44 +60,42 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
 
   IterableCubitState<Value, ExtraData> toRemoved({@required BuiltMap<int, Value> allValues}) {
     return IterableCubitRemoved(
-      valuesCount: valuesCount,
+      length: length,
       allValues: allValues,
       extraData: extraData,
-      oldAllValues: this.allValues,
     );
   }
 
   IterableCubitState<Value, ExtraData> toAdded({@required BuiltMap<int, Value> allValues}) {
     return IterableCubitAdded(
-      valuesCount: valuesCount,
+      length: length,
       allValues: allValues,
       extraData: extraData,
-      oldAllValues: this.allValues,
     );
   }
 
   @override
-  List<Object> get props => [valuesCount, allValues, extraData];
+  List<Object> get props => [length, allValues, extraData];
 }
 
 /// The job list is being updated
 class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
   IterableCubitUpdating({
-    int valuesCount,
+    int length,
     @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
-  }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
+  }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
 class IterableCubitUpdateFailed<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
   final Object failure;
 
   IterableCubitUpdateFailed({
-    int valuesCount,
+    int length,
     @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
     this.failure,
-  }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
+  }) : super(length: length, allValues: allValues, extraData: extraData);
 
   @override
   List<Object> get props => super.props..add(failure);
@@ -95,10 +106,10 @@ class IterableCubitUpdateFailed<Value, ExtraData> extends IterableCubitState<Val
 /// [MultiCubit] New values have been added to the previous values
 class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
   IterableCubitUpdated({
-    int valuesCount,
+    int length,
     @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
-  }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
+  }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
 /// All values have been removed
@@ -106,33 +117,24 @@ class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, E
 /// [MultiCubit] All values have been removed and you call fetch when receive this state
 ///              it is a initial State
 class IterableCubitIdle<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-  final BuiltMap<int, Value> oldAllValues;
-
   IterableCubitIdle({
     @required BuiltMap<int, Value> allValues,
     @required ExtraData extraData,
-    @required this.oldAllValues,
-  }) : super(valuesCount: null, allValues: allValues, extraData: extraData);
+  }) : super(length: null, allValues: allValues, extraData: extraData);
 }
 
 class IterableCubitAdded<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-  final BuiltMap<int, Value> oldAllValues;
-
   IterableCubitAdded({
-    int valuesCount,
+    int length,
     @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
-    @required this.oldAllValues,
-  }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
+  }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
 class IterableCubitRemoved<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-  final BuiltMap<int, Value> oldAllValues;
-
   IterableCubitRemoved({
-    int valuesCount,
+    int length,
     @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
-    @required this.oldAllValues,
-  }) : super(valuesCount: valuesCount, allValues: allValues, extraData: extraData);
+  }) : super(length: length, allValues: allValues, extraData: extraData);
 }

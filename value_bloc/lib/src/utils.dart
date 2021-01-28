@@ -1,11 +1,24 @@
 import 'package:value_bloc/src/internalUtils.dart';
 
-abstract class FetchEvent<V> {
-  FetchEvent._();
+class FailedFetchEvent<V> implements ObjectFetchEvent<V>, IterableFetchEvent<V> {
+  final Object failure;
 
-  // factory FetchEvent.empty() = FetchEmptyEvent;
+  FailedFetchEvent({this.failure});
+}
 
-  factory FetchEvent.failed({Object failure}) = FetchFailedEvent;
+class EmptyFetchEvent<V> implements ObjectFetchEvent<V>, IterableFetchEvent<V> {
+  EmptyFetchEvent();
+}
 
-  factory FetchEvent.fetched(V value, {int total}) = FetchedEvent;
+class ObjectFetchedEvent<V> implements ObjectFetchEvent<V> {
+  final V value;
+
+  ObjectFetchedEvent(this.value);
+}
+
+class IterableFetchedEvent<V> implements IterableFetchEvent<V> {
+  final V values;
+  final int total;
+
+  IterableFetchedEvent(this.values, {this.total});
 }
