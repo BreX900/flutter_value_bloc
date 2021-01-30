@@ -19,12 +19,12 @@ dependencies:
 
   flutter_bloc: ^6.1.1
 
-  value_bloc: ^0.4.2
-#  value_bloc:
-#    path: ../value_bloc
+#  value_bloc: ^0.4.2
+  value_bloc:
+    path: ../value_bloc
 
   provider: ^4.3.2+3
-  pull_to_refresh: ^1.6.3
+  pull_to_refresh: ^1.6.4
 
 dev_dependencies:
   flutter_test:

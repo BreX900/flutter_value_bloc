@@ -15,12 +15,9 @@ class TableScreen extends StatelessWidget {
           title: Text('Table with ListValueCubit'),
         ),
         body: SingleChildScrollView(
-          child: PaginatedTableListValueCubitBuilder<ListPersonCubit, Person, Object>(
+          child: PaginatedDataTableCubitBuilder<ListPersonCubit, Person, Object>(
             header: Text('Names'),
-            columns: [
-              DataColumn(label: Text('Name')),
-              DataColumn(label: Text('Surname'))
-            ],
+            columns: [DataColumn(label: Text('Name')), DataColumn(label: Text('Surname'))],
             builder: (person) {
               if (person == null)
                 return DataRow(cells: [

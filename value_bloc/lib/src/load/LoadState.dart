@@ -2,21 +2,21 @@ part of 'LoadCubit.dart';
 
 typedef Loader = void Function();
 
-abstract class LoadState<Data> with EquatableMixin {
-  LoadState<Data> toLoading({double progress = 0.0, Data data}) {
+abstract class LoadCubitState<Data> with EquatableMixin {
+  LoadCubitState<Data> toLoading({double progress = 0.0, Data data}) {
     return LoadCubitLoading(progress: progress, data: data);
   }
 
-  LoadState<Data> toFailed({Object failure, Data data}) {
+  LoadCubitState<Data> toFailed({Object failure, Data data}) {
     return LoadCubitFailed(failure: failure, data: data);
   }
 
-  LoadState<Data> toLoaded() {
+  LoadCubitState<Data> toLoaded() {
     return LoadCubitLoaded();
   }
 }
 
-class LoadCubitLoading<Data> extends LoadState<Data> {
+class LoadCubitLoading<Data> extends LoadCubitState<Data> {
   final double progress;
   final Data data;
 
@@ -26,7 +26,7 @@ class LoadCubitLoading<Data> extends LoadState<Data> {
   List<Object> get props => [progress, data];
 }
 
-class LoadCubitFailed<Data> extends LoadState<Data> {
+class LoadCubitFailed<Data> extends LoadCubitState<Data> {
   final Object failure;
   final Data data;
 
@@ -36,7 +36,7 @@ class LoadCubitFailed<Data> extends LoadState<Data> {
   List<Object> get props => [failure, data];
 }
 
-class LoadCubitLoaded<Data> extends LoadState<Data> {
+class LoadCubitLoaded<Data> extends LoadCubitState<Data> {
   @override
   List<Object> get props => [];
 }

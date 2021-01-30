@@ -6,10 +6,12 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/src/utils.dart';
+import 'package:value_bloc/src/screen/DynamicCubit.dart';
 
 part 'ObjectState.dart';
 
-abstract class ObjectCubit<Value, ExtraData> extends Cubit<ObjectCubitState<Value, ExtraData>> {
+abstract class ObjectCubit<Value, ExtraData> extends Cubit<ObjectCubitState<Value, ExtraData>>
+    implements DynamicCubit<ObjectCubitState<Value, ExtraData>> {
   ObjectCubit(ObjectCubitState<Value, ExtraData> state) : super(state);
 
   void reset();

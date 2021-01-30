@@ -6,17 +6,16 @@ import 'package:value_bloc/value_bloc.dart';
 typedef _RowBuilder<V> = DataRow Function(V value);
 
 /// Build a [PaginatedDataTable] with [ListValueCubit]
-class PaginatedTableListValueCubitBuilder<C extends ListValueCubit<V, Filter>, V, Filter>
-    extends StatefulWidget {
-  final C listCubit;
+class PaginatedDataTableCubitBuilder<V> extends StatefulWidget {
+  final IterableCubit<V, Object> iterableCubit;
   final int rowsPerPage;
   final Widget header;
   final List<DataColumn> columns;
   final _RowBuilder<V> builder;
 
-  const PaginatedTableListValueCubitBuilder({
+  const PaginatedDataTableCubitBuilder({
     Key key,
-    this.listCubit,
+    @required this.iterableCubit,
     this.rowsPerPage = PaginatedDataTable.defaultRowsPerPage,
     @required this.header,
     @required this.columns,
@@ -24,50 +23,53 @@ class PaginatedTableListValueCubitBuilder<C extends ListValueCubit<V, Filter>, V
   }) : super(key: key);
 
   @override
-  _PaginatedTableListValueCubitBuilderState<C, V, Filter> createState() =>
-      _PaginatedTableListValueCubitBuilderState();
+  _PaginatedDataTableCubitBuilderState<V> createState() => _PaginatedDataTableCubitBuilderState();
 }
 
-class _PaginatedTableListValueCubitBuilderState<C extends ListValueCubit<V, Filter>, V, Filter>
-    extends State<PaginatedTableListValueCubitBuilder<C, V, Filter>> {
+class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCubitBuilder<V>> {
   _DataTableSource<V> _source;
 
   @override
   void initState() {
     super.initState();
     _source = _DataTableSource<V>(
-      data: getData((BlocProvider.of<C>(context) ?? widget.listCubit).state),
+      data: getData(widget.iterableCubit.state),
       builder: widget.builder,
     );
+    final iterableCubit = widget.iterableCubit;
+    if (iterableCubit is MultiCubit<V, Object>) {
+      iterableCubit.fetch(section: IterableSection(0, widget.rowsPerPage));
+    }
   }
 
   @override
-  void didUpdateWidget(covariant PaginatedTableListValueCubitBuilder<C, V, Filter> oldWidget) {
+  void didUpdateWidget(covariant PaginatedDataTableCubitBuilder<V> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.builder != oldWidget.builder) {
       _source.builder = widget.builder;
     }
   }
 
-  _Data<V> getData(ListValueState state) {
+  _Data<V> getData(IterableCubitState<V, Object> state) {
     return _Data<V>(
-      values: state.values,
-      isRowCountApproximate: state.countValues == null,
-      rowCount: state.countValues ?? state.values.length,
+      values: state.allValues,
+      isRowCountApproximate: state.length == null,
+      rowCount: state.length ?? state.allValues.length,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final listCubit = widget.listCubit ?? BlocProvider.of<C>(context);
+    final iterableCubit = widget.iterableCubit;
 
-    return BlocListener<C, ListValueState<V, Filter>>(
-      cubit: listCubit,
+    return BlocListener<IterableCubit<V, Object>, IterableCubitState<V, Object>>(
+      cubit: iterableCubit,
       listener: (context, state) => _source.data = getData(state),
       child: PaginatedDataTable(
         onPageChanged: (offset) {
-          if (listCubit.state.containsPage(offset, widget.rowsPerPage)) return;
-          listCubit.fetch(offset: offset, limit: widget.rowsPerPage);
+          if (iterableCubit is MultiCubit<V, Object>) {
+            iterableCubit.fetch(section: IterableSection(offset, widget.rowsPerPage));
+          }
         },
         source: _source,
         header: widget.header,
@@ -110,7 +112,7 @@ class _DataTableSource<V> extends DataTableSource {
 
   @override
   DataRow getRow(int index) {
-    return _builder(rowCount > index ? _data.values[index] : null);
+    return _builder(_data.values[index]);
   }
 }
 

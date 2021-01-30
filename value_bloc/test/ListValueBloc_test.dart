@@ -31,7 +31,7 @@ void main() {
         )..listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(selection: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: IterableSection(0, 10)),
             expect: [
               state,
               state = state.toUpdating(),
@@ -43,7 +43,7 @@ void main() {
           ),
           CubitTest(
             // Fetch partial second page
-            act: (c) => c.fetch(selection: IterableSection(10, 10)),
+            act: (c) => c.fetch(section: IterableSection(10, 10)),
             expect: [
               state.toUpdating(),
               state = state.toUpdated(

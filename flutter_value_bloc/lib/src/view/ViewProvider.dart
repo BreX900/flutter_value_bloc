@@ -17,13 +17,15 @@ class ViewDataProvider extends Provider<ViewData> {
     Widget child,
   }) : super.value(value: value, builder: builder, child: child);
 
-  static ViewData of(BuildContext context) => context.watch<ViewData>();
-
-  static ViewData tryOf(BuildContext context) {
+  static ViewData of(BuildContext context, {bool nullOk = false}) {
     try {
       return context.watch<ViewData>();
     } on ProviderNotFoundException {
-      return null;
+      if (nullOk) {
+        return null;
+      } else {
+        rethrow;
+      }
     }
   }
 }

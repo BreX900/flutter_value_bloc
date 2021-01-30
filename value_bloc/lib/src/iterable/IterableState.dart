@@ -1,5 +1,15 @@
 part of 'IterableCubit.dart';
 
+extension FirstValuesExtension<Value> on BuiltMap<int, Value> {
+  BuiltList<Value> get firstValues {
+    final values = <Value>[];
+    for (var i = 0; containsKey(i); i++) {
+      values.add(this[i]);
+    }
+    return values.toBuiltList();
+  }
+}
+
 abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   final int length;
   final BuiltMap<int, Value> allValues;
@@ -12,15 +22,30 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   });
 
   BuiltList<Value> _values;
-  BuiltList<Value> get values {
-    if (_values == null) {
-      final values = <Value>[];
-      for (var i = 0; allValues.containsKey(i); i++) {
-        values.add(allValues[i]);
+  BuiltList<Value> get values => _values ??= allValues.firstValues;
+
+  BuiltList<IterableSection> _sections;
+  BuiltList<IterableSection> get sections {
+    if (allValues.isEmpty) return BuiltList<IterableSection>();
+    if (_sections != null) return _sections;
+
+    final sections = ListBuilder<IterableSection>();
+    var startAt = allValues.keys.first;
+    var endAt = allValues.keys.first;
+    for (var i = allValues.keys.first; i < allValues.keys.last; i++) {
+      if (i != endAt) {
+        sections.add(IterableSection.of(startAt, endAt));
+        startAt = i;
+        endAt = i;
       }
-      _values = values.toBuiltList();
     }
-    return _values;
+    sections.add(IterableSection.of(startAt, endAt));
+
+    return _sections = sections.build();
+  }
+
+  bool containsSection(IterableSection section) {
+    return sections.any((s) => s.containsOffset(section.startAt));
   }
 
   IterableCubitState<Value, ExtraData> toUpdating() {
@@ -48,6 +73,7 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
       length: length ?? this.length,
       allValues: allValues ?? this.allValues,
       extraData: extraData,
+      oldAllValues: this.allValues,
     );
   }
 
@@ -58,21 +84,21 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
     );
   }
 
-  IterableCubitState<Value, ExtraData> toRemoved({@required BuiltMap<int, Value> allValues}) {
-    return IterableCubitRemoved(
-      length: length,
-      allValues: allValues,
-      extraData: extraData,
-    );
-  }
-
-  IterableCubitState<Value, ExtraData> toAdded({@required BuiltMap<int, Value> allValues}) {
-    return IterableCubitAdded(
-      length: length,
-      allValues: allValues,
-      extraData: extraData,
-    );
-  }
+  // IterableCubitState<Value, ExtraData> toRemoved({@required BuiltMap<int, Value> allValues}) {
+  //   return IterableCubitRemoved(
+  //     length: length,
+  //     allValues: allValues,
+  //     extraData: extraData,
+  //   );
+  // }
+  //
+  // IterableCubitState<Value, ExtraData> toAdded({@required BuiltMap<int, Value> allValues}) {
+  //   return IterableCubitAdded(
+  //     length: length,
+  //     allValues: allValues,
+  //     extraData: extraData,
+  //   );
+  // }
 
   @override
   List<Object> get props => [length, allValues, extraData];
@@ -105,10 +131,26 @@ class IterableCubitUpdateFailed<Value, ExtraData> extends IterableCubitState<Val
 /// [ListCubit] The old values have been replaced by the new ones
 /// [MultiCubit] New values have been added to the previous values
 class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+  final BuiltMap<int, Value> oldAllValues;
+
+  BuiltList<Value> _oldValues;
+  BuiltList<Value> get oldValues => _oldValues ??= oldAllValues.firstValues;
+
+  BuiltList<Value> _losValues;
+  BuiltList<Value> get lostValues {
+    return _losValues ??= oldValues.where((value) => !values.contains(value)).toBuiltList();
+  }
+
+  BuiltList<Value> _newValues;
+  BuiltList<Value> get newValues {
+    return _newValues ??= values.where((value) => !oldValues.contains(value)).toBuiltList();
+  }
+
   IterableCubitUpdated({
     int length,
     @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
+    @required this.oldAllValues,
   }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
@@ -123,18 +165,18 @@ class IterableCubitIdle<Value, ExtraData> extends IterableCubitState<Value, Extr
   }) : super(length: null, allValues: allValues, extraData: extraData);
 }
 
-class IterableCubitAdded<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-  IterableCubitAdded({
-    int length,
-    @required BuiltMap<int, Value> allValues,
-    ExtraData extraData,
-  }) : super(length: length, allValues: allValues, extraData: extraData);
-}
-
-class IterableCubitRemoved<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-  IterableCubitRemoved({
-    int length,
-    @required BuiltMap<int, Value> allValues,
-    ExtraData extraData,
-  }) : super(length: length, allValues: allValues, extraData: extraData);
-}
+// class IterableCubitAdded<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+//   IterableCubitAdded({
+//     int length,
+//     @required BuiltMap<int, Value> allValues,
+//     ExtraData extraData,
+//   }) : super(length: length, allValues: allValues, extraData: extraData);
+// }
+//
+// class IterableCubitRemoved<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+//   IterableCubitRemoved({
+//     int length,
+//     @required BuiltMap<int, Value> allValues,
+//     ExtraData extraData,
+//   }) : super(length: length, allValues: allValues, extraData: extraData);
+// }

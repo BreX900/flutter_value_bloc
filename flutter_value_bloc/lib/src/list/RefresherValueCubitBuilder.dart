@@ -4,7 +4,7 @@ import 'package:flutter_value_bloc/src/value_view/ValueViewBuilder.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart' as ptr;
 import 'package:value_bloc/value_bloc.dart';
 
-/// This is a plugin used in [ViewValueCubitBuilderBase]
+/// This is a plugin used in [DynamicCubitBuilder]
 /// and it integrate a [RefresherValueCubitBuilder]
 class RefresherValueCubitPlugin<C extends ValueCubit<S, Filter>, S extends ValueState<Filter>,
     Filter> extends ViewValueCubitPlugin<C, S, Filter> {

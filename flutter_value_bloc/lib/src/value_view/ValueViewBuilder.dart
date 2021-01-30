@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_value_bloc/src/value_view/ValueViewProvider.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-/// it is a [ViewValueCubitBuilderBase] for [ValueCubit]
+/// it is a [DynamicCubitBuilder] for [ValueCubit]
 class SingleViewValueCubitBuilder<C extends ValueCubit<V, Filter>, V, Filter>
-    extends ViewValueCubitBuilderBase<C, SingleValueState<V, Filter>> {
+    extends DynamicCubitBuilder<C, SingleValueState<V, Filter>> {
   const SingleViewValueCubitBuilder({
     Key key,
     C valueCubit,
@@ -25,9 +25,9 @@ class SingleViewValueCubitBuilder<C extends ValueCubit<V, Filter>, V, Filter>
         );
 }
 
-/// it is a [ViewValueCubitBuilderBase] for [ListValueCubit]
-class ListViewValueCubitBuilder<C extends ListValueCubit<V, Filter>, V, Filter>
-    extends ViewValueCubitBuilderBase<C, ListValueState<V, Filter>> {
+/// it is a [DynamicCubitBuilder] for [ListValueCubit]
+class ListViewValueCubitBuilder<C extends IterableCubit<V, Object>, V>
+    extends DynamicCubitBuilder<C, IterableCubitState<V, Object>> {
   const ListViewValueCubitBuilder({
     Key key,
     C valueCubit,
@@ -47,7 +47,7 @@ class ListViewValueCubitBuilder<C extends ListValueCubit<V, Filter>, V, Filter>
         );
 }
 
-/// This is a plugin for wrapping a child in [ViewValueCubitBuilderBase]
+/// This is a plugin for wrapping a child in [DynamicCubitBuilder]
 abstract class ViewValueCubitPlugin<C extends ValueCubit<S, Filter>, S extends ValueState<Filter>,
     Filter> {
   Widget apply(C valueCubit, S builderState, Widget child);
@@ -57,8 +57,7 @@ abstract class ViewValueCubitPlugin<C extends ValueCubit<S, Filter>, S extends V
 ///
 /// This is a view builder with default [ValueViewErrorBuilder],
 /// [ValueViewLoaderBuilder], [ValueViewEmptyBuilder] for [ValueCubit]
-class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>, S extends ValueState<dynamic>>
-    extends StatelessWidget {
+abstract class DynamicCubitBuilder<C extends Cubit<S>, S> extends StatelessWidget {
   final C valueCubit;
   final ViewValueCubitPlugin plugin;
   final BlocWidgetBuilder<FailedValueState> errorBuilder;
@@ -66,7 +65,7 @@ class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>, S extends Valu
   final BlocWidgetBuilder<ValueState> emptyBuilder;
   final BlocWidgetBuilder<S> builder;
 
-  const ViewValueCubitBuilderBase({
+  const DynamicCubitBuilder({
     Key key,
     this.plugin,
     this.valueCubit,
@@ -75,6 +74,12 @@ class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>, S extends Valu
     this.emptyBuilder,
     @required this.builder,
   }) : super(key: key);
+
+  bool isLoading(BuildContext context, S state);
+
+  bool isFailed(BuildContext context, S state);
+
+  bool isEmpty(BuildContext context, S state);
 
   @override
   Widget build(BuildContext context) {
@@ -93,12 +98,12 @@ class ViewValueCubitBuilderBase<C extends ValueCubit<S, dynamic>, S extends Valu
         Widget current;
 
         /// build a error widget if the state have a error
-        if (state is FailedValueState) {
+        if (isFailed(context, state)) {
           current = view.errorBuilder(context, state);
-        } else if (!state.isInitialized) {
+        } else if (isLoading(context, state)) {
           /// build a loading widget if the state is not initilized
           current = view.loadingBuilder(context, state);
-        } else if (state.isEmpty) {
+        } else if (isEmpty(context, state)) {
           /// build a empty widget if the state not have a value/s
           current = view.emptyBuilder(context, state);
         } else if (plugin != null) {

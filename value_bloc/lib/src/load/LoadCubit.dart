@@ -4,7 +4,7 @@ import 'package:meta/meta.dart';
 
 part 'LoadState.dart';
 
-class LoadCubit<Data> extends Cubit<LoadState<Data>> {
+class LoadCubit<Data> extends Cubit<LoadCubitState<Data>> {
   LoadCubit({bool isLoading = true}) : super(isLoading ? LoadCubitLoading() : LoadCubitLoaded());
 
   void load({@required Loader loader}) {

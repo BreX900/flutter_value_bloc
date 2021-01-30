@@ -9,11 +9,13 @@ import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/fetchers.dart';
 import 'package:value_bloc/src/internalUtils.dart';
+import 'package:value_bloc/src/screen/DynamicCubit.dart';
 import 'package:value_bloc/src/utils.dart';
 
 part 'IterableState.dart';
 
-abstract class IterableCubit<Value, ExtraData> extends Cubit<IterableCubitState<Value, ExtraData>> {
+abstract class IterableCubit<Value, ExtraData> extends Cubit<IterableCubitState<Value, ExtraData>>
+    implements DynamicCubit<IterableCubitState<Value, ExtraData>> {
   IterableCubit(IterableCubitState<Value, ExtraData> state) : super(state);
 
   void reset();
@@ -29,6 +31,7 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
                 extraData: initialExtraData,
               )
             : IterableCubitUpdated(
+                oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
                 allValues: BuiltMap.build((b) => b
                   ..withBase(() => HashMap())
                   ..addAll(values.toList().asMap())),
@@ -46,7 +49,7 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   }
 
   void remove({@required Iterable<Value> values}) {
-    emit(state.toRemoved(
+    emit(state.toUpdated(
       allValues: state.allValues.rebuild((b) {
         b.removeWhere((_, value) => values.contains(value));
       }),
@@ -54,7 +57,7 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   }
 
   void add({@required Iterable<Value> values}) {
-    emit(state.toAdded(
+    emit(state.toUpdated(
       allValues: state.allValues.rebuild((b) => b.addAll(values.toList().asMap())),
     ));
   }
@@ -123,18 +126,21 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
           } else if (event is IterableFetchedEvent<Iterable<Value>>) {
             final page = event.values;
 
-            emit(state.toUpdated(
-              allValues: state.allValues.rebuild((b) {
-                try {
-                  for (var i = 0; i < scheme.length; i++) {
-                    b[i + scheme.startAt] = page.elementAt(i);
-                  }
-                } on IndexError {
-                  // ignore: empty_catches
+            final allValues = state.allValues.rebuild((b) {
+              try {
+                for (var i = 0; i < scheme.length; i++) {
+                  b[i + scheme.startAt] = page.elementAt(i);
                 }
-              }),
-              length:
-                  event.total ?? state.length ?? (scheme.endAt < page.length ? page.length : null),
+              } on IndexError {
+                // ignore: empty_catches
+              }
+            });
+            final length =
+                event.total ?? state.length ?? (scheme.endAt < page.length ? page.length : null);
+
+            emit(state.toUpdated(
+              allValues: allValues,
+              length: length,
             ));
           }
         }).addToByKey(_subs, scheme);
@@ -156,8 +162,8 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   //                         UI
   // ==================================================
 
-  void fetch({@required IterableSection selection}) {
-    final newSchemes = _fetcherPlugin.update(_selectionsSubject.value, selection);
+  void fetch({@required IterableSection section}) {
+    final newSchemes = _fetcherPlugin.update(_selectionsSubject.value, section);
     _selectionsSubject.add(newSchemes);
   }
 

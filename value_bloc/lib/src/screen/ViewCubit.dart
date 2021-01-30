@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:value_bloc/src/load/LoadCubit.dart';
 
-mixin ViewCubitMixin<State, LoadCubitData> on Cubit<State> {
+mixin ScreenCubitMixin<State, LoadCubitData> on Cubit<State> {
   final _viewCubits = <Cubit>[];
 
   LoadCubit<LoadCubitData> get loadCubit;
@@ -32,12 +32,12 @@ mixin ViewCubitMixin<State, LoadCubitData> on Cubit<State> {
   }
 }
 
-class ViewCubit<State, LoadCubitData> extends Cubit<State>
-    with ViewCubitMixin<State, LoadCubitData> {
+class ScreenCubit<State, LoadCubitData> extends Cubit<State>
+    with ScreenCubitMixin<State, LoadCubitData> {
   @override
   final LoadCubit<LoadCubitData> loadCubit;
 
-  ViewCubit(
+  ScreenCubit(
     State state, {
     bool isLoading = false,
   })  : loadCubit = LoadCubit(isLoading: isLoading),
@@ -45,5 +45,5 @@ class ViewCubit<State, LoadCubitData> extends Cubit<State>
     if (isLoading) onLoading();
   }
 
-  void onLoading() => throw 'Not implement onLoading method';
+  void onLoading() {}
 }
