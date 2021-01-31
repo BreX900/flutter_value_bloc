@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:value_bloc/src/internalUtils.dart';
 
 class FailedFetchEvent<V> implements ObjectFetchEvent<V>, IterableFetchEvent<V> {

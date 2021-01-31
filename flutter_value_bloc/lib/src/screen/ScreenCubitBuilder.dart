@@ -1,11 +1,14 @@
-import 'package:flutter/widgets.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_value_bloc/src/load/CircularProgressCubitBuilder.dart';
+import 'package:flutter_value_bloc/src/view/ViewData.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ScreenCubitConsumer<SC extends ScreenCubit<S, LoadCubitData>, S, LoadCubitData>
-    extends StatelessWidget {
+class ScreenCubitConsumer<SC extends ScreenCubit<S>, S> extends StatelessWidget {
   final SC screenCubit;
+
+  /// [CircularProgressCubitBuilder.hasScaffold]
+  final bool hasScaffold;
   final ViewErrorBuilder errorBuilder;
   final ViewLoaderBuilder loadingBuilder;
   final BlocWidgetListener<S> listener;
@@ -14,6 +17,7 @@ class ScreenCubitConsumer<SC extends ScreenCubit<S, LoadCubitData>, S, LoadCubit
   const ScreenCubitConsumer({
     Key key,
     this.screenCubit,
+    this.hasScaffold = true,
     this.errorBuilder,
     this.loadingBuilder,
     this.listener,
@@ -31,7 +35,7 @@ class ScreenCubitConsumer<SC extends ScreenCubit<S, LoadCubitData>, S, LoadCubit
       builder: (context) {
         return BlocConsumer<SC, S>(
           cubit: screenCubit,
-          listener: listener,
+          listener: listener ?? (context, state) => {},
           builder: builder,
         );
       },

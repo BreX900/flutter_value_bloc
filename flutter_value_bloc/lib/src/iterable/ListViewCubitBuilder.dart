@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 typedef ValueWidgetBuilder<V> = Widget Function(BuildContext context, V value);
@@ -47,6 +47,7 @@ class ListViewCubitBuilder<V> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<IterableCubit<V, Object>, IterableCubitState<V, Object>>(
+      cubit: iterableCubit,
       builder: (context, state) {
         final values = state.values;
 
@@ -57,6 +58,11 @@ class ListViewCubitBuilder<V> extends StatelessWidget {
         if (separatorBuilder != null) {
           return ListView.separated(
             scrollDirection: scrollDirection,
+            reverse: reverse,
+            controller: controller,
+            primary: primary,
+            physics: physics,
+            shrinkWrap: shrinkWrap,
             itemCount: values.length,
             separatorBuilder: separatorBuilder,
             itemBuilder: itemBuilder,
@@ -65,6 +71,11 @@ class ListViewCubitBuilder<V> extends StatelessWidget {
 
         return ListView.builder(
           scrollDirection: scrollDirection,
+          reverse: reverse,
+          controller: controller,
+          primary: primary,
+          physics: physics,
+          shrinkWrap: shrinkWrap,
           itemCount: values.length,
           itemBuilder: itemBuilder,
         );

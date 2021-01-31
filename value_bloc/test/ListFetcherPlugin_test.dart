@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'package:built_collection/built_collection.dart';
 import 'package:test/test.dart';
 import 'package:value_bloc/src/fetchers.dart';
-import 'package:value_bloc/src/internalUtils.dart';
+import 'package:value_bloc/value_bloc.dart';
 
 void main() {
   group('ListFetcherPlugin tests', () {

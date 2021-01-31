@@ -2,10 +2,10 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:value_bloc/src/load/LoadCubit.dart';
 
-mixin ScreenCubitMixin<State, LoadCubitData> on Cubit<State> {
+mixin ScreenCubitMixin<State> on Cubit<State> {
   final _viewCubits = <Cubit>[];
 
-  LoadCubit<LoadCubitData> get loadCubit;
+  LoadCubit get loadCubit;
 
   void addViewCubit({@required Cubit viewCubit}) {
     _viewCubits.add(viewCubit);
@@ -15,11 +15,11 @@ mixin ScreenCubitMixin<State, LoadCubitData> on Cubit<State> {
     _viewCubits.addAll(viewCubits);
   }
 
-  void emitLoading({@required double progress, LoadCubitData data}) {
+  void emitLoading({@required double progress, Object data}) {
     loadCubit.notifyProgress(progress: progress, data: data);
   }
 
-  void emitLoadFailed({Object failure, LoadCubitData data}) {
+  void emitLoadFailed({Object failure, Object data}) {
     loadCubit.notifyFailure(failure: failure, data: data);
   }
 
@@ -32,10 +32,9 @@ mixin ScreenCubitMixin<State, LoadCubitData> on Cubit<State> {
   }
 }
 
-class ScreenCubit<State, LoadCubitData> extends Cubit<State>
-    with ScreenCubitMixin<State, LoadCubitData> {
+class ScreenCubit<State> extends Cubit<State> with ScreenCubitMixin<State> {
   @override
-  final LoadCubit<LoadCubitData> loadCubit;
+  final LoadCubit loadCubit;
 
   ScreenCubit(
     State state, {

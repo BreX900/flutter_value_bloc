@@ -123,6 +123,10 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
         }).listen((event) {
           if (event is FailedFetchEvent<Iterable<Value>>) {
             emit(state.toUpdateFailed(failure: event.failure));
+          } else if (event is EmptyFetchEvent) {
+            emit(state.toUpdated(
+              length: state.allValues.length,
+            ));
           } else if (event is IterableFetchedEvent<Iterable<Value>>) {
             final page = event.values;
 

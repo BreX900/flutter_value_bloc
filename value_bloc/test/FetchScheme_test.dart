@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:value_bloc/src/internalUtils.dart';
+import 'package:value_bloc/value_bloc.dart';
 
 void main() {
   group('FetchScheme tests', () {

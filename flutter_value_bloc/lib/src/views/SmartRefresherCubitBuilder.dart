@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:value_bloc/value_bloc.dart';
 
@@ -20,10 +20,12 @@ abstract class SmartRefresherCubitBuilder extends StatefulWidget {
 
 class _SmartRefresherSingleCubitBuilder extends SmartRefresherCubitBuilder {
   final SingleCubit<Object, Object> singleCubit;
+  final Widget child;
 
   const _SmartRefresherSingleCubitBuilder({
     Key key,
     @required this.singleCubit,
+    @required this.child,
   }) : super._(key: key);
 
   @override
@@ -66,8 +68,8 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
       listener: (context, state) => updateStatus(state),
       child: SmartRefresher(
         controller: _refreshController,
-        enablePullDown: widget.enablePullDown,
-        enablePullUp: widget.enablePullUp,
+        // enablePullDown: widget.enablePullDown,
+        // enablePullUp: widget.enablePullUp,
         onRefresh: refresh,
         onLoading: null,
         child: widget.child,
@@ -79,11 +81,13 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
 class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
   final MultiCubit<Object, Object> multiCubit;
   final int valuesPerFetch;
+  final Widget child;
 
   const _SmartRefresherMultiCubitBuilder({
     Key key,
     @required this.multiCubit,
     this.valuesPerFetch = 10,
+    @required this.child,
   }) : super._(key: key);
 
   @override
@@ -150,8 +154,8 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
       listener: (context, state) => updateStatus(state),
       child: SmartRefresher(
         controller: _refreshController,
-        enablePullDown: widget.enablePullDown,
-        enablePullUp: widget.enablePullUp,
+        // enablePullDown: widget.enablePullDown,
+        // enablePullUp: widget.enablePullUp,
         onRefresh: refresh,
         onLoading: loadNextPage,
         child: widget.child,

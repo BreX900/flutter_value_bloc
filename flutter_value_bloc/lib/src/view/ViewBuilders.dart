@@ -26,7 +26,7 @@ class ViewBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final view = ViewDataProvider.tryOf(context).copyWith(
+    final view = ViewDataProvider.of(context).copyWith(
       errorBuilder: errorBuilder,
       loadingBuilder: loadingBuilder,
       emptyBuilder: emptyBuilder,

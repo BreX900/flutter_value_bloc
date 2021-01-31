@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+import 'package:flutter_value_bloc/src/view/ViewProvider.dart';
+import 'package:value_bloc/value_bloc.dart';
 
-abstract class ViewCubitBuilder<S> extends StatefulWidget {
+class ViewCubitBuilder<S> extends StatefulWidget {
   final DynamicCubit<S> dynamicCubit;
-  final ViewValueCubitPlugin plugin;
-  final BlocWidgetBuilder<FailedValueState> errorBuilder;
-  final BlocWidgetBuilder<ProcessingValueState> loadingBuilder;
-  final BlocWidgetBuilder<ValueState> emptyBuilder;
+  // final ViewValueCubitPlugin plugin;
+  // final BlocWidgetBuilder<FailedValueState> errorBuilder;
+  // final BlocWidgetBuilder<ProcessingValueState> loadingBuilder;
+  // final BlocWidgetBuilder<ValueState> emptyBuilder;
   final BlocWidgetBuilder<S> builder;
 
   const ViewCubitBuilder({
     Key key,
-    this.plugin,
+    // this.plugin,
     @required this.dynamicCubit,
-    this.errorBuilder,
-    this.loadingBuilder,
-    this.emptyBuilder,
+    // this.errorBuilder,
+    // this.loadingBuilder,
+    // this.emptyBuilder,
     @required this.builder,
   }) : super(key: key);
 
@@ -29,33 +32,39 @@ class _ViewCubitBuilderState<S> extends State<ViewCubitBuilder<S>> {
     super.initState();
   }
 
-  bool isUpdating(BuildContext context, S state) {
-    if (state is ObjectCubitState) {
-      if (state is ObjectCubitUpdating || state is ObjectCubitIdle) {
-        return true;
-      }
-    } else if (state is IterableCubitState) {
-      if (state is IterableCubitUpdating) {
-        if (state.values == "ciao") return true;
-      } else if (state is IterableCubitIdle) {}
+  Widget buildIterableState(BuildContext context, ViewData view, IterableCubitState state) {
+    if ((state is IterableCubitUpdating && state.length == null) || state is IterableCubitIdle) {
+      return view.loadingBuilder(context, 0.0);
+    } else if (state is IterableCubitUpdateFailed) {
+      return view.errorBuilder(context, state.failure);
+    } else if (state is IterableCubitUpdated && state.length == 0) {
+      return view.emptyBuilder(context);
     }
-    return false;
+    return null;
   }
 
-  bool isFailed(BuildContext context, S state);
-
-  bool isEmpty(BuildContext context, S state);
+  Widget buildObjectState(BuildContext context, ViewData view, ObjectCubitState state) {
+    if (state is ObjectCubitUpdating || state is ObjectCubitIdle) {
+      return view.loadingBuilder(context, 0.0);
+    } else if (state is ObjectCubitUpdateFailed) {
+      return view.errorBuilder(context, state.failure);
+    } else if (state is ObjectCubitUpdated && !state.hasValue) {
+      return view.emptyBuilder(context);
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final valueCubit = this.widget.dynamicCubit ?? BlocProvider.of<C>(context);
+    final valueCubit = this.widget.dynamicCubit;
     assert(valueCubit != null);
 
-    final view = ValueViewDataProvider.tryOf(context).copyWith(
-      errorBuilder: widget.errorBuilder,
-      loadingBuilder: widget.loadingBuilder,
-      emptyBuilder: widget.emptyBuilder,
-    );
+    final view = ViewDataProvider.of(context);
+    //     .copyWith(
+    //   errorBuilder: widget.errorBuilder,
+    //   loadingBuilder: widget.loadingBuilder,
+    //   emptyBuilder: widget.emptyBuilder,
+    // );
 
     return BlocConsumer<DynamicCubit<S>, S>(
       cubit: valueCubit,
@@ -64,20 +73,17 @@ class _ViewCubitBuilderState<S> extends State<ViewCubitBuilder<S>> {
         Widget current;
 
         /// build a error widget if the state have a error
-        if (isFailed(context, state)) {
-          current = view.errorBuilder(context, state);
-        } else if (isUpdating(context, state)) {
+        if (state is ObjectCubitState) {
+          current = buildObjectState(context, view, state);
+        } else if (state is IterableCubitState) {
           /// build a loading widget if the state is not initilized
-          current = view.loadingBuilder(context, state);
-        } else if (isEmpty(context, state)) {
-          /// build a empty widget if the state not have a value/s
-          current = view.emptyBuilder(context, state);
-        } else if (widget.plugin != null) {
-          current = widget.plugin.apply(valueCubit, state, widget.builder(context, state));
+          current = buildIterableState(context, view, state);
         }
-        current ??= widget.builder(context, state);
+        // else if (widget.plugin != null) {
+        //   current = widget.plugin.apply(valueCubit, state, widget.builder(context, state));
+        // }
 
-        return current;
+        return current ?? widget.builder(context, state);
       },
     );
   }
