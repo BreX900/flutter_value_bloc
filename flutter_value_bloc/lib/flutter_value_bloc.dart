@@ -3,11 +3,12 @@ library flutter_value_bloc;
 export 'package:flutter_bloc/flutter_bloc.dart';
 export 'package:pull_to_refresh/pull_to_refresh.dart' show RefreshConfiguration;
 
-// export 'package:value_bloc/value_bloc.dart';
-
 export 'src/iterable/ListViewCubitBuilder.dart';
 export 'src/iterable/PaginatedTableListValueCubitBuilder.dart';
 export 'src/iterable/PaginatedTableListValueCubitBuilder.dart';
+export 'src/navigation/NavigationRailCubitBuilder.dart';
+// export 'package:value_bloc/value_bloc.dart';
+export 'src/navigation/StackCubitBuilder.dart';
 export 'src/screen/ScreenCubitBuilder.dart';
 export 'src/screen/ScreenCubitBuilder.dart';
 export 'src/value_view/ValueViewBuilder.dart';
