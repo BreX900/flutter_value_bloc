@@ -9,6 +9,7 @@ import 'package:meta/meta.dart';
 import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/fetchers.dart';
+import 'package:value_bloc/src/object/ObjectCubit.dart';
 import 'package:value_bloc/src/screen/DynamicCubit.dart';
 import 'package:value_bloc/src/utils.dart';
 
@@ -93,6 +94,11 @@ typedef ListFetcher<Value> = Stream<IterableFetchEvent<Iterable<Value>>> Functio
   IterableSection section,
 );
 
+typedef ListFilterFetcher<Value> = Stream<IterableFetchEvent<Iterable<Value>>> Function(
+  IterableSection section,
+  Object filter,
+);
+
 class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   final ListFetcherPlugin _fetcherPlugin;
 
@@ -100,6 +106,7 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   final _selectionsSubject = BehaviorSubject<BuiltSet<IterableSection>>();
 
   StreamSubscription _sub;
+  StreamSubscription _filterSub;
 
   MultiCubit({
     ListFetcherPlugin fetcherPlugin = const SimpleListFetcherPlugin(),
@@ -183,6 +190,48 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
     _fetcherSubject.add(fetcher);
   }
 
+  void applyFilter<Filter>({
+    @required ListFilterFetcher<Value> fetcher,
+    @required Filter filter,
+  }) async {
+    assert(fetcher != null);
+    await Future.delayed(Duration());
+    await _filterSub?.cancel();
+    applyFetcher(fetcher: (section) {
+      return fetcher(section, filter);
+    });
+  }
+
+  void applyFilterChanges<Filter>({
+    @required ListFilterFetcher<Value> fetcher,
+    @required Stream<Filter> onFilterChanges,
+  }) async {
+    assert(fetcher != null);
+    await Future.delayed(Duration());
+    await _filterSub?.cancel();
+    _filterSub = onFilterChanges.listen((filter) {
+      applyFetcher(fetcher: (section) {
+        return fetcher(section, filter);
+      });
+    });
+  }
+
+  void applyFilterCubit<Filter>({
+    @required ListFilterFetcher<Value> fetcher,
+    @required ObjectCubit<Filter, Object> onFilterChanges,
+  }) async {
+    assert(fetcher != null);
+    await Future.delayed(Duration());
+    await _filterSub?.cancel();
+    _filterSub = onFilterChanges.listen((filterState) {
+      if (filterState is ObjectCubitUpdated<Filter, Object>) {
+        applyFetcher(fetcher: (section) {
+          return fetcher(section, filterState.value);
+        });
+      }
+    });
+  }
+
   // ==================================================
   //                         UI
   // ==================================================
@@ -206,6 +255,7 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
 
   @override
   Future<void> close() {
+    _filterSub?.cancel();
     _sub.cancel();
     _fetcherSubject.close();
     _selectionsSubject.close();
