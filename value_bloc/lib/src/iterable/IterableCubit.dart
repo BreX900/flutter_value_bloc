@@ -131,16 +131,14 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
             final page = event.values;
 
             final allValues = state.allValues.rebuild((b) {
-              try {
-                for (var i = 0; i < scheme.length; i++) {
-                  b[i + scheme.startAt] = page.elementAt(i);
-                }
-              } on IndexError {
-                // ignore: empty_catches
+              final pageIterator = page.iterator;
+              for (var i = 0; i < scheme.length && pageIterator.moveNext(); i++) {
+                b[i + scheme.startAt] = pageIterator.current;
               }
             });
-            final length =
-                event.total ?? state.length ?? (scheme.endAt < page.length ? page.length : null);
+            final length = event.total ??
+                state.length ??
+                (page.length < scheme.endAt ? allValues.length : null);
 
             emit(state.toUpdated(
               allValues: allValues,

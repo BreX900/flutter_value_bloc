@@ -22,10 +22,10 @@ void main() {
       await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
         build: () => MultiCubit<int, $>(
           fetcher: (selection) async* {
-            if (selection == IterableSection(0, 10)) {
-              yield IterableFetchEvent.fetched(values.take(10));
+            if (selection == IterableSection(10, 10)) {
+              yield IterableFetchEvent.empty();
             } else {
-              yield IterableFetchEvent.fetched(values.skip(10).take(5));
+              yield IterableFetchEvent.fetched(values.take(10));
             }
           },
         )..listen(print),
@@ -42,29 +42,43 @@ void main() {
             ],
           ),
           CubitTest(
-            // Fetch partial second page
+            // Fetch empty second page
             act: (c) => c.fetch(section: IterableSection(10, 10)),
             expect: [
               state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues.rebuild((b) => b.addAll(values
-                    .skip(10)
-                    .take(5)
-                    .toList()
-                    .asMap()
-                    .map((key, value) => MapEntry(key + 10, value)))),
+                length: 10,
               ),
             ],
           ),
-          // CubitTest(
-          //   act: (c) => c.applyFilter(scheme: IterableSection(0, 10)),
-          //   expect: [
-          //     state,
-          //     state,
-          //     state = state.toFetched(
-          //         values: values.take(10).toBuiltList(), scheme: IterableSection(0, 10)),
-          //   ],
-          // ),
+        ],
+      );
+    });
+
+    test('Success Fetch partial page', () async {
+      IterableCubitState<int, $> state = IterableCubitIdle<int, $>(
+        allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
+        extraData: null,
+      );
+      await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
+        build: () => MultiCubit<int, $>(
+          fetcher: (selection) async* {
+            yield IterableFetchEvent.fetched(values.take(3));
+          },
+        )..listen(print),
+        tests: [
+          CubitTest(
+            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            expect: [
+              state,
+              state = state.toUpdating(),
+              state = state.toUpdated(
+                allValues:
+                    state.allValues.rebuild((b) => b.addAll(values.take(3).toList().asMap())),
+                length: 3,
+              ),
+            ],
+          ),
         ],
       );
     });
