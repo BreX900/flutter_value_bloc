@@ -75,12 +75,9 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   final ListFetcherPlugin _fetcherPlugin;
 
   final _fetcherSubject = BehaviorSubject<ListFetcher<Value>>();
-  final _selectionsSubject = BehaviorSubject<BuiltSet<IterableSection>>.seeded(BuiltSet.build((b) {
-    b.withBase(() => HashSet());
-  }));
+  final _selectionsSubject = BehaviorSubject<BuiltSet<IterableSection>>();
 
   StreamSubscription _sub;
-  final _subs = CompositeMapSubscription<IterableSection>();
 
   MultiCubit({
     ListFetcherPlugin fetcherPlugin = const SimpleListFetcherPlugin(),
@@ -95,66 +92,64 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
           }),
           extraData: initialExtraData,
         )) {
-    if (fetcher != null) _fetcherSubject.add(fetcher);
-    _sub = _selectionsSubject.pairwise().listen((vls) {
-      final newSchemes = vls.last.without(vls.first);
-      final oldSchemes = vls.first.without(vls.last);
+    _sub = _fetcherSubject.switchMap<FetchResult<Value>>((fetcher) {
+      emit(state.toIdle());
+      _selectionsSubject.add(BuiltSet.build((b) {
+        b.withBase(() => HashSet());
+      }));
 
-      // Remove old subscriptions and values
-      oldSchemes.forEach((scheme) async {
-        await _subs.remove(scheme);
+      return _selectionsSubject.pairwise().map((vls) {
+        // final oldSchemes = vls.first.without(vls.last);
+        return vls.last.without(vls.first);
+      }).where((newSections) {
+        return newSections.isNotEmpty;
+      }).asyncExpand((newSections) {
+        emit(state.toUpdating());
+
+        return Rx.merge<FetchResult<Value>>(newSections.map((section) {
+          return fetcher(section).map((event) {
+            return FetchResult(section, event);
+          });
+        }));
+      });
+    }).listen((res) {
+      final section = res.section;
+      final event = res.event;
+
+      if (event is FailedFetchEvent<Iterable<Value>>) {
+        emit(state.toUpdateFailed(failure: event.failure));
+      } else if (event is EmptyFetchEvent) {
         emit(state.toUpdated(
-          allValues: state.allValues.rebuild((b) {
-            for (var i = scheme.startAt; i < scheme.endAt; i++) {
-              b.remove(i);
-            }
-          }),
+          length: state.allValues.length,
         ));
-      });
+      } else if (event is IterableFetchedEvent<Iterable<Value>>) {
+        final page = event.values;
 
-      if (newSchemes.isNotEmpty) emit(state.toUpdating());
-
-      // Add new subscriptions for every new scheme and add values
-      newSchemes.forEach((scheme) {
-        _fetcherSubject.switchMap((fetcher) {
-          if (fetcher == null) return Stream.empty();
-          return fetcher(scheme);
-        }).listen((event) {
-          if (event is FailedFetchEvent<Iterable<Value>>) {
-            emit(state.toUpdateFailed(failure: event.failure));
-          } else if (event is EmptyFetchEvent) {
-            emit(state.toUpdated(
-              length: state.allValues.length,
-            ));
-          } else if (event is IterableFetchedEvent<Iterable<Value>>) {
-            final page = event.values;
-
-            final allValues = state.allValues.rebuild((b) {
-              final pageIterator = page.iterator;
-              for (var i = 0; i < scheme.length && pageIterator.moveNext(); i++) {
-                b[i + scheme.startAt] = pageIterator.current;
-              }
-            });
-            final length = event.total ??
-                state.length ??
-                (page.length < scheme.endAt ? allValues.length : null);
-
-            emit(state.toUpdated(
-              allValues: allValues,
-              length: length,
-            ));
+        final allValues = state.allValues.rebuild((b) {
+          final pageIterator = page.iterator;
+          for (var i = 0; i < section.length && pageIterator.moveNext(); i++) {
+            b[i + section.startAt] = pageIterator.current;
           }
-        }).addToByKey(_subs, scheme);
-      });
+        });
+        final length =
+            event.total ?? state.length ?? (page.length < section.endAt ? allValues.length : null);
+
+        emit(state.toUpdated(
+          allValues: allValues,
+          length: length,
+        ));
+      }
     });
+    applyFetcher(fetcher: fetcher);
   }
 
   // ==================================================
   //                        CUBIT
   // ==================================================
 
-  void applyFetcher({@required ListFetcher<Value> fetcher}) {
+  void applyFetcher({@required ListFetcher<Value> fetcher}) async {
     assert(fetcher != null);
+    await Future.delayed(Duration());
     if (_fetcherSubject.value == fetcher) return;
     _fetcherSubject.add(fetcher);
   }
@@ -163,15 +158,17 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   //                         UI
   // ==================================================
 
-  void fetch({@required IterableSection section}) {
+  void fetch({@required IterableSection section}) async {
+    assert(section != null);
+    await Future.delayed(Duration());
     final newSchemes = _fetcherPlugin.update(_selectionsSubject.value, section);
     _selectionsSubject.add(newSchemes);
   }
 
   @override
   void reset() async {
-    _selectionsSubject.add(_selectionsSubject.value.rebuild((b) => b.clear()));
-    emit(state.toIdle());
+    await Future.delayed(Duration());
+    _fetcherSubject.add(_fetcherSubject.value);
   }
 
   // ==================================================
@@ -180,10 +177,26 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
 
   @override
   Future<void> close() {
-    _subs.dispose();
     _sub.cancel();
     _fetcherSubject.close();
     _selectionsSubject.close();
     return super.close();
   }
+}
+
+class FetchResult<V> {
+  final IterableSection section;
+  final IterableFetchEvent<Iterable<V>> event;
+
+  FetchResult(this.section, this.event);
+}
+
+class FilterUser {
+  final String searchText;
+  final bool desc;
+
+  const FilterUser({
+    @required this.searchText,
+    this.desc,
+  });
 }
