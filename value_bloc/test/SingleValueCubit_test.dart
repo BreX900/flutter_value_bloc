@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:test/test.dart';
 import 'package:value_bloc/ignore.dart';
-import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 import 'utility.dart';

@@ -1,6 +1,20 @@
 import 'dart:math';
 
-import 'package:value_bloc/src/internalUtils.dart';
+abstract class ObjectFetchEvent<V> {
+  factory ObjectFetchEvent.failed({Object failure}) = FailedFetchEvent<V>;
+
+  factory ObjectFetchEvent.empty() = EmptyFetchEvent<V>;
+
+  factory ObjectFetchEvent.fetched(V value) = ObjectFetchedEvent<V>;
+}
+
+abstract class IterableFetchEvent<V> {
+  factory IterableFetchEvent.failed({Object failure}) = FailedFetchEvent<V>;
+
+  factory IterableFetchEvent.empty() = EmptyFetchEvent<V>;
+
+  factory IterableFetchEvent.fetched(V value, {int total}) = IterableFetchedEvent<V>;
+}
 
 class FailedFetchEvent<V> implements ObjectFetchEvent<V>, IterableFetchEvent<V> {
   final Object failure;

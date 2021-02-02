@@ -4,9 +4,8 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:value_bloc/src/internalUtils.dart';
-import 'package:value_bloc/src/utils.dart';
 import 'package:value_bloc/src/screen/DynamicCubit.dart';
+import 'package:value_bloc/src/utils.dart';
 
 part 'ObjectState.dart';
 

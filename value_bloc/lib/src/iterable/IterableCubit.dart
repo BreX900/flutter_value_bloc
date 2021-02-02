@@ -8,7 +8,6 @@ import 'package:meta/meta.dart';
 import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/fetchers.dart';
-import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/src/screen/DynamicCubit.dart';
 import 'package:value_bloc/src/utils.dart';
 
