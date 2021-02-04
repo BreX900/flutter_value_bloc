@@ -10,6 +10,7 @@ class PaginatedDataTableCubitBuilder<V> extends StatefulWidget {
   final IterableCubit<V, Object> iterableCubit;
   final int rowsPerPage;
   final Widget header;
+  final List<Widget> actions;
   final List<DataColumn> columns;
   final _RowBuilder<V> builder;
 
@@ -18,6 +19,7 @@ class PaginatedDataTableCubitBuilder<V> extends StatefulWidget {
     @required this.iterableCubit,
     this.rowsPerPage = PaginatedDataTable.defaultRowsPerPage,
     @required this.header,
+    this.actions = const <Widget>[],
     @required this.columns,
     @required this.builder,
   }) : super(key: key);
@@ -64,15 +66,21 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
 
     return BlocListener<IterableCubit<V, Object>, IterableCubitState<V, Object>>(
       cubit: iterableCubit,
-      listener: (context, state) => _source.data = getData(state),
+      listener: (context, state) {
+        _source.data = getData(state);
+        if (state is IterableCubitIdle<V, Object> && iterableCubit is MultiCubit<V, Object>) {
+          iterableCubit.fetch(section: IterableSection(0, widget.rowsPerPage));
+        }
+      },
       child: PaginatedDataTable(
+        header: widget.header,
+        actions: widget.actions,
         onPageChanged: (offset) {
           if (iterableCubit is MultiCubit<V, Object>) {
             iterableCubit.fetch(section: IterableSection(offset, widget.rowsPerPage));
           }
         },
         source: _source,
-        header: widget.header,
         columns: widget.columns,
       ),
     );
