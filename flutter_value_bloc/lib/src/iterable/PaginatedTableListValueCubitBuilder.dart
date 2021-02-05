@@ -1,4 +1,5 @@
 import 'package:built_collection/built_collection.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
@@ -6,23 +7,80 @@ import 'package:value_bloc/value_bloc.dart';
 typedef _RowBuilder<V> = DataRow Function(V value);
 
 /// Build a [PaginatedDataTable] with [ListValueCubit]
+///
+/// === PLEASE NOT CHANGE THE [rowsPerPage] AND [initialFirstRowIndex] ===
 class PaginatedDataTableCubitBuilder<V> extends StatefulWidget {
+  /// Used for creating ui based on data in this object
   final IterableCubit<V, Object> iterableCubit;
+
+  /// See [PaginatedDataTable.rowsPerPage]
   final int rowsPerPage;
+
+  /// See [PaginatedDataTable.availableRowsPerPage]
+  final List<int> availableRowsPerPage;
+
+  /// See [PaginatedDataTable.sortColumnIndex]
+  final int sortColumnIndex;
+
+  /// See [PaginatedDataTable.sortAscending]
+  final bool sortAscending;
+
+  /// See [PaginatedDataTable.dataRowHeight]
+  final double dataRowHeight;
+
+  /// See [PaginatedDataTable.headingRowHeight]
+  final double headingRowHeight;
+
+  /// See [PaginatedDataTable.horizontalMargin]
+  final double horizontalMargin;
+
+  /// See [PaginatedDataTable.columnSpacing]
+  final double columnSpacing;
+
+  /// See [PaginatedDataTable.initialFirstRowIndex]
+  final int initialFirstRowIndex;
+
+  /// See [PaginatedDataTable.dragStartBehavior]
+  final DragStartBehavior dragStartBehavior;
+
+  /// See [PaginatedDataTable.header]
   final Widget header;
+
+  /// See [PaginatedDataTable.actions]
   final List<Widget> actions;
+
+  /// See [PaginatedDataTable.columns]
   final List<DataColumn> columns;
+
+  /// Build the row based on the value
+  /// See [DataTableSource.getRow] for more details
   final _RowBuilder<V> builder;
 
   const PaginatedDataTableCubitBuilder({
     Key key,
     @required this.iterableCubit,
+    this.initialFirstRowIndex = 0,
     this.rowsPerPage = PaginatedDataTable.defaultRowsPerPage,
+    this.availableRowsPerPage = const <int>[
+      PaginatedDataTable.defaultRowsPerPage,
+      PaginatedDataTable.defaultRowsPerPage * 2,
+      PaginatedDataTable.defaultRowsPerPage * 5,
+      PaginatedDataTable.defaultRowsPerPage * 10,
+    ],
+    this.sortColumnIndex,
+    this.sortAscending = true,
+    this.dataRowHeight = kMinInteractiveDimension,
+    this.headingRowHeight = 56.0,
+    this.horizontalMargin = 24.0,
+    this.columnSpacing = 56.0,
+    this.dragStartBehavior = DragStartBehavior.start,
     @required this.header,
     this.actions = const <Widget>[],
     @required this.columns,
     @required this.builder,
-  }) : super(key: key);
+  })  : assert(iterableCubit != null),
+        assert(builder != null),
+        super(key: key);
 
   @override
   _PaginatedDataTableCubitBuilderState<V> createState() => _PaginatedDataTableCubitBuilderState();
@@ -40,6 +98,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
     );
     final iterableCubit = widget.iterableCubit;
     if (iterableCubit is MultiCubit<V, Object>) {
+      // Todo: manage initialFirstRowIndex when change and when is != 0
       iterableCubit.fetch(section: IterableSection(0, widget.rowsPerPage));
     }
   }
@@ -50,6 +109,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
     if (widget.builder != oldWidget.builder) {
       _source.builder = widget.builder;
     }
+    // Todo: manage rowsPerPage when change
   }
 
   _Data<V> getData(IterableCubitState<V, Object> state) {
@@ -69,11 +129,22 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
       listener: (context, state) {
         _source.data = getData(state);
         if (state is IterableCubitIdle<V, Object> && iterableCubit is MultiCubit<V, Object>) {
+          // Todo: manage initialFirstRowIndex when change and when is != 0
           iterableCubit.fetch(section: IterableSection(0, widget.rowsPerPage));
         }
       },
       child: PaginatedDataTable(
+        initialFirstRowIndex: widget.initialFirstRowIndex,
+        rowsPerPage: widget.rowsPerPage,
+        availableRowsPerPage: widget.availableRowsPerPage,
+        sortColumnIndex: widget.sortColumnIndex,
         header: widget.header,
+        sortAscending: widget.sortAscending,
+        dataRowHeight: widget.dataRowHeight,
+        headingRowHeight: widget.headingRowHeight,
+        horizontalMargin: widget.horizontalMargin,
+        columnSpacing: widget.columnSpacing,
+        dragStartBehavior: widget.dragStartBehavior,
         actions: widget.actions,
         onPageChanged: (offset) {
           if (iterableCubit is MultiCubit<V, Object>) {
