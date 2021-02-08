@@ -7,14 +7,14 @@ class TableScreenCubit extends ScreenCubit<int> {
   final personsCubit = MultiCubit<Person, int>();
 
   TableScreenCubit() : super(0, isLoading: true) {
-    personsCubit.applyFetcher(fetcher: (selection) async* {
+    personsCubit.applyFetcher(fetcher: (section) async* {
       // Fetch values on database
-
-      await Future.delayed(Duration(seconds: 2));
-      if (selection.startAt >= 30) {
+      print('Fetching... ${section}');
+      await Future.delayed(Duration(seconds: 1));
+      if (section.startAt > 35) {
         yield EmptyFetchEvent();
       } else {
-        final persons = personList.skip(selection.endAt).take(selection.length);
+        final persons = personList.skip(section.startAt).take(section.length);
         yield IterableFetchedEvent(persons);
       }
     });
@@ -22,7 +22,7 @@ class TableScreenCubit extends ScreenCubit<int> {
 
   @override
   void onLoading() async {
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 1));
     // initialize ScreenCubit
     emitLoaded();
   }

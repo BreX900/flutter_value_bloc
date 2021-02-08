@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:math' as math;
 
 import 'package:bloc/bloc.dart';
 import 'package:built_collection/built_collection.dart';
@@ -67,6 +68,27 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   }
 }
 
+// Todo: move to pure_extensions package
+extension BigExtension<T> on Stream<T> {
+  Stream<R> infinityFactory<R>(Stream<R> Function(T event) factory) {
+    final subject = PublishSubject<R>();
+    final subs = CompositeSubscription();
+    subject
+      ..onListen = () {
+        listen((event) {
+          factory(event).listen((event) {
+            subject.add(event);
+          }).addTo(subs);
+        }).addTo(subs);
+      }
+      ..onCancel = () {
+        subs.dispose();
+        subject.close();
+      };
+    return subject;
+  }
+}
+
 typedef ListFetcher<Value> = Stream<IterableFetchEvent<Iterable<Value>>> Function(
   IterableSection section,
 );
@@ -98,12 +120,12 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
         b.withBase(() => HashSet());
       }));
 
-      return _selectionsSubject.pairwise().map((vls) {
+      return _selectionsSubject.distinct().pairwise().map((vls) {
         // final oldSchemes = vls.first.without(vls.last);
         return vls.last.without(vls.first);
       }).where((newSections) {
         return newSections.isNotEmpty;
-      }).asyncExpand((newSections) {
+      }).infinityFactory((newSections) {
         emit(state.toUpdating());
 
         return Rx.merge<FetchResult<Value>>(newSections.map((section) {
@@ -116,11 +138,20 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
       final section = res.section;
       final event = res.event;
 
+      int calculateLength(BuiltMap<int, Value> allValues, int pageLength, {int total}) {
+        if (total != null) {
+          return total;
+        } else if (section.length > pageLength) {
+          return math.max(section.startAt, allValues.length);
+        }
+        return state.length;
+      }
+
       if (event is FailedFetchEvent<Iterable<Value>>) {
         emit(state.toUpdateFailed(failure: event.failure));
       } else if (event is EmptyFetchEvent) {
         emit(state.toUpdated(
-          length: state.allValues.length,
+          length: calculateLength(state.allValues, 0),
         ));
       } else if (event is IterableFetchedEvent<Iterable<Value>>) {
         final page = event.values;
@@ -128,19 +159,17 @@ class MultiCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
         final allValues = state.allValues.rebuild((b) {
           final pageIterator = page.iterator;
           for (var i = 0; i < section.length && pageIterator.moveNext(); i++) {
-            b[i + section.startAt] = pageIterator.current;
+            b[section.startAt + i] = pageIterator.current;
           }
         });
-        final length =
-            event.total ?? state.length ?? (page.length < section.endAt ? allValues.length : null);
 
         emit(state.toUpdated(
           allValues: allValues,
-          length: length,
+          length: calculateLength(allValues, page.length, total: event.total),
         ));
       }
     });
-    applyFetcher(fetcher: fetcher);
+    if (fetcher != null) applyFetcher(fetcher: fetcher);
   }
 
   // ==================================================

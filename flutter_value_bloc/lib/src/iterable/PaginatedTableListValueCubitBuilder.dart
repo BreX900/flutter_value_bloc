@@ -88,18 +88,20 @@ class PaginatedDataTableCubitBuilder<V> extends StatefulWidget {
 
 class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCubitBuilder<V>> {
   _DataTableSource<V> _source;
+  int _currentPageOffset;
 
   @override
   void initState() {
     super.initState();
+    _currentPageOffset = (widget.initialFirstRowIndex / widget.rowsPerPage).floor();
+    print('init: ${_currentPageOffset}');
     _source = _DataTableSource<V>(
       data: getData(widget.iterableCubit.state),
       builder: widget.builder,
     );
     final iterableCubit = widget.iterableCubit;
     if (iterableCubit is MultiCubit<V, Object>) {
-      // Todo: manage initialFirstRowIndex when change and when is != 0
-      iterableCubit.fetch(section: IterableSection(0, widget.rowsPerPage));
+      iterableCubit.fetch(section: IterableSection(_currentPageOffset, widget.rowsPerPage));
     }
   }
 
@@ -109,7 +111,6 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
     if (widget.builder != oldWidget.builder) {
       _source.builder = widget.builder;
     }
-    // Todo: manage rowsPerPage when change
   }
 
   _Data<V> getData(IterableCubitState<V, Object> state) {
@@ -129,8 +130,9 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
       listener: (context, state) {
         _source.data = getData(state);
         if (state is IterableCubitIdle<V, Object> && iterableCubit is MultiCubit<V, Object>) {
-          // Todo: manage initialFirstRowIndex when change and when is != 0
-          iterableCubit.fetch(section: IterableSection(0, widget.rowsPerPage));
+          // Todo: When page is empty after first work but if you navigate to previous page
+          //       the values not fetching
+          iterableCubit.fetch(section: IterableSection(_currentPageOffset, widget.rowsPerPage));
         }
       },
       child: PaginatedDataTable(
@@ -147,6 +149,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
         dragStartBehavior: widget.dragStartBehavior,
         actions: widget.actions,
         onPageChanged: (offset) {
+          _currentPageOffset = offset;
           if (iterableCubit is MultiCubit<V, Object>) {
             iterableCubit.fetch(section: IterableSection(offset, widget.rowsPerPage));
           }

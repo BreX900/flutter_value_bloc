@@ -35,6 +35,23 @@ void main() {
       );
     });
 
+    test('Add scheme before exist scheme', () {
+      final schemes = BuiltSet<IterableSection>.build((b) {
+        b
+          ..withBase(() => HashSet())
+          ..addAll([IterableSection(20, 10), IterableSection(30, 10)]);
+      });
+      final res = fetcher.update(schemes, IterableSection(10, 10));
+      expect(
+        res,
+        BuiltSet<IterableSection>([
+          IterableSection(10, 10),
+          IterableSection(20, 10),
+          IterableSection(30, 10),
+        ]),
+      );
+    });
+
     test('Add scheme before and after exist scheme', () {
       final schemes = BuiltSet<IterableSection>.build((b) {
         b

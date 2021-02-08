@@ -48,6 +48,7 @@ class IterableSection {
   final int length;
 
   /// it is a position after last position
+  /// Todo: Fix it with match with last position
   int get endAt => startAt + length;
 
   IterableSection(this.startAt, this.length)
@@ -55,6 +56,10 @@ class IterableSection {
         assert(length != null && length > 0, 'length is "$length"');
 
   IterableSection.of(int startAt, int endAt) : this(startAt, endAt - startAt);
+
+  IterableSection.from(int sectionsCount, int length) : this(sectionsCount * length, length);
+
+  IterableSection.fromPagination(int offset, int length) : this((offset / length).floor(), length);
 
   /// it check if [other] scheme is in [this] scheme
   bool contains(IterableSection other) => startAt <= other.startAt && endAt >= other.endAt;
