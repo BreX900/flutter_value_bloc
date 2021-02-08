@@ -47,6 +47,12 @@ class TableScreen extends StatelessWidget {
               child: PaginatedDataTableCubitBuilder<Person>(
                 iterableCubit: screenCubit.personsCubit,
                 header: Text('Names'),
+                actions: [
+                  IconButton(
+                    onPressed: () => screenCubit.personsCubit.reset(),
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
                 columns: [DataColumn(label: Text('Name')), DataColumn(label: Text('Surname'))],
                 builder: (person) {
                   if (person == null) {
