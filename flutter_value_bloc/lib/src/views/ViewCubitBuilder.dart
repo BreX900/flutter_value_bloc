@@ -56,7 +56,7 @@ class _ViewCubitBuilderState<S> extends State<ViewCubitBuilder<S>> {
 
   @override
   Widget build(BuildContext context) {
-    final valueCubit = this.widget.dynamicCubit;
+    final valueCubit = widget.dynamicCubit;
     assert(valueCubit != null);
 
     final view = ViewDataProvider.of(context);
