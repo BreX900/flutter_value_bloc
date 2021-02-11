@@ -18,9 +18,9 @@ void main() {
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
       );
-      await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
-        build: () => MultiCubit<int, $>(
-          fetcher: (selection) async* {
+      await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
+        build: () => MultiCubit<int, $, $>(
+          fetcher: (selection, filter) async* {
             if (selection == IterableSection(30, 10)) {
               yield IterableFetchEvent.empty();
             } else {
@@ -38,8 +38,8 @@ void main() {
               state,
               state = state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues
-                    .rebuild((b) => b.addAll(values.take(10).toList().asMap())),
+                allValues:
+                    state.allValues.rebuild((b) => b.addAll(values.take(10).toList().asMap())),
               ),
             ],
           ),
@@ -49,8 +49,7 @@ void main() {
               state = state.toUpdating(),
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(10,
-                        (index) => MapEntry(index + 10, values[index + 10])))),
+                    List.generate(10, (index) => MapEntry(index + 10, values[index + 10])))),
               ),
             ],
           ),
@@ -60,8 +59,7 @@ void main() {
               state = state.toUpdating(),
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(10,
-                        (index) => MapEntry(index + 20, values[index + 20])))),
+                    List.generate(10, (index) => MapEntry(index + 20, values[index + 20])))),
               ),
             ],
           ),
@@ -84,14 +82,13 @@ void main() {
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
       );
-      await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
-        build: () => MultiCubit<int, $>(
-          fetcher: (section) async* {
+      await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
+        build: () => MultiCubit<int, $, $>(
+          fetcher: (section, filter) async* {
             if (section == IterableSection(20, 10)) {
               yield IterableFetchEvent.fetched(values.skip(20).take(3));
             } else {
-              yield IterableFetchEvent.fetched(
-                  values.skip(section.startAt).take(section.length));
+              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length));
             }
           },
         )..listen(print),
@@ -103,8 +100,8 @@ void main() {
               state,
               state = state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues
-                    .rebuild((b) => b.addAll(values.take(10).toList().asMap())),
+                allValues:
+                    state.allValues.rebuild((b) => b.addAll(values.take(10).toList().asMap())),
               ),
             ],
           ),
@@ -114,8 +111,7 @@ void main() {
               state = state.toUpdating(),
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(10,
-                        (index) => MapEntry(index + 10, values[index + 10])))),
+                    List.generate(10, (index) => MapEntry(index + 10, values[index + 10])))),
               ),
             ],
           ),
@@ -125,8 +121,7 @@ void main() {
               state = state.toUpdating(),
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(3,
-                        (index) => MapEntry(index + 20, values[index + 20])))),
+                    List.generate(3, (index) => MapEntry(index + 20, values[index + 20])))),
                 length: 23,
               ),
             ],
@@ -140,9 +135,9 @@ void main() {
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
       );
-      await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
-        build: () => MultiCubit<int, $>(
-          fetcher: (selection) async* {
+      await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
+        build: () => MultiCubit<int, $, $>(
+          fetcher: (selection, filter) async* {
             yield IterableFetchEvent.fetched(values.take(3));
           },
         )..listen(print),
@@ -154,8 +149,8 @@ void main() {
               state,
               state = state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues
-                    .rebuild((b) => b.addAll(values.take(3).toList().asMap())),
+                allValues:
+                    state.allValues.rebuild((b) => b.addAll(values.take(3).toList().asMap())),
                 length: 3,
               ),
             ],
@@ -171,8 +166,8 @@ void main() {
             expect: [
               state = state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues
-                    .rebuild((b) => b.addAll(values.take(3).toList().asMap())),
+                allValues:
+                    state.allValues.rebuild((b) => b.addAll(values.take(3).toList().asMap())),
                 length: 3,
               ),
             ],
@@ -186,15 +181,14 @@ void main() {
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
       );
-      await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
-        build: () => MultiCubit<int, $>(
-          fetcher: (section) async* {
+      await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
+        build: () => MultiCubit<int, $, $>(
+          fetcher: (section, filter) async* {
             print(section);
             if (section == IterableSection(10, 10)) {
               yield IterableFetchEvent.empty();
             } else {
-              yield IterableFetchEvent.fetched(
-                  values.skip(section.startAt).take(section.length));
+              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length));
             }
           },
         )..listen(print),
@@ -213,9 +207,8 @@ void main() {
             expect: [
               state = state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(
-                        10, (index) => MapEntry(index, values[index])))),
+                allValues: state.allValues.rebuild((b) =>
+                    b.addEntries(List.generate(10, (index) => MapEntry(index, values[index])))),
                 length: 10,
               ),
             ],
@@ -229,11 +222,10 @@ void main() {
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
       );
-      await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
-        build: () => MultiCubit<int, $>(
-          fetcher: (section) async* {
-            yield IterableFetchEvent.fetched(
-                values.skip(section.startAt).take(section.length));
+      await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
+        build: () => MultiCubit<int, $, $>(
+          fetcher: (section, filter) async* {
+            yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length));
           },
         )..listen(print),
         tests: [
@@ -244,9 +236,8 @@ void main() {
               state,
               state = state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(
-                        10, (index) => MapEntry(index, values[index])))),
+                allValues: state.allValues.rebuild((b) =>
+                    b.addEntries(List.generate(10, (index) => MapEntry(index, values[index])))),
               ),
             ],
           ),
@@ -256,8 +247,7 @@ void main() {
               state = state.toUpdating(),
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(10,
-                        (index) => MapEntry(index + 10, values[index + 10])))),
+                    List.generate(10, (index) => MapEntry(index + 10, values[index + 10])))),
               ),
             ],
           ),
@@ -273,8 +263,7 @@ void main() {
               state = state.toUpdating(),
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(10,
-                        (index) => MapEntry(index + 10, values[index + 10])))),
+                    List.generate(10, (index) => MapEntry(index + 10, values[index + 10])))),
               ),
             ],
           ),
@@ -283,9 +272,8 @@ void main() {
             expect: [
               state = state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(
-                        10, (index) => MapEntry(index, values[index])))),
+                allValues: state.allValues.rebuild((b) =>
+                    b.addEntries(List.generate(10, (index) => MapEntry(index, values[index])))),
               ),
             ],
           ),
@@ -298,16 +286,15 @@ void main() {
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
       );
-      await runCubitTest<MultiCubit<int, $>, IterableCubitState<int, $>>(
+      await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
         wait: Duration(milliseconds: 700),
-        build: () => MultiCubit<int, $>(
-          fetcher: (section) async* {
+        build: () => MultiCubit<int, $, $>(
+          fetcher: (section, filter) async* {
             print(section);
             if (section == IterableSection(10, 10)) {
               yield IterableFetchEvent.empty();
             } else {
-              yield IterableFetchEvent.fetched(
-                  values.skip(section.startAt).take(section.length));
+              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length));
               await Future.delayed(Duration(seconds: 1));
               yield IterableFetchEvent.fetched(
                   values.skip(section.startAt + 20).take(section.length + 20));
@@ -323,8 +310,7 @@ void main() {
               state = state.toUpdating(),
               state = state.toUpdated(
                 allValues: state.allValues.rebuild(
-                  (b) => b.addEntries(List.generate(
-                      10, (index) => MapEntry(index, values[index]))),
+                  (b) => b.addEntries(List.generate(10, (index) => MapEntry(index, values[index]))),
                 ),
               ),
             ],
@@ -335,9 +321,8 @@ void main() {
               state = state.toUpdating(),
               state = state.toUpdated(length: 10),
               state = state.toUpdated(
-                allValues: state.allValues.rebuild((b) => b.addEntries(
-                    List.generate(
-                        10, (index) => MapEntry(index, values[index + 20])))),
+                allValues: state.allValues.rebuild((b) => b
+                    .addEntries(List.generate(10, (index) => MapEntry(index, values[index + 20])))),
               ),
             ],
           ),
