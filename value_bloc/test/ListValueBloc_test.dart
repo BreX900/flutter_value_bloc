@@ -309,9 +309,8 @@ void main() {
               state,
               state = state.toUpdating(),
               state = state.toUpdated(
-                allValues: state.allValues.rebuild(
-                  (b) => b.addEntries(List.generate(10, (index) => MapEntry(index, values[index]))),
-                ),
+                allValues: state.allValues.rebuild((b) =>
+                    b.addEntries(List.generate(10, (index) => MapEntry(index, values[index])))),
               ),
             ],
           ),
@@ -323,6 +322,59 @@ void main() {
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b
                     .addEntries(List.generate(10, (index) => MapEntry(index, values[index + 20])))),
+              ),
+            ],
+          ),
+        ],
+      );
+    });
+
+    test('Fetch and update filter', () async {
+      IterableCubitState<int, $> state = IterableCubitIdle<int, $>(
+        allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
+        extraData: null,
+      );
+      await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
+        wait: Duration(milliseconds: 700),
+        build: () => MultiCubit<int, $, $>(
+          fetcher: (section, filter) async* {
+            if (filter == null) {
+              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length),
+                  total: 10);
+            } else {
+              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length),
+                  total: 10);
+            }
+          },
+        )..listen(print),
+        tests: [
+          CubitTest(
+            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            expect: [
+              state,
+              state,
+              state = state.toUpdating(),
+              state = state.toUpdated(
+                allValues: state.allValues.rebuild((b) =>
+                    b.addEntries(List.generate(10, (index) => MapEntry(index, values[index])))),
+                length: 10,
+              ),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.applyFilter(filter: $()),
+            expect: [
+              state = state.toIdle(),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            expect: [
+              state = state.toUpdating(),
+              state = state.toUpdated(
+                allValues: state.allValues.rebuild((b) =>
+                    b.addEntries(List.generate(10, (index) => MapEntry(index, values[index])))),
+                length: 10,
               ),
             ],
           ),
