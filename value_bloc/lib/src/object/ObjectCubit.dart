@@ -54,7 +54,7 @@ typedef ValueFetcher<Value, Filter> = Stream<ObjectFetchEvent<Value>> Function(F
 class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData>
     with FilteredCubit<Filter, ObjectCubitState<Value, ExtraData>> {
   final _fetcherSubject = BehaviorSubject<ValueFetcher<Value, Filter>>();
-  final _canFetchSubject = PublishSubject<bool>();
+  final _canFetchSubject = BehaviorSubject<bool>();
   StreamSubscription _sub;
 
   SingleCubit._(
@@ -80,9 +80,7 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
       final fetcher = data.value1;
       final filter = data.value2;
 
-      if (state is! ObjectCubitIdle<Value, ExtraData>) {
-        _canFetchSubject.add(false);
-      }
+      _canFetchSubject.add(false);
       emit(state.toIdle());
       await Future.delayed(Duration());
 
@@ -175,7 +173,7 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
   void reset() async {
     await Future.delayed(Duration());
 
-    emit(state.toIdle());
+    _fetcherSubject.add(_fetcherSubject.value);
   }
 
   @override
