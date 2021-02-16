@@ -10,7 +10,6 @@ import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/fetchers.dart';
 import 'package:value_bloc/src/internalUtils.dart';
-import 'package:value_bloc/src/object/ObjectCubit.dart';
 import 'package:value_bloc/src/screen/DynamicCubit.dart';
 import 'package:value_bloc/src/utils.dart';
 
@@ -75,23 +74,22 @@ typedef ListFetcher<Value, Filter> = Stream<IterableFetchEvent<Iterable<Value>>>
   Filter filter,
 );
 
-class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraData> {
+class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraData>
+    with FilteredCubit<Filter, IterableCubitState<Value, ExtraData>> {
   final ListFetcherPlugin _fetcherPlugin;
 
   final _fetcherSubject = BehaviorSubject<ListFetcher<Value, Filter>>();
-  final _filterSubject = PublishSubject<Filter>();
   final _selectionsSubject = BehaviorSubject<BuiltSet<IterableSection>>();
 
   StreamSubscription _sub;
-  StreamSubscription _filterSub;
 
   MultiCubit({
     ListFetcherPlugin fetcherPlugin = const SimpleListFetcherPlugin(),
     ListFetcher<Value, Filter> fetcher,
     Map<int, Value> initialAllValues,
     Filter initialFilter,
-    bool canSkipInitialFilter = false,
-    bool Function(Filter e1, Filter e2) equalsFilter,
+    bool canWaitFirstFilter = false,
+    bool Function(Filter e1, Filter e2) filterEquals,
     Duration filterDebounceTime,
     ExtraData initialExtraData,
   })  : _fetcherPlugin = fetcherPlugin,
@@ -102,14 +100,21 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
           }),
           extraData: initialExtraData,
         )) {
-    Stream<Filter> filterStream = _filterSubject;
-    if (filterDebounceTime != null) filterStream.debounceTime(filterDebounceTime);
-    filterStream = filterStream.distinct(equalsFilter);
+    final filterStream = Utils.createFilterStream(
+      filterStream: onFilterChanges,
+      initialFilter: initialFilter,
+      canWaitFirstFilter: canWaitFirstFilter,
+      filterEquals: filterEquals,
+      filterDebounceTime: filterDebounceTime,
+    );
 
     _sub = Rx.combineLatest2<ListFetcher<Value, Filter>, Filter,
         Tuple2<ListFetcher<Value, Filter>, Filter>>(_fetcherSubject, filterStream, (a, b) {
       return Tuple2(a, b);
-    }).switchMap<FetchResult<Value>>((tuple) {
+    }).switchMap((data) {
+      final fetcher = data.value1;
+      final filter = data.value2;
+
       emit(state.toIdle());
       _selectionsSubject.add(BuiltSet.build((b) {
         b.withBase(() => HashSet());
@@ -123,15 +128,15 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
       }).flatMap((newSections) {
         emit(state.toUpdating());
 
-        return Rx.merge<FetchResult<Value>>(newSections.map((section) {
-          return tuple.value1(section, tuple.value2).map((event) {
-            return FetchResult(section, event);
+        return Rx.merge(newSections.map((section) {
+          return fetcher(section, filter).map((event) {
+            return Tuple2(section, event);
           });
         }));
       });
     }).listen((res) {
-      final section = res.section;
-      final event = res.event;
+      final section = res.value1;
+      final event = res.value2;
 
       int calculateLength(BuiltMap<int, Value> allValues, int pageLength, {int total}) {
         if (total != null) {
@@ -165,7 +170,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
       }
     });
     if (fetcher != null) applyFetcher(fetcher: fetcher);
-    if (canSkipInitialFilter || initialFilter == null) applyFilter(filter: initialFilter);
+    if (!canWaitFirstFilter || initialFilter == null) applyFilter(filter: initialFilter);
   }
 
   // ==================================================
@@ -177,36 +182,6 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
     await Future.delayed(Duration());
     if (_fetcherSubject.value == fetcher) return;
     _fetcherSubject.add(fetcher);
-  }
-
-  void applyFilter({
-    @required Filter filter,
-  }) async {
-    await Future.delayed(Duration());
-    await _filterSub?.cancel();
-    _filterSubject.add(filter);
-  }
-
-  void applyFilterChanges({
-    @required Stream<Filter> onFilterChanges,
-  }) async {
-    assert(onFilterChanges != null);
-    await Future.delayed(Duration());
-    await _filterSub?.cancel();
-    _filterSub = onFilterChanges.listen(_filterSubject.add);
-  }
-
-  void applyFilterCubit({
-    @required ObjectCubit<Filter, Object> filterCubit,
-  }) async {
-    assert(filterCubit != null);
-    await Future.delayed(Duration());
-    await _filterSub?.cancel();
-    _filterSub = filterCubit.listen((filterState) {
-      if (filterState is ObjectCubitUpdated<Filter, Object>) {
-        _filterSubject.add(filterState.value);
-      }
-    });
   }
 
   // ==================================================
@@ -232,17 +207,9 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
 
   @override
   Future<void> close() {
-    _filterSub?.cancel();
     _sub.cancel();
     _fetcherSubject.close();
     _selectionsSubject.close();
     return super.close();
   }
-}
-
-class FetchResult<Value> {
-  final IterableSection section;
-  final IterableFetchEvent<Iterable<Value>> event;
-
-  FetchResult(this.section, this.event);
 }
