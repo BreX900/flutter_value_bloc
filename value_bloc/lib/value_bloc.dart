@@ -8,4 +8,4 @@ export 'src/navigation/NavigationCubit.dart';
 export 'src/object/ObjectCubit.dart';
 export 'src/utils.dart';
 export 'src/screen/DynamicCubit.dart';
-export 'src/screen/ViewCubit.dart';
+export 'src/screen/Closeable.dart';
