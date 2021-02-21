@@ -8,18 +8,18 @@ abstract class SmartRefresherCubitBuilder extends StatefulWidget {
 
   factory SmartRefresherCubitBuilder.single({
     Key key,
-    @required SingleCubit<Object, Object> singleCubit,
+    @required SingleCubit<Object, Object, Object> singleCubit,
   }) = _SmartRefresherSingleCubitBuilder;
 
   factory SmartRefresherCubitBuilder.multi({
     Key key,
-    @required MultiCubit<Object, Object> multiCubit,
+    @required MultiCubit<Object, Object, Object> multiCubit,
     int valuesPerFetch,
   }) = _SmartRefresherMultiCubitBuilder;
 }
 
 class _SmartRefresherSingleCubitBuilder extends SmartRefresherCubitBuilder {
-  final SingleCubit<Object, Object> singleCubit;
+  final SingleCubit<Object, Object, Object> singleCubit;
   final Widget child;
 
   const _SmartRefresherSingleCubitBuilder({
@@ -63,7 +63,7 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SingleCubit<Object, Object>, ObjectCubitState<Object, Object>>(
+    return BlocListener<SingleCubit<Object, Object, Object>, ObjectCubitState<Object, Object>>(
       cubit: widget.singleCubit,
       listener: (context, state) => updateStatus(state),
       child: SmartRefresher(
@@ -79,7 +79,7 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
 }
 
 class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
-  final MultiCubit<Object, Object> multiCubit;
+  final MultiCubit<Object, Object, Object> multiCubit;
   final int valuesPerFetch;
   final Widget child;
 
@@ -149,7 +149,7 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<MultiCubit<Object, Object>, IterableCubitState<Object, Object>>(
+    return BlocListener<MultiCubit<Object, Object, Object>, IterableCubitState<Object, Object>>(
       cubit: widget.multiCubit,
       listener: (context, state) => updateStatus(state),
       child: SmartRefresher(

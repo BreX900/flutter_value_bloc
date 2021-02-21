@@ -3,19 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ListScreenCubit extends ScreenCubit<int> {
-  final personsCubit = MultiCubit<Person, int>();
+class ListScreenCubit extends CloseableCubit<int> with CubitContainer {
+  final personsCubit = MultiCubit<Person, int, int>();
 
   ListScreenCubit() : super(0) {
-    personsCubit.applyFetcher(fetcher: (selection) async* {
-      await Future.delayed(Duration(seconds: 2));
-      if (selection.startAt >= 30) {
-        yield EmptyFetchEvent();
-      } else {
-        final persons = personList.skip(selection.endAt).take(selection.length);
-        yield IterableFetchedEvent(persons);
-      }
-    });
+    personsCubit
+      ..applyFetcher(fetcher: (selection, filter) async* {
+        await Future.delayed(Duration(seconds: 2));
+        if (selection.startAt >= 30) {
+          yield EmptyFetchEvent();
+        } else {
+          final persons = personList.skip(selection.endAt).take(selection.length);
+          yield IterableFetchedEvent(persons);
+        }
+      })
+      ..addToContainer(this);
   }
 }
 
@@ -30,7 +32,7 @@ class ListScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text('List with ListValueCubit'),
         ),
-        body: ScreenCubitConsumer<ListScreenCubit, int>(
+        body: ModularCubitConsumer<ListScreenCubit, int>(
           builder: (context, state) {
             final screenCubit = BlocProvider.of<ListScreenCubit>(context);
 

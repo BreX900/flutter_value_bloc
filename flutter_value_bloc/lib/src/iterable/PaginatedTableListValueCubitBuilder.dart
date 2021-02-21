@@ -94,7 +94,6 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
   void initState() {
     super.initState();
     _currentPageOffset = (widget.initialFirstRowIndex / widget.rowsPerPage).floor();
-    print('init: ${_currentPageOffset}');
     _source = _DataTableSource<V>(
       data: getData(widget.iterableCubit.state),
       builder: widget.builder,

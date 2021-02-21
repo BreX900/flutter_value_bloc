@@ -9,12 +9,16 @@ abstract class Closeable {
   Future<void> close() async {}
 }
 
-abstract class CloseableCubit<State> extends Cubit<State> implements Closeable {
+abstract class CloseableCubit<State> extends Cubit<State> with Closeable implements Closeable {
   CloseableCubit(State state) : super(state);
 }
 
 abstract class CloseableBloc<Event, State> extends Bloc<Event, State> implements Closeable {
   CloseableBloc(State initialState) : super(initialState);
+}
+
+abstract class CubitModular {
+  CubitModular._();
 }
 
 mixin StreamSubscriptionContainer on Closeable {
@@ -37,24 +41,33 @@ mixin CubitContainer on Closeable {
   }
 }
 
-mixin CubitLoadable on Closeable {
-  LoadCubit get loadCubit;
-
-  void emitLoading({@required double progress, Object data}) {
-    loadCubit.notifyProgress(progress: progress, data: data);
+abstract class CubitLoadable<ExtraData> {
+  LoadCubit _loadCubit;
+  LoadCubit get loadCubit {
+    return _loadCubit ??= LoadCubit(loader: onLoading)..load();
   }
 
-  void emitLoadFailed({Object failure, Object data}) {
-    loadCubit.notifyFailure(failure: failure, data: data);
+  @protected
+  void onLoading();
+
+  @protected
+  void emitLoading({@required double progress, ExtraData extraData}) {
+    loadCubit.emitLoading(progress: progress, extraData: extraData);
   }
 
-  void emitLoaded() => loadCubit.notifySuccess();
-
-  @override
-  Future<void> close() {
-    loadCubit.close();
-    return super.close();
+  @protected
+  void emitLoadFailed({Object failure, ExtraData extraData}) {
+    loadCubit.emitLoadFailed(failure: failure, extraData: extraData);
   }
+
+  @protected
+  void emitLoaded() => loadCubit.emitLoaded();
+
+  // @override
+  // Future<void> close() {
+  //   loadCubit.close();
+  //   return super.close();
+  // }
 }
 
 extension CloseableStreamSubscriptionExtension<T> on StreamSubscription<T> {

@@ -104,6 +104,17 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   List<Object> get props => [length, allValues, extraData];
 }
 
+/// All values have been removed
+/// [ListCubit] All values have been removed
+/// [MultiCubit] All values have been removed and you call fetch when receive this state
+///              it is a initial State
+class IterableCubitIdle<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+  IterableCubitIdle({
+    @required BuiltMap<int, Value> allValues,
+    @required ExtraData extraData,
+  }) : super(length: null, allValues: allValues, extraData: extraData);
+}
+
 /// The job list is being updated
 class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
   IterableCubitUpdating({
@@ -152,17 +163,6 @@ class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, E
     ExtraData extraData,
     @required this.oldAllValues,
   }) : super(length: length, allValues: allValues, extraData: extraData);
-}
-
-/// All values have been removed
-/// [ListCubit] All values have been removed
-/// [MultiCubit] All values have been removed and you call fetch when receive this state
-///              it is a initial State
-class IterableCubitIdle<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-  IterableCubitIdle({
-    @required BuiltMap<int, Value> allValues,
-    @required ExtraData extraData,
-  }) : super(length: null, allValues: allValues, extraData: extraData);
 }
 
 // class IterableCubitAdded<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
