@@ -4,24 +4,19 @@ import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/load/LoadCubit.dart';
+import 'package:value_bloc/value_bloc.dart';
 
-abstract class Closeable {
-  Future<void> close() async {}
+mixin ModularCubitMixin<State> on Cubit<State> {}
+
+abstract class ModularCubit<State> extends Cubit<State> with ModularCubitMixin<State> {
+  ModularCubit(State state) : super(state);
 }
 
-abstract class CloseableCubit<State> extends Cubit<State> with Closeable implements Closeable {
-  CloseableCubit(State state) : super(state);
+abstract class ModularBloc<Event, State> extends Bloc<Event, State> with ModularCubitMixin<State> {
+  ModularBloc(State initialState) : super(initialState);
 }
 
-abstract class CloseableBloc<Event, State> extends Bloc<Event, State> implements Closeable {
-  CloseableBloc(State initialState) : super(initialState);
-}
-
-abstract class CubitModular {
-  CubitModular._();
-}
-
-mixin StreamSubscriptionContainer on Closeable {
+mixin StreamSubscriptionContainer<State> on ModularCubitMixin<State> {
   final _compositeStream = CompositeSubscription();
 
   @override
@@ -31,7 +26,7 @@ mixin StreamSubscriptionContainer on Closeable {
   }
 }
 
-mixin CubitContainer on Closeable {
+mixin CubitContainer<State> on ModularCubitMixin<State> {
   final _viewCubits = <Cubit>[];
 
   @override
@@ -41,7 +36,7 @@ mixin CubitContainer on Closeable {
   }
 }
 
-abstract class CubitLoadable<ExtraData> {
+mixin CubitLoadable<ExtraData, State> on ModularCubitMixin<State> {
   LoadCubit _loadCubit;
   LoadCubit get loadCubit {
     return _loadCubit ??= LoadCubit(loader: onLoading)..load();
@@ -63,11 +58,11 @@ abstract class CubitLoadable<ExtraData> {
   @protected
   void emitLoaded() => loadCubit.emitLoaded();
 
-  // @override
-  // Future<void> close() {
-  //   loadCubit.close();
-  //   return super.close();
-  // }
+  @override
+  Future<void> close() {
+    loadCubit.close();
+    return super.close();
+  }
 }
 
 extension CloseableStreamSubscriptionExtension<T> on StreamSubscription<T> {

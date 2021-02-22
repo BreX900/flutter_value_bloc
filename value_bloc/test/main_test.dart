@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 import 'package:value_bloc/src/screen/Closeable.dart';
 
-class TestCubit extends CloseableCubit<int> with CubitLoadable {
+class TestCubit extends ModularCubit<int> with CubitLoadable {
   TestCubit() : super(1);
 
   @override

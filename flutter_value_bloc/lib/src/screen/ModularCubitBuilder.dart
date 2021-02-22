@@ -4,7 +4,7 @@ import 'package:flutter_value_bloc/src/load/CircularProgressCubitBuilder.dart';
 import 'package:flutter_value_bloc/src/view/ViewData.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ModularCubitConsumer<C extends CloseableCubit<S>, S> extends StatelessWidget {
+class ModularCubitConsumer<C extends ModularCubitMixin<S>, S> extends StatelessWidget {
   final C modularCubit;
 
   /// [CircularProgressCubitBuilder.hasScaffold]
@@ -26,24 +26,25 @@ class ModularCubitConsumer<C extends CloseableCubit<S>, S> extends StatelessWidg
 
   @override
   Widget build(BuildContext context) {
-    final screenCubit = this.modularCubit ?? BlocProvider.of<C>(context);
+    final modularCubit = this.modularCubit ?? BlocProvider.of<C>(context);
 
     Widget _build() {
       return BlocConsumer<C, S>(
-        cubit: screenCubit,
+        cubit: modularCubit,
         listener: listener ?? (context, state) => {},
         builder: builder,
       );
     }
 
-    if (screenCubit is CubitLoadable<Object>) {
-      final cubitLoadable = (screenCubit as CubitLoadable<Object>);
+    if (modularCubit is CubitLoadable<Object, S>) {
       return CircularProgressCubitBuilder(
-        loadCubit: cubitLoadable.loadCubit,
+        loadCubit: modularCubit.loadCubit,
         loadingBuilder: loadingBuilder,
         errorBuilder: errorBuilder,
         builder: (context) => _build(),
       );
+    } else {
+      return _build();
     }
   }
 }

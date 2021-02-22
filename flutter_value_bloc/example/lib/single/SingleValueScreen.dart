@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class SingleScreenCubit extends Cubit<int> with Closeable, CubitContainer {
+class SingleScreenCubit extends Cubit<int> with CloseableModule, CubitContainer {
   final personCubit = SingleCubit<Person, int, int>();
 
   SingleScreenCubit() : super(0) {

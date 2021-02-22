@@ -28,10 +28,7 @@ class CircularProgressCubitBuilder extends StatelessWidget {
   }) : super(key: key);
 
   Widget _build(BuildContext context, Widget child) {
-    if (hasScaffold) {
-      return child;
-    }
-    return Material(child: child);
+    return hasScaffold ? child : Material(child: child);
   }
 
   @override

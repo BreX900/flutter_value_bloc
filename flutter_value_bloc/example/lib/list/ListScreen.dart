@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ListScreenCubit extends CloseableCubit<int> with CubitContainer {
+class ListScreenCubit extends ModularCubit<int> with CubitContainer {
   final personsCubit = MultiCubit<Person, int, int>();
 
   ListScreenCubit() : super(0) {
