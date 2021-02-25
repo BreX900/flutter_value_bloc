@@ -55,7 +55,10 @@ class TableScreen extends StatelessWidget {
                     icon: const Icon(Icons.refresh),
                   ),
                 ],
-                columns: [DataColumn(label: Text('Name')), DataColumn(label: Text('Surname'))],
+                columns: [
+                  DataColumn(label: Text('Name')),
+                  DataColumn(label: Text('Surname')),
+                ],
                 builder: (person) {
                   if (person == null) {
                     return null;

@@ -1,22 +1,43 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
 part 'auth_state.dart';
 
-typedef Authorizer = void Function();
+abstract class AuthRequest {}
 
-typedef Revoker = void Function();
+class RevokeAuthRequest extends AuthRequest {}
+
+class EmailAndPasswordAuthRequest extends AuthRequest {
+  final String email;
+  final String password;
+
+  EmailAndPasswordAuthRequest(this.email, this.password);
+}
+
+typedef Authorizer = void Function(AuthRequest request);
 
 class AuthCubit<Authorization> extends Cubit<AuthCubitState<Authorization>> {
+  StreamSubscription _authorizationSub;
   Authorizer _authorizer;
-  Revoker _revoker;
 
   AuthCubit({
-    bool isAuthorized,
+    AuthEvent<Authorization> initialAuthorization,
     Stream<AuthEvent> onAuthorizationChanges,
-  }) : super(isAuthorized ? AuthCubitAuthorized() : AuthCubitUnauthorized()) {
-    onAuthorizationChanges.listen((event) {
+    Authorizer authorizer,
+  })  : _authorizer = authorizer,
+        super(() {
+          if (initialAuthorization is AuthorizedEvent<Authorization>) {
+            return AuthCubitAuthorized(authorization: null);
+          } else if (initialAuthorization is AuthorizingEvent<Authorization>) {
+            return AuthCubitAuthorizing();
+          } else {
+            return AuthCubitUnauthorized();
+          }
+        }()) {
+    _authorizationSub = onAuthorizationChanges?.listen((event) {
       if (event is AuthorizingEvent) {
         emit(state.toUpdating());
       } else if (event is UnauthorizedEvent) {
@@ -27,14 +48,18 @@ class AuthCubit<Authorization> extends Cubit<AuthCubitState<Authorization>> {
     });
   }
 
-  void authorize() {
-    emit(state.toUpdating());
-    _authorizer();
+  void applyAuthorizer(Authorizer authorizer) {
+    _authorizer = authorizer;
   }
 
-  void revoke() {
+  void authorizeWithEmailAndPassword(String email, String password) {
     emit(state.toUpdating());
-    _revoker();
+    _authorizer(EmailAndPasswordAuthRequest(email, password));
+  }
+
+  void revokeAuthorization() {
+    emit(state.toUpdating());
+    _authorizer(RevokeAuthRequest());
   }
 
   void emitAuthorization() {
@@ -43,5 +68,11 @@ class AuthCubit<Authorization> extends Cubit<AuthCubitState<Authorization>> {
 
   void emitUnauthorized() {
     emit(state.toUnauthorized());
+  }
+
+  @override
+  Future<void> close() {
+    _authorizationSub?.cancel();
+    return super.close();
   }
 }

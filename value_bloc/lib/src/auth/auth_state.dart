@@ -1,18 +1,14 @@
 part of 'auth_cubit.dart';
 
-abstract class AuthEvent {}
+abstract class AuthEvent<Authorization> {}
 
-abstract class AuthorizingEvent extends AuthEvent {}
+abstract class AuthorizingEvent<Authorization> extends AuthEvent<Authorization> {}
 
-abstract class AuthorizedEvent extends AuthEvent {}
+abstract class AuthorizedEvent<Authorization> extends AuthEvent<Authorization> {}
 
-abstract class UnauthorizedEvent extends AuthEvent {}
+abstract class UnauthorizedEvent<Authorization> extends AuthEvent<Authorization> {}
 
 abstract class AuthCubitState<Authorization> extends Equatable {
-  final Authorization authorization;
-
-  const AuthCubitState({@required this.authorization});
-
   AuthCubitState toUpdating() {
     if (this is AuthCubitAuthorizing || this is AuthCubitAuthorized) {}
     return AuthCubitAuthorizing();
@@ -23,22 +19,33 @@ abstract class AuthCubitState<Authorization> extends Equatable {
   AuthCubitState toAuthorized() {}
 }
 
-class AuthCubitAuthorizing extends AuthCubitState {
+class AuthCubitUnauthorized<Authorization> extends AuthCubitState<Authorization> {
   @override
   List<Object> get props => [];
 }
 
-class AuthCubitAuthorized extends AuthCubitState {
+class AuthCubitAuthorizing<Authorization> extends AuthCubitUnauthorized<Authorization> {
   @override
   List<Object> get props => [];
 }
 
-class AuthCubitUnauthorizing extends AuthCubitState {
+class AuthCubitAuthorized<Authorization> extends AuthCubitState<Authorization> {
+  final Authorization authorization;
+
+  AuthCubitAuthorized({@required this.authorization});
+
   @override
-  List<Object> get props => [];
+  List<Object> get props => [authorization];
 }
 
-class AuthCubitUnauthorized extends AuthCubitState {
-  @override
-  List<Object> get props => [];
+class AuthCubitUnauthorizing<Authorization> extends AuthCubitAuthorized<Authorization> {
+  AuthCubitUnauthorizing({
+    @required Authorization authorization,
+  }) : super(authorization: authorization);
+}
+
+class AuthCubitReauthorizing<Authorization> extends AuthCubitAuthorized<Authorization> {
+  AuthCubitReauthorizing({
+    @required Authorization authorization,
+  }) : super(authorization: authorization);
 }

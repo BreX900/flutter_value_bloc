@@ -99,7 +99,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
       builder: widget.builder,
     );
     final iterableCubit = widget.iterableCubit;
-    if (iterableCubit is MultiCubit<V, Object>) {
+    if (iterableCubit is MultiCubit<V, Object, Object>) {
       iterableCubit.fetch(section: IterableSection(_currentPageOffset, widget.rowsPerPage));
     }
   }
@@ -150,7 +150,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
         actions: widget.actions,
         onPageChanged: (offset) {
           _currentPageOffset = offset;
-          if (iterableCubit is MultiCubit<V, Object>) {
+          if (iterableCubit is MultiCubit<V, Object, Object>) {
             iterableCubit.fetch(section: IterableSection(offset, widget.rowsPerPage));
           }
         },

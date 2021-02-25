@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/load/CircularProgressCubitBuilder.dart';
+import 'package:flutter_value_bloc/src/load/LoadViewCubitBuilder.dart';
 import 'package:flutter_value_bloc/src/view/ViewData.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 class ModularCubitConsumer<C extends ModularCubitMixin<S>, S> extends StatelessWidget {
   final C modularCubit;
 
-  /// [CircularProgressCubitBuilder.hasScaffold]
+  /// [LoadViewCubitBuilder.hasScaffold]
   final bool hasScaffold;
   final ViewErrorBuilder errorBuilder;
   final ViewLoaderBuilder loadingBuilder;
@@ -37,7 +37,7 @@ class ModularCubitConsumer<C extends ModularCubitMixin<S>, S> extends StatelessW
     }
 
     if (modularCubit is CubitLoadable<Object, S>) {
-      return CircularProgressCubitBuilder(
+      return LoadViewCubitBuilder(
         loadCubit: modularCubit.loadCubit,
         loadingBuilder: loadingBuilder,
         errorBuilder: errorBuilder,

@@ -8,12 +8,14 @@ class ListScreenCubit extends ModularCubit<int> with CubitContainer {
 
   ListScreenCubit() : super(0) {
     personsCubit
-      ..applyFetcher(fetcher: (selection, filter) async* {
-        await Future.delayed(Duration(seconds: 2));
-        if (selection.startAt >= 30) {
+      ..applyFetcher(fetcher: (section, filter) async* {
+        // Fetch values on database
+        print('Fetching... ${section}');
+        await Future.delayed(Duration(seconds: 1));
+        if (section.startAt > 35) {
           yield EmptyFetchEvent();
         } else {
-          final persons = personList.skip(selection.endAt).take(selection.length);
+          final persons = personList.skip(section.startAt).take(section.length);
           yield IterableFetchedEvent(persons);
         }
       })
@@ -36,20 +38,11 @@ class ListScreen extends StatelessWidget {
           builder: (context, state) {
             final screenCubit = BlocProvider.of<ListScreenCubit>(context);
 
-            return ListViewCubitBuilder<Person>(
-              iterableCubit: screenCubit.personsCubit,
-              // plugin: RefresherValueCubitPlugin(enablePullUp: true),
-              builder: (context, state) {
-                return ListView.separated(
-                  itemCount: state.values.length,
-                  separatorBuilder: (context, index) => Divider(),
-                  itemBuilder: (context, index) {
-                    final person = state.values[index];
-
-                    return ListTile(
-                      title: Text('${person.name} ${person.surname}'),
-                    );
-                  },
+            return SmartListViewCubitBuilder<Person>(
+              multiCubit: screenCubit.personsCubit,
+              builder: (context, person) {
+                return ListTile(
+                  title: Text('${person.name} ${person.surname}'),
                 );
               },
             );

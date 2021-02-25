@@ -31,9 +31,11 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
 
     final sections = ListBuilder<IterableSection>();
     var startAt = allValues.keys.first;
-    var endAt = allValues.keys.first;
+    var endAt = allValues.keys.first - 1;
     for (var i = allValues.keys.first; i < allValues.keys.last; i++) {
-      if (i != endAt) {
+      if (i == endAt + 1) {
+        endAt = i;
+      } else {
         sections.add(IterableSection.of(startAt, endAt));
         startAt = i;
         endAt = i;
@@ -45,6 +47,7 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   }
 
   bool containsSection(IterableSection section) {
+    assert(section != null);
     return sections.any((s) => s.containsOffset(section.startAt));
   }
 

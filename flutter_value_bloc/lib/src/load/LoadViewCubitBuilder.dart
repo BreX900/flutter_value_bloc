@@ -4,7 +4,7 @@ import 'package:flutter_value_bloc/src/view/ViewData.dart';
 import 'package:flutter_value_bloc/src/view/ViewProvider.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class CircularProgressCubitBuilder extends StatelessWidget {
+class LoadViewCubitBuilder extends StatelessWidget {
   final LoadCubit loadCubit;
 
   /// When it is inner the [Scaffold] widget it not wrap the ui with [Material] widget
@@ -18,7 +18,7 @@ class CircularProgressCubitBuilder extends StatelessWidget {
 
   final WidgetBuilder builder;
 
-  const CircularProgressCubitBuilder({
+  const LoadViewCubitBuilder({
     Key key,
     @required this.loadCubit,
     this.hasScaffold = true,
