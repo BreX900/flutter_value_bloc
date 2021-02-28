@@ -6,64 +6,33 @@ import 'package:meta/meta.dart';
 
 part 'auth_state.dart';
 
-abstract class AuthRequest {}
-
-class RevokeAuthRequest extends AuthRequest {}
-
-class EmailAndPasswordAuthRequest extends AuthRequest {
-  final String email;
-  final String password;
-
-  EmailAndPasswordAuthRequest(this.email, this.password);
-}
-
-typedef Authorizer = void Function(AuthRequest request);
-
-class AuthCubit<Authorization> extends Cubit<AuthCubitState<Authorization>> {
+abstract class AuthCubit<ExtraData> extends Cubit<AuthCubitState<ExtraData>> {
   StreamSubscription _authorizationSub;
-  Authorizer _authorizer;
 
   AuthCubit({
-    AuthEvent<Authorization> initialAuthorization,
-    Stream<AuthEvent> onAuthorizationChanges,
-    Authorizer authorizer,
-  })  : _authorizer = authorizer,
-        super(() {
-          if (initialAuthorization is AuthorizedEvent<Authorization>) {
-            return AuthCubitAuthorized(authorization: null);
-          } else if (initialAuthorization is AuthorizingEvent<Authorization>) {
-            return AuthCubitAuthorizing();
-          } else {
+    Authorization initialAuthorization,
+    Stream<Authorization> onAuthorizationChanges,
+  }) : super(() {
+          if (initialAuthorization == null) {
             return AuthCubitUnauthorized();
+          } else {
+            return AuthCubitAuthorized(authorization: initialAuthorization);
           }
         }()) {
-    _authorizationSub = onAuthorizationChanges?.listen((event) {
-      if (event is AuthorizingEvent) {
-        emit(state.toUpdating());
-      } else if (event is UnauthorizedEvent) {
-        emit(state.toUnauthorized());
-      } else if (event is AuthorizedEvent) {
-        emit(state.toUpdating());
-      }
+    _authorizationSub = onAuthorizationChanges?.listen((authorization) {
+      emit(state.copyWith(authorization: authorization));
     });
   }
 
-  void applyAuthorizer(Authorizer authorizer) {
-    _authorizer = authorizer;
-  }
-
-  void authorizeWithEmailAndPassword(String email, String password) {
-    emit(state.toUpdating());
-    _authorizer(EmailAndPasswordAuthRequest(email, password));
-  }
-
   void revokeAuthorization() {
-    emit(state.toUpdating());
-    _authorizer(RevokeAuthRequest());
+    emit(state.toUnauthorizing());
+    onRevokingAuthorization();
   }
 
-  void emitAuthorization() {
-    emit(state.toUnauthorized());
+  void onRevokingAuthorization();
+
+  void emitAuthorization({@required Authorization authorization}) {
+    emit(state.toAuthorized(authorization: authorization));
   }
 
   void emitUnauthorized() {
