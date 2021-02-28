@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-typedef ObjectWidgetBuilder<V> = Widget Function(BuildContext context, V value);
+typedef ViewWidgetBuilder<V> = Widget Function(BuildContext context, V value);
 
-typedef ChildWidgetBuilder = Widget Function(BuildContext context, Widget child);
+typedef DecorationWidgetBuilder = Widget Function(BuildContext context, Widget child);

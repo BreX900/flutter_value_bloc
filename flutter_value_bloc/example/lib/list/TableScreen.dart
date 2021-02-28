@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class TableScreenCubit extends ModularCubit<int> with CubitLoadable, CubitContainer {
+class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, CloseCubitModule {
   final personsCubit = MultiCubit<Person, int, int>();
 
   TableScreenCubit() : super(0) {
@@ -41,7 +41,7 @@ class TableScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text('Table with ListValueCubit'),
         ),
-        body: ModularCubitConsumer<TableScreenCubit, int>(
+        body: ModularViewCubitBuilder<TableScreenCubit, int>(
           builder: (context, state) {
             final screenCubit = BlocProvider.of<TableScreenCubit>(context);
 

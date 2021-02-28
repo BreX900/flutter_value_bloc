@@ -78,7 +78,7 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
   }
 
   RefreshStatus _getRefreshStatus(ObjectCubitState<Object, Object> state) {
-    if (state is ObjectCubitIdle<Object, Object>) {
+    if (state is ObjectCubitUpdating<Object, Object>) {
       return RefreshStatus.refreshing;
     } else {
       return RefreshStatus.completed;
@@ -113,7 +113,7 @@ class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
   const _SmartRefresherMultiCubitBuilder({
     Key key,
     @required this.multiCubit,
-    this.valuesPerScroll = 10,
+    this.valuesPerScroll = 50,
     bool isEnabledPullDown = true,
     bool isEnabledPullUp = false,
     @required Widget child,
@@ -156,18 +156,13 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
     widget.multiCubit.fetch(section: _section);
   }
 
-  void updateStatus(IterableCubitState<Object, Object> state) {
-    if (state is IterableCubitIdle<Object, Object>) {
-      _section = IterableSection(0, widget.valuesPerScroll);
-      widget.multiCubit.fetch(section: _section);
-    }
-
+  void updateSmartRefresherController(IterableCubitState<Object, Object> state) {
     _refreshController.headerMode.value = _getRefreshStatus(state);
     _refreshController.footerMode.value = _getLoadStatus(state);
   }
 
   RefreshStatus _getRefreshStatus(IterableCubitState<Object, Object> state) {
-    if (state is IterableCubitIdle<Object, Object>) {
+    if (state is IterableCubitUpdating<Object, Object>) {
       return RefreshStatus.refreshing;
     } else {
       return RefreshStatus.completed;
@@ -199,10 +194,10 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
     return BlocListener<MultiCubit<Object, Object, Object>, IterableCubitState<Object, Object>>(
       cubit: widget.multiCubit,
       listener: (context, state) {
-        if (state is IterableCubitIdle<Object, Object>) {
+        if (state is IterableCubitUpdating<Object, Object>) {
           init();
         }
-        updateStatus(state);
+        updateSmartRefresherController(state);
       },
       child: SmartRefresher(
         controller: _refreshController,

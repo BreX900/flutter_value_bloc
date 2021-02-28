@@ -128,7 +128,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
       cubit: iterableCubit,
       listener: (context, state) {
         _source.data = getData(state);
-        if (state is IterableCubitIdle<V, Object> &&
+        if (state is IterableCubitUpdating<V, Object> &&
             iterableCubit is MultiCubit<V, Object, Object>) {
           // Todo: When page is empty after first work but if you navigate to previous page
           //       the values not fetching

@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_value_bloc/src/load/LoadViewCubitBuilder.dart';
-import 'package:flutter_value_bloc/src/view/ViewData.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ModularCubitConsumer<C extends ModularCubitMixin<S>, S> extends StatelessWidget {
+typedef _LoadModuleBuilder = Widget Function(BuildContext context, LoadCubit cubit);
+
+class ModularViewCubitBuilder<C extends ModularCubitMixin<S>, S> extends StatelessWidget {
   final C modularCubit;
 
-  /// [LoadViewCubitBuilder.hasScaffold]
-  final bool hasScaffold;
-  final ViewErrorBuilder errorBuilder;
-  final ViewLoaderBuilder loadingBuilder;
-  final BlocWidgetListener<S> listener;
+  final _LoadModuleBuilder loadModuleBuilder;
+
+  final BlocBuilderCondition<S> buildWhen;
   final BlocWidgetBuilder<S> builder;
 
-  const ModularCubitConsumer({
+  const ModularViewCubitBuilder({
     Key key,
     this.modularCubit,
-    this.hasScaffold = true,
-    this.errorBuilder,
-    this.loadingBuilder,
-    this.listener,
+    this.loadModuleBuilder,
+    this.buildWhen,
     @required this.builder,
   }) : super(key: key);
 
@@ -28,23 +25,64 @@ class ModularCubitConsumer<C extends ModularCubitMixin<S>, S> extends StatelessW
   Widget build(BuildContext context) {
     final modularCubit = this.modularCubit ?? BlocProvider.of<C>(context);
 
-    Widget _build() {
-      return BlocConsumer<C, S>(
-        cubit: modularCubit,
-        listener: listener ?? (context, state) => {},
-        builder: builder,
-      );
-    }
-
-    if (modularCubit is CubitLoadable<Object, S>) {
-      return LoadViewCubitBuilder(
-        loadCubit: modularCubit.loadCubit,
-        loadingBuilder: loadingBuilder,
-        errorBuilder: errorBuilder,
-        builder: (context) => _build(),
-      );
+    if (modularCubit is LoadCubitModule<Object, S>) {
+      if (loadModuleBuilder != null) {
+        return loadModuleBuilder(context, modularCubit.loadCubit);
+      } else {
+        return LoadViewCubitBuilder(
+          loadCubit: modularCubit.loadCubit,
+          builder: (context, state) => _buildView(context, modularCubit),
+        );
+      }
     } else {
-      return _build();
+      return _buildView(context, modularCubit);
     }
+  }
+
+  Widget _buildView(BuildContext context, C modularCubit) {
+    return BlocBuilder<C, S>(
+      cubit: modularCubit,
+      buildWhen: buildWhen,
+      builder: builder,
+    );
+  }
+}
+
+class ModularViewCubitConsumer<C extends ModularCubitMixin<S>, S> extends StatelessWidget {
+  final C modularCubit;
+
+  final _LoadModuleBuilder loadModuleBuilder;
+
+  final BlocBuilderCondition<S> listenWhen;
+  final BlocWidgetListener<S> listener;
+
+  final BlocBuilderCondition<S> buildWhen;
+  final BlocWidgetBuilder<S> builder;
+
+  const ModularViewCubitConsumer({
+    Key key,
+    this.modularCubit,
+    this.loadModuleBuilder,
+    this.listenWhen,
+    @required this.listener,
+    this.buildWhen,
+    @required this.builder,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final modularCubit = this.modularCubit ?? BlocProvider.of<C>(context);
+
+    return BlocListener<C, S>(
+      cubit: modularCubit,
+      listenWhen: listenWhen,
+      listener: listener,
+      child: ModularViewCubitBuilder(
+        modularCubit: modularCubit,
+        loadModuleBuilder: loadModuleBuilder,
+        buildWhen: buildWhen,
+        builder: builder,
+      ),
+    );
   }
 }

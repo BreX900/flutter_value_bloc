@@ -51,11 +51,21 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
     return sections.any((s) => s.containsOffset(section.startAt));
   }
 
+  BuiltMap<int, Value> get _oldAllValues {
+    final state = this;
+    if (state is IterableCubitUpdating<Value, ExtraData>) {
+      return state.oldAllValues;
+    } else {
+      return state.allValues;
+    }
+  }
+
   IterableCubitState<Value, ExtraData> toUpdating() {
     return IterableCubitUpdating(
-      length: length,
-      allValues: allValues,
+      length: null,
+      allValues: allValues.rebuild((b) => b.clear()),
       extraData: extraData,
+      oldAllValues: _oldAllValues,
     );
   }
 
@@ -76,54 +86,25 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
       length: length ?? this.length,
       allValues: allValues ?? this.allValues,
       extraData: extraData,
-      oldAllValues: this.allValues,
+      oldAllValues: _oldAllValues,
     );
   }
-
-  IterableCubitState<Value, ExtraData> toIdle() {
-    return IterableCubitIdle(
-      allValues: allValues.rebuild((b) => b.clear()),
-      extraData: extraData,
-    );
-  }
-
-  // IterableCubitState<Value, ExtraData> toRemoved({@required BuiltMap<int, Value> allValues}) {
-  //   return IterableCubitRemoved(
-  //     length: length,
-  //     allValues: allValues,
-  //     extraData: extraData,
-  //   );
-  // }
-  //
-  // IterableCubitState<Value, ExtraData> toAdded({@required BuiltMap<int, Value> allValues}) {
-  //   return IterableCubitAdded(
-  //     length: length,
-  //     allValues: allValues,
-  //     extraData: extraData,
-  //   );
-  // }
 
   @override
   List<Object> get props => [length, allValues, extraData];
 }
 
-/// All values have been removed
-/// [ListCubit] All values have been removed
-/// [MultiCubit] All values have been removed and you call fetch when receive this state
-///              it is a initial State
-class IterableCubitIdle<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-  IterableCubitIdle({
-    @required BuiltMap<int, Value> allValues,
-    @required ExtraData extraData,
-  }) : super(length: null, allValues: allValues, extraData: extraData);
-}
-
 /// The job list is being updated
-class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, ExtraData>
+    with _OldValues {
+  @override
+  final BuiltMap<int, Value> oldAllValues;
+
   IterableCubitUpdating({
     int length,
     @required BuiltMap<int, Value> allValues,
     ExtraData extraData,
+    @required this.oldAllValues,
   }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
@@ -144,21 +125,10 @@ class IterableCubitUpdateFailed<Value, ExtraData> extends IterableCubitState<Val
 /// The job list has been updated
 /// [ListCubit] The old values have been replaced by the new ones
 /// [MultiCubit] New values have been added to the previous values
-class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
+class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, ExtraData>
+    with _OldValues {
+  @override
   final BuiltMap<int, Value> oldAllValues;
-
-  BuiltList<Value> _oldValues;
-  BuiltList<Value> get oldValues => _oldValues ??= oldAllValues.firstValues;
-
-  BuiltList<Value> _losValues;
-  BuiltList<Value> get lostValues {
-    return _losValues ??= oldValues.where((value) => !values.contains(value)).toBuiltList();
-  }
-
-  BuiltList<Value> _newValues;
-  BuiltList<Value> get newValues {
-    return _newValues ??= values.where((value) => !oldValues.contains(value)).toBuiltList();
-  }
 
   IterableCubitUpdated({
     int length,
@@ -168,18 +138,25 @@ class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, E
   }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
-// class IterableCubitAdded<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-//   IterableCubitAdded({
-//     int length,
-//     @required BuiltMap<int, Value> allValues,
-//     ExtraData extraData,
-//   }) : super(length: length, allValues: allValues, extraData: extraData);
-// }
-//
-// class IterableCubitRemoved<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-//   IterableCubitRemoved({
-//     int length,
-//     @required BuiltMap<int, Value> allValues,
-//     ExtraData extraData,
-//   }) : super(length: length, allValues: allValues, extraData: extraData);
-// }
+mixin _OldValues<Value, ExtraData> on IterableCubitState<Value, ExtraData> {
+  BuiltMap<int, Value> get oldAllValues;
+
+  BuiltList<Value> _oldValues;
+  BuiltList<Value> get oldValues => _oldValues ??= oldAllValues.firstValues;
+
+  /// Is a difference between [oldValues] and [values]
+  ///
+  /// Ex. <oldValues>[1, 2, 3, 4] - <values>[1, 2, 3] = <lostValues>[4]
+  BuiltList<Value> _lostValues;
+  BuiltList<Value> get lostValues {
+    return _lostValues ??= oldValues.where((value) => !values.contains(value)).toBuiltList();
+  }
+
+  /// Is a difference between [values] and [oldValues]
+  ///
+  /// Ex. <values>[1, 2, 3] - <oldValues>[1] = <acquiredValues>[2, 3]
+  BuiltList<Value> _acquiredValues;
+  BuiltList<Value> get acquiredValues {
+    return _acquiredValues ??= values.where((value) => !oldValues.contains(value)).toBuiltList();
+  }
+}

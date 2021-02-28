@@ -1,53 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/view/ViewData.dart';
-import 'package:flutter_value_bloc/src/view/ViewProvider.dart';
+import 'package:flutter_value_bloc/src/cubit_views/CubitViews.dart';
+import 'package:flutter_value_bloc/src/cubit_views/ValueViewBuilder.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 class LoadViewCubitBuilder extends StatelessWidget {
   final LoadCubit loadCubit;
 
-  /// When it is inner the [Scaffold] widget it not wrap the ui with [Material] widget
-  final bool hasScaffold;
+  /// If it is null, automatic checks if it has a [Scaffold] widget.
+  /// If it doesn't have the [Scaffold] it wraps itself in a [Material] widget.
+  ///
+  /// If it is true it wraps in a [Material] widget if it is false it does nothing
+  final bool useMaterial;
 
-  @visibleForTesting
-  final ViewErrorBuilder errorBuilder;
+  final LoadingCubitViewBuilder<LoadCubit<Object>, LoadCubitLoading<Object>> loadingBuilder;
 
-  @visibleForTesting
-  final ViewLoaderBuilder loadingBuilder;
+  final ErrorCubitViewBuilder<LoadCubit<Object>, LoadCubitFailed<Object>> errorBuilder;
 
-  final WidgetBuilder builder;
+  final BlocWidgetBuilder<LoadCubitState> builder;
 
   const LoadViewCubitBuilder({
     Key key,
     @required this.loadCubit,
-    this.hasScaffold = true,
-    this.errorBuilder,
-    this.loadingBuilder,
+    this.useMaterial,
+    this.errorBuilder = CubitViewBuilder.buildError,
+    this.loadingBuilder = CubitViewBuilder.buildLoading,
     @required this.builder,
   }) : super(key: key);
 
   Widget _build(BuildContext context, Widget child) {
-    return hasScaffold ? child : Material(child: child);
+    final useMaterial = this.useMaterial ?? Scaffold.of(context, nullOk: true) != null;
+    return useMaterial ? Material(child: child) : child;
   }
 
   @override
   Widget build(BuildContext context) {
-    final view = ViewDataProvider.of(context).copyWith(
-      loadingBuilder: loadingBuilder,
-      errorBuilder: errorBuilder,
-    );
-
     return BlocBuilder<LoadCubit, LoadCubitState>(
       cubit: loadCubit,
       builder: (context, state) {
         if (state is LoadCubitLoading) {
-          return _build(context, view.loadingBuilder(context, state.progress));
+          return _build(
+            context,
+            loadingBuilder != null
+                ? loadingBuilder(context, loadCubit, state)
+                : builder(context, state),
+          );
         } else if (state is LoadCubitFailed) {
-          return _build(context, view.errorBuilder(context, state.failure));
+          return _build(
+            context,
+            errorBuilder != null
+                ? errorBuilder(context, loadCubit, state)
+                : builder(context, state),
+          );
         }
 
-        return builder(context);
+        return builder(context, state);
       },
     );
   }

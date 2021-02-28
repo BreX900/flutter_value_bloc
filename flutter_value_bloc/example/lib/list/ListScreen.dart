@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ListScreenCubit extends ModularCubit<int> with CubitContainer {
+class ListScreenCubit extends ModularCubit<int> with CloseCubitModule {
   final personsCubit = MultiCubit<Person, int, int>();
 
   ListScreenCubit() : super(0) {
@@ -12,7 +12,7 @@ class ListScreenCubit extends ModularCubit<int> with CubitContainer {
         // Fetch values on database
         print('Fetching... ${section}');
         await Future.delayed(Duration(seconds: 1));
-        if (section.startAt > 35) {
+        if (section.startAt > 55) {
           yield EmptyFetchEvent();
         } else {
           final persons = personList.skip(section.startAt).take(section.length);
@@ -34,12 +34,14 @@ class ListScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text('List with ListValueCubit'),
         ),
-        body: ModularCubitConsumer<ListScreenCubit, int>(
+        body: ModularViewCubitBuilder<ListScreenCubit, int>(
           builder: (context, state) {
             final screenCubit = BlocProvider.of<ListScreenCubit>(context);
 
             return SmartListViewCubitBuilder<Person>(
               multiCubit: screenCubit.personsCubit,
+              valuesPerScroll: 20,
+              isEnabledPullUp: true,
               builder: (context, person) {
                 return ListTile(
                   title: Text('${person.name} ${person.surname}'),

@@ -30,6 +30,7 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
             ? IterableCubitUpdating(
                 allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
                 extraData: initialExtraData,
+                oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
               )
             : IterableCubitUpdated(
                 oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -93,12 +94,13 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
     Duration filterDebounceTime,
     ExtraData initialExtraData,
   })  : _fetcherPlugin = fetcherPlugin,
-        super(IterableCubitIdle(
+        super(IterableCubitUpdating(
           allValues: BuiltMap.build((b) {
             b.withBase(() => HashMap());
             if (initialAllValues != null) b.addAll(initialAllValues);
           }),
           extraData: initialExtraData,
+          oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         )) {
     final filterStream = Utils.createFilterStream(
       filterStream: onFilterChanges,
@@ -115,7 +117,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
       final fetcher = data.value1;
       final filter = data.value2;
 
-      emit(state.toIdle());
+      emit(state.toUpdating());
       _selectionsSubject.add(BuiltSet.build((b) {
         b.withBase(() => HashSet());
       }));
@@ -126,8 +128,6 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
       }).where((newSections) {
         return newSections.isNotEmpty;
       }).flatMap((newSections) {
-        emit(state.toUpdating());
-
         return Rx.merge(newSections.map((section) {
           return fetcher(section, filter).map((event) {
             return Tuple2(section, event);

@@ -1,11 +1,10 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 class IterableCubitListener<Value, ExtraData> extends StatelessWidget {
   final IterableCubit<Value, ExtraData> iterableCubit;
   final BlocListenerCondition<IterableCubitState<Value, ExtraData>> listenWhen;
-  final BlocWidgetListener<IterableCubitIdle<Value, ExtraData>> onIdle;
   final BlocWidgetListener<IterableCubitUpdating<Value, ExtraData>> onUpdating;
   final BlocWidgetListener<IterableCubitUpdateFailed<Value, ExtraData>> onUpdateFailed;
   final BlocWidgetListener<IterableCubitUpdated<Value, ExtraData>> onUpdated;
@@ -15,7 +14,6 @@ class IterableCubitListener<Value, ExtraData> extends StatelessWidget {
     Key key,
     @required this.iterableCubit,
     this.listenWhen = _listenWhen,
-    this.onIdle,
     this.onUpdating,
     this.onUpdateFailed,
     this.onUpdated,
@@ -35,11 +33,7 @@ class IterableCubitListener<Value, ExtraData> extends StatelessWidget {
       cubit: iterableCubit,
       listenWhen: listenWhen,
       listener: (context, state) {
-        if (state is IterableCubitIdle<Value, ExtraData>) {
-          if (onIdle != null) {
-            onIdle(context, state);
-          }
-        } else if (state is IterableCubitUpdating<Value, ExtraData>) {
+        if (state is IterableCubitUpdating<Value, ExtraData>) {
           if (onUpdating != null) {
             onUpdating(context, state);
           }
