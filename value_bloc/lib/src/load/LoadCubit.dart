@@ -4,23 +4,31 @@ import 'package:meta/meta.dart';
 
 part 'LoadState.dart';
 
-class LoadCubit extends Cubit<LoadCubitState> {
-  LoadCubit({bool isLoading = true}) : super(isLoading ? LoadCubitLoading() : LoadCubitLoaded());
+class LoadCubit<ExtraData> extends Cubit<LoadCubitState<ExtraData>> {
+  Loader _loader;
 
-  void load({@required Loader loader}) {
+  LoadCubit({
+    Loader loader,
+  }) : _loader = loader, super(LoadCubitIdle());
+
+  void applyLoader({@required Loader loader}) {
+    _loader = loader;
+  }
+
+  void load() {
     emit(state.toLoading());
-    loader();
+    _loader();
   }
 
-  void notifyProgress({@required double progress, Object data}) {
-    emit(state.toLoading(progress: progress, data: data));
+  void emitLoading({@required double progress, ExtraData extraData}) {
+    emit(state.toLoading(progress: progress, extraData: extraData));
   }
 
-  void notifyFailure({Object failure, Object data}) {
-    emit(state.toFailed(failure: failure, data: data));
+  void emitLoadFailed({Object failure, ExtraData extraData}) {
+    emit(state.toFailed(failure: failure, extraData: extraData));
   }
 
-  void notifySuccess() {
+  void emitLoaded() {
     emit(state.toLoaded());
   }
 }

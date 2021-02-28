@@ -2,41 +2,49 @@ part of 'LoadCubit.dart';
 
 typedef Loader = void Function();
 
-abstract class LoadCubitState with EquatableMixin {
-  LoadCubitState toLoading({double progress = 0.0, Object data}) {
-    return LoadCubitLoading(progress: progress, data: data);
+abstract class LoadCubitState<ExtraData> with EquatableMixin {
+  final ExtraData extraData;
+
+  const LoadCubitState({@required this.extraData});
+
+  LoadCubitState toLoading({double progress = 0.0, ExtraData extraData}) {
+    return LoadCubitLoading(progress: progress, extraData: extraData ?? this.extraData);
   }
 
-  LoadCubitState toFailed({Object failure, Object data}) {
-    return LoadCubitFailed(failure: failure, data: data);
+  LoadCubitState toFailed({Object failure, ExtraData extraData}) {
+    return LoadCubitFailed(failure: failure, extraData: extraData ?? this.extraData);
   }
 
   LoadCubitState toLoaded() {
     return LoadCubitLoaded();
   }
+
+  @override
+  List<Object> get props => [extraData];
 }
 
-class LoadCubitLoading extends LoadCubitState {
+class LoadCubitIdle<ExtraData> extends LoadCubitState<ExtraData> {
+  LoadCubitIdle({ExtraData extraData}) : super(extraData: extraData);
+}
+
+class LoadCubitLoading<ExtraData> extends LoadCubitState<ExtraData> {
   final double progress;
-  final Object data;
 
-  LoadCubitLoading({this.progress = 0, this.data});
+  LoadCubitLoading({ExtraData extraData, this.progress = 0}): super(extraData: extraData);
 
   @override
-  List<Object> get props => [progress, data];
+  List<Object> get props => super.props..add(progress);
 }
 
-class LoadCubitFailed extends LoadCubitState {
+class LoadCubitFailed<ExtraData> extends LoadCubitState<ExtraData> {
   final Object failure;
-  final Object data;
 
-  LoadCubitFailed({this.failure, this.data});
+  LoadCubitFailed({ExtraData extraData, this.failure}): super(extraData: extraData);
 
   @override
-  List<Object> get props => [failure, data];
+  List<Object> get props => super.props..add(failure);
 }
 
-class LoadCubitLoaded<Data> extends LoadCubitState {
-  @override
-  List<Object> get props => [];
+class LoadCubitLoaded<ExtraData> extends LoadCubitState<ExtraData> {
+  LoadCubitLoaded({ExtraData extraData}): super(extraData: extraData);
 }

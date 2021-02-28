@@ -4,29 +4,50 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 abstract class SmartRefresherCubitBuilder extends StatefulWidget {
-  const SmartRefresherCubitBuilder._({Key key}) : super(key: key);
+  final bool isEnabledPullDown;
+  final bool isEnabledPullUp;
+  final Widget child;
+
+  const SmartRefresherCubitBuilder._({
+    @required Key key,
+    @required this.isEnabledPullDown,
+    @required this.isEnabledPullUp,
+    @required this.child,
+  }) : super(key: key);
 
   factory SmartRefresherCubitBuilder.single({
     Key key,
-    @required SingleCubit<Object, Object> singleCubit,
+    @required SingleCubit<Object, Object, Object> singleCubit,
+    bool isEnabledPullDown,
+    bool isEnabledPullUp,
+    @required Widget child,
   }) = _SmartRefresherSingleCubitBuilder;
 
   factory SmartRefresherCubitBuilder.multi({
     Key key,
-    @required MultiCubit<Object, Object> multiCubit,
-    int valuesPerFetch,
+    @required MultiCubit<Object, Object, Object> multiCubit,
+    int valuesPerScroll,
+    bool isEnabledPullDown,
+    bool isEnabledPullUp,
+    @required Widget child,
   }) = _SmartRefresherMultiCubitBuilder;
 }
 
 class _SmartRefresherSingleCubitBuilder extends SmartRefresherCubitBuilder {
-  final SingleCubit<Object, Object> singleCubit;
-  final Widget child;
+  final SingleCubit<Object, Object, Object> singleCubit;
 
   const _SmartRefresherSingleCubitBuilder({
     Key key,
     @required this.singleCubit,
-    @required this.child,
-  }) : super._(key: key);
+    bool isEnabledPullDown = true,
+    bool isEnabledPullUp = false,
+    @required Widget child,
+  }) : super._(
+          key: key,
+          isEnabledPullDown: isEnabledPullDown,
+          isEnabledPullUp: isEnabledPullUp,
+          child: child,
+        );
 
   @override
   _SmartRefresherSingleCubitBuilderState createState() => _SmartRefresherSingleCubitBuilderState();
@@ -35,14 +56,21 @@ class _SmartRefresherSingleCubitBuilder extends SmartRefresherCubitBuilder {
 class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingleCubitBuilder> {
   RefreshController _refreshController;
 
-  IterableSection section;
-
   @override
   void initState() {
     super.initState();
+    widget.singleCubit.fetch();
     _refreshController = RefreshController(
       initialRefreshStatus: _getRefreshStatus(widget.singleCubit.state),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant _SmartRefresherSingleCubitBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.singleCubit != oldWidget.singleCubit) {
+      widget.singleCubit.fetch();
+    }
   }
 
   void updateStatus(ObjectCubitState<Object, Object> state) {
@@ -50,7 +78,7 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
   }
 
   RefreshStatus _getRefreshStatus(ObjectCubitState<Object, Object> state) {
-    if (state is ObjectCubitIdle<Object, Object>) {
+    if (state is ObjectCubitUpdating<Object, Object>) {
       return RefreshStatus.refreshing;
     } else {
       return RefreshStatus.completed;
@@ -63,13 +91,13 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SingleCubit<Object, Object>, ObjectCubitState<Object, Object>>(
+    return BlocListener<SingleCubit<Object, Object, Object>, ObjectCubitState<Object, Object>>(
       cubit: widget.singleCubit,
       listener: (context, state) => updateStatus(state),
       child: SmartRefresher(
         controller: _refreshController,
-        // enablePullDown: widget.enablePullDown,
-        // enablePullUp: widget.enablePullUp,
+        enablePullDown: widget.isEnabledPullDown,
+        enablePullUp: widget.isEnabledPullUp,
         onRefresh: refresh,
         onLoading: null,
         child: widget.child,
@@ -79,17 +107,22 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
 }
 
 class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
-  final MultiCubit<Object, Object> multiCubit;
-  final int valuesPerFetch;
-  final Widget child;
+  final MultiCubit<Object, Object, Object> multiCubit;
+  final int valuesPerScroll;
 
   const _SmartRefresherMultiCubitBuilder({
     Key key,
     @required this.multiCubit,
-    this.valuesPerFetch = 10,
-    @required this.child,
-  }) : super._(key: key);
-
+    this.valuesPerScroll = 50,
+    bool isEnabledPullDown = true,
+    bool isEnabledPullUp = false,
+    @required Widget child,
+  }) : super._(
+          key: key,
+          isEnabledPullDown: isEnabledPullDown,
+          isEnabledPullUp: isEnabledPullUp,
+          child: child,
+        );
   @override
   _SmartRefresherMultiCubitBuilderState createState() => _SmartRefresherMultiCubitBuilderState();
 }
@@ -97,30 +130,39 @@ class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
 class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCubitBuilder> {
   RefreshController _refreshController;
 
-  IterableSection section;
+  IterableSection _section;
 
   @override
   void initState() {
     super.initState();
+    init();
     _refreshController = RefreshController(
       initialRefreshStatus: _getRefreshStatus(widget.multiCubit.state),
       initialLoadStatus: _getLoadStatus(widget.multiCubit.state),
     );
-    section = IterableSection(0, widget.valuesPerFetch);
   }
 
-  void updateStatus(IterableCubitState<Object, Object> state) {
-    if (state is IterableCubitIdle<Object, Object>) {
-      section = IterableSection(0, widget.valuesPerFetch);
-      widget.multiCubit.fetch(section: section);
+  @override
+  void didUpdateWidget(covariant _SmartRefresherMultiCubitBuilder oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.multiCubit != oldWidget.multiCubit) {
+      init();
     }
+  }
 
+  /// Update section to first section and fetch it
+  void init() {
+    _section = IterableSection(0, widget.valuesPerScroll);
+    widget.multiCubit.fetch(section: _section);
+  }
+
+  void updateSmartRefresherController(IterableCubitState<Object, Object> state) {
     _refreshController.headerMode.value = _getRefreshStatus(state);
     _refreshController.footerMode.value = _getLoadStatus(state);
   }
 
   RefreshStatus _getRefreshStatus(IterableCubitState<Object, Object> state) {
-    if (state is IterableCubitIdle<Object, Object>) {
+    if (state is IterableCubitUpdating<Object, Object>) {
       return RefreshStatus.refreshing;
     } else {
       return RefreshStatus.completed;
@@ -128,19 +170,19 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
   }
 
   LoadStatus _getLoadStatus(IterableCubitState<Object, Object> state) {
-    if (state.length != null && section.endAt >= state.length) {
+    if (state.length != null && _section.endAt >= state.length) {
       return LoadStatus.noMore;
-    } else if (!state.containsSection(section)) {
+    } else if (!state.containsSection(_section)) {
       return LoadStatus.loading;
-    } else if (state.containsSection(section)) {
+    } else if (state.containsSection(_section)) {
       return LoadStatus.idle;
     }
     throw 'Not support LoadStatus for $state';
   }
 
   void loadNextPage() {
-    section = section.moveOf(widget.valuesPerFetch);
-    widget.multiCubit.fetch(section: section);
+    _section = _section.moveOf(widget.valuesPerScroll);
+    widget.multiCubit.fetch(section: _section);
   }
 
   void refresh() {
@@ -149,13 +191,18 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<MultiCubit<Object, Object>, IterableCubitState<Object, Object>>(
+    return BlocListener<MultiCubit<Object, Object, Object>, IterableCubitState<Object, Object>>(
       cubit: widget.multiCubit,
-      listener: (context, state) => updateStatus(state),
+      listener: (context, state) {
+        if (state is IterableCubitUpdating<Object, Object>) {
+          init();
+        }
+        updateSmartRefresherController(state);
+      },
       child: SmartRefresher(
         controller: _refreshController,
-        // enablePullDown: widget.enablePullDown,
-        // enablePullUp: widget.enablePullUp,
+        enablePullDown: widget.isEnabledPullDown,
+        enablePullUp: widget.isEnabledPullUp,
         onRefresh: refresh,
         onLoading: loadNextPage,
         child: widget.child,

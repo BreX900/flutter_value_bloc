@@ -10,7 +10,7 @@ void main() {
 
   group('Test ObjectCubit', () {
     test('Test basic ValueCubit', () async {
-      ObjectCubitState<int, $> state = ObjectCubitIdle();
+      ObjectCubitState<int, $> state = ObjectCubitUpdating(oldValue: null);
       await runCubitTest<ValueCubit<int, $>, ObjectCubitState<int, $>>(
         build: () => ValueCubit<int, $>()..listen(print),
         tests: [
@@ -42,34 +42,71 @@ void main() {
         ],
       );
     });
+  });
 
-    test('Test basic SingleCubit', () async {
-      ObjectCubitState<int, $> state = ObjectCubitIdle();
-      await runCubitTest<SingleCubit<int, $>, ObjectCubitState<int, $>>(
-        build: () => SingleCubit<int, $>(
-          fetcher: () async* {
+  group('Test SingleCubit', () {
+    test('Fetching values on start and after reset', () async {
+      ObjectCubitState<int, $> state = ObjectCubitUpdating(oldValue: null);
+      await runCubitTest<SingleCubit<int, $, $>, ObjectCubitState<int, $>>(
+        wait: Duration(milliseconds: 100),
+        build: () => SingleCubit<int, $, $>(
+          fetcher: (filter) async* {
             yield ObjectFetchEvent.fetched(1);
           },
         )..listen(print),
         tests: [
           CubitTest(
+            act: (c) => c.fetch(),
             expect: [
               state,
-              state = state.toUpdating(),
-              state = state.toUpdated(hasValue: true, value: 1),
+              state,
+              state = ObjectCubitUpdated(hasValue: true, value: 1, oldValue: null),
             ],
           ),
           CubitTest(
             act: (c) => c.reset(),
             expect: [
-              state = state.toIdle(),
+              state = ObjectCubitUpdating(oldValue: 1),
             ],
           ),
           CubitTest(
             act: (c) => c.fetch(),
             expect: [
-              state = state.toUpdating(),
+              state = ObjectCubitUpdated(hasValue: true, value: 1, oldValue: 1),
+            ],
+          ),
+        ],
+      );
+    });
+
+    test('Apply filter after first fetch', () async {
+      ObjectCubitState<int, $> state = ObjectCubitUpdating(oldValue: null);
+      await runCubitTest<SingleCubit<int, $, $>, ObjectCubitState<int, $>>(
+        wait: Duration(milliseconds: 100),
+        build: () => SingleCubit<int, $, $>(
+          fetcher: (filter) async* {
+            yield ObjectFetchEvent.fetched(filter != null ? 2 : 1);
+          },
+        )..listen(print),
+        tests: [
+          CubitTest(
+            act: (c) => c.fetch(),
+            expect: [
+              state,
+              state,
               state = state.toUpdated(hasValue: true, value: 1),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.applyFilter(filter: $()),
+            expect: [
+              state = state.toUpdating(),
+            ],
+          ),
+          CubitTest(
+            act: (c) => c.fetch(),
+            expect: [
+              state = state.toUpdated(hasValue: true, value: 2),
             ],
           ),
         ],

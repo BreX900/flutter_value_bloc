@@ -8,11 +8,11 @@ import 'package:flutter_value_bloc/src/utils.dart';
 import 'package:flutter_value_bloc/src/widgets/SmartRefresherCubitBuilder.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
-  /// [ListView.separatorBuilder]
-  final IndexedWidgetBuilder separatorBuilder;
+class GridViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
+  /// [GridView.gridDelegate]
+  final SliverGridDelegate gridDelegate;
 
-  const ListViewCubitBuilder({
+  const GridViewCubitBuilder({
     Key key,
     @required MultiCubit<Value, Object, Object> iterableCubit,
     Axis scrollDirection = Axis.vertical,
@@ -23,13 +23,13 @@ class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
     bool shrinkWrap = false,
     EdgeInsetsGeometry padding,
     bool useOldValues = false,
+    this.gridDelegate,
     LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         loadingBuilder = CubitViewBuilder.buildLoading,
     ErrorCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         errorBuilder = CubitViewBuilder.buildError,
     EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         emptyBuilder = CubitViewBuilder.buildEmpty,
-    this.separatorBuilder,
     @required ViewWidgetBuilder<Value> builder,
   }) : super(
           key: key,
@@ -49,37 +49,23 @@ class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
 
   @override
   Widget buildScrollView(BuildContext context, BuiltList<Value> values) {
-    Widget itemBuilder(BuildContext context, int index) {
-      return builder(context, values[index]);
-    }
-
-    if (separatorBuilder != null) {
-      return ListView.separated(
-        scrollDirection: scrollDirection,
-        reverse: reverse,
-        controller: controller,
-        primary: primary,
-        physics: physics,
-        shrinkWrap: shrinkWrap,
-        itemCount: values.length,
-        separatorBuilder: separatorBuilder,
-        itemBuilder: itemBuilder,
-      );
-    }
-    return ListView.builder(
+    return GridView.custom(
       scrollDirection: scrollDirection,
       reverse: reverse,
       controller: controller,
       primary: primary,
       physics: physics,
       shrinkWrap: shrinkWrap,
-      itemCount: values.length,
-      itemBuilder: itemBuilder,
+      padding: padding,
+      gridDelegate: gridDelegate,
+      childrenDelegate: SliverChildBuilderDelegate((BuildContext context, int index) {
+        return builder(context, values[index]);
+      }),
     );
   }
 }
 
-class SmartListViewCubitBuilder<Value> extends ListViewCubitBuilder<Value> {
+class SmartGridViewCubitBuilder<Value> extends GridViewCubitBuilder<Value> {
   final MultiCubit<Value, Object, Object> multiCubit;
 
   /// [SmartRefresherCubitBuilder.valuesPerScroll]
@@ -91,7 +77,7 @@ class SmartListViewCubitBuilder<Value> extends ListViewCubitBuilder<Value> {
   /// [SmartRefresherCubitBuilder.isEnabledPullUp]
   final bool isEnabledPullUp;
 
-  const SmartListViewCubitBuilder({
+  const SmartGridViewCubitBuilder({
     Key key,
     @required this.multiCubit,
     Axis scrollDirection = Axis.vertical,
@@ -101,7 +87,7 @@ class SmartListViewCubitBuilder<Value> extends ListViewCubitBuilder<Value> {
     ScrollPhysics physics,
     bool shrinkWrap = false,
     EdgeInsetsGeometry padding,
-    bool useOldValues = false,
+    SliverGridDelegate gridDelegate,
     this.valuesPerScroll = 50,
     this.isEnabledPullDown = true,
     this.isEnabledPullUp = false,
@@ -111,7 +97,6 @@ class SmartListViewCubitBuilder<Value> extends ListViewCubitBuilder<Value> {
         errorBuilder = CubitViewBuilder.buildError,
     EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         emptyBuilder = CubitViewBuilder.buildEmpty,
-    IndexedWidgetBuilder separatorBuilder,
     @required ViewWidgetBuilder<Value> builder,
   }) : super(
           key: key,
@@ -122,11 +107,10 @@ class SmartListViewCubitBuilder<Value> extends ListViewCubitBuilder<Value> {
           primary: primary,
           shrinkWrap: shrinkWrap,
           padding: padding,
-          useOldValues: useOldValues,
+          gridDelegate: gridDelegate,
           loadingBuilder: loadingBuilder,
           errorBuilder: errorBuilder,
           emptyBuilder: emptyBuilder,
-          separatorBuilder: separatorBuilder,
           builder: builder,
         );
 

@@ -2,29 +2,29 @@ import 'package:flutter/material.dart';
 
 /// It build a widget for showing a progress
 /// Ex. Center(child: CircularProgressIndicator(value: progress))
-typedef ViewLoaderBuilder = Widget Function(BuildContext context, double progress);
+typedef LoadingViewBuilder = Widget Function(BuildContext context, double progress);
 
 /// It build a widget for showing a error
 /// Ex. Center(child: Text('$error'))
-typedef ViewErrorBuilder = Widget Function(BuildContext context, Object error);
+typedef ErrorViewBuilder = Widget Function(BuildContext context, Object error);
 
 /// It build a widget for showing a empty list or empty screen
 /// Center(child: Text('Empty'))
-typedef ViewEmptyBuilder = Widget Function(BuildContext context);
+typedef EmptyViewBuilder = Widget Function(BuildContext context);
 
-/// It defines default [ViewErrorBuilder], [ViewLoaderBuilder], [ViewEmptyBuilder]
-class ViewData {
-  final ViewErrorBuilder errorBuilder;
-  final ViewLoaderBuilder loadingBuilder;
-  final ViewEmptyBuilder emptyBuilder;
+/// It defines default [ErrorViewBuilder], [LoadingViewBuilder], [EmptyViewBuilder]
+class Views {
+  final ErrorViewBuilder errorBuilder;
+  final LoadingViewBuilder loadingBuilder;
+  final EmptyViewBuilder emptyBuilder;
 
-  const ViewData({
+  const Views({
     this.errorBuilder = _buildError,
     this.loadingBuilder = _buildLoading,
     this.emptyBuilder = _buildEmpty,
   });
 
-  const ViewData.raw({
+  const Views.raw({
     this.errorBuilder,
     this.loadingBuilder,
     this.emptyBuilder,
@@ -44,12 +44,12 @@ class ViewData {
     return Center(child: Text('Empty'));
   }
 
-  ViewData copyWith({
-    ViewLoaderBuilder loadingBuilder,
-    ViewErrorBuilder errorBuilder,
-    ViewEmptyBuilder emptyBuilder,
+  Views copyWith({
+    LoadingViewBuilder loadingBuilder,
+    ErrorViewBuilder errorBuilder,
+    EmptyViewBuilder emptyBuilder,
   }) {
-    return ViewData.raw(
+    return Views.raw(
       loadingBuilder: loadingBuilder ?? this.loadingBuilder,
       errorBuilder: errorBuilder ?? this.errorBuilder,
       emptyBuilder: emptyBuilder ?? this.emptyBuilder,

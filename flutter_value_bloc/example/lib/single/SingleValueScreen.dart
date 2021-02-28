@@ -3,15 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class SingleScreenCubit extends ScreenCubit<int> {
-  final personCubit = SingleCubit<Person, int>();
+class SingleScreenCubit extends ModularCubit<int> with CloseCubitModule, LoadCubitModule {
+  final personCubit = SingleCubit<Person, int, int>();
 
   SingleScreenCubit() : super(0) {
-    personCubit.applyFetcher(fetcher: () async* {
-      await Future.delayed(Duration(seconds: 2));
-      yield ObjectFetchedEvent(personList[0]);
-    });
-    addViewCubits(viewCubits: [personCubit]);
+    personCubit
+      ..applyFetcher(fetcher: (filter) async* {
+        await Future.delayed(Duration(seconds: 2));
+        yield ObjectFetchedEvent(personList[0]);
+      })
+      ..addToContainer(this);
+  }
+
+  @override
+  void onLoading() async {
+    await Future.delayed(Duration(seconds: 1));
+    // initialize ScreenCubit
+    emitLoaded();
   }
 }
 
@@ -24,14 +32,14 @@ class SingleScreen extends StatelessWidget {
       create: (context) => SingleScreenCubit(),
       child: Scaffold(
         appBar: AppBar(),
-        body: ScreenCubitConsumer<SingleScreenCubit, int>(
+        body: ModularViewCubitBuilder<SingleScreenCubit, int>(
           builder: (context, state) {
             final screenCubit = BlocProvider.of<SingleScreenCubit>(context);
 
-            return ViewCubitBuilder<ObjectCubitState<Person, int>>(
-              dynamicCubit: screenCubit.personCubit,
-              builder: (context, personState) {
-                return Text(personState.value.name);
+            return ViewCubitBuilder<Person>(
+              objectCubit: screenCubit.personCubit,
+              builder: (context, person) {
+                return Text(person?.name ?? '');
               },
             );
           },
