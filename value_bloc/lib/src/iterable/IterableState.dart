@@ -1,6 +1,6 @@
 part of 'IterableCubit.dart';
 
-extension FirstValuesExtension<Value> on BuiltMap<int, Value> {
+extension FirstValuesBuiltListExtension<Value> on BuiltMap<int, Value> {
   BuiltList<Value> get firstValues {
     final values = <Value>[];
     for (var i = 0; containsKey(i); i++) {
@@ -11,8 +11,16 @@ extension FirstValuesExtension<Value> on BuiltMap<int, Value> {
 }
 
 abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
+  /// Defines the maximum amount of possible values. If it is null, it is not known.
   final int length;
+
+  /// Contains all indexed values.
+  ///
+  /// It can also contain non-continuous indexes.
+  /// For Example: [23: ..., 24: ..., 89: ...]
   final BuiltMap<int, Value> allValues;
+
+  /// What you want :)
   final ExtraData extraData;
 
   IterableCubitState({
@@ -94,7 +102,9 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   List<Object> get props => [length, allValues, extraData];
 }
 
-/// The job list is being updated
+/// The job list is being updated.
+///
+/// If using [MultiCubit], listeners will need to request the current section to refresh it.
 class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, ExtraData>
     with _OldValues {
   @override
@@ -108,6 +118,9 @@ class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, 
   }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
+/// The job is failed.
+///
+/// The reason for the failure is saved on failure.
 class IterableCubitUpdateFailed<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
   final Object failure;
 
@@ -122,9 +135,9 @@ class IterableCubitUpdateFailed<Value, ExtraData> extends IterableCubitState<Val
   List<Object> get props => super.props..add(failure);
 }
 
-/// The job list has been updated
-/// [ListCubit] The old values have been replaced by the new ones
-/// [MultiCubit] New values have been added to the previous values
+/// The job list has been updated.
+///
+/// The values of the previous state will remain available on [oldValues].
 class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, ExtraData>
     with _OldValues {
   @override

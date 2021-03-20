@@ -1,103 +1,132 @@
+import 'dart:math';
+
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_value_bloc/src/cubit_views/CubitViews.dart';
 import 'package:flutter_value_bloc/src/cubit_views/ValueViewBuilder.dart';
-import 'package:flutter_value_bloc/src/utils.dart';
+import 'package:flutter_value_bloc/src/internalUtils.dart';
+import 'package:flutter_value_bloc/src/iterable/IterableCubitBuilder.dart';
+import 'package:flutter_value_bloc/src/widgets/SmartRefresherCubitBuilder.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-// ???
-abstract class ScrollViewCubitBuilderBase<Value> extends StatelessWidget {
-  final IterableCubit<Value, Object> iterableCubit;
+class ScrollViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
+  final Widget Function(
+    BuildContext context,
+    IterableCubitState<Value, Object> state,
+    BuiltList<Value> values,
+  ) builder;
 
-  /// [ScrollView.scrollDirection]
-  final Axis scrollDirection;
+  ScrollViewCubitBuilder({
+    Key key,
+    @required MultiCubit<Value, Object, Object> iterableCubit,
+    bool useOldValues = true,
+    int skipValuesCount = 0,
+    int takeValuesCount,
+    int valuesPerScroll,
+    bool isEnabledPullDown = true,
+    bool isEnabledPullUp = false,
+    LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+        loadingBuilder = CubitViewBuilder.buildLoading,
+    ErrorCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+        errorBuilder = CubitViewBuilder.buildError,
+    EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+        emptyBuilder = CubitViewBuilder.buildEmpty,
+    @required this.builder,
+  }) : super(
+          key: key,
+          iterableCubit: iterableCubit,
+          useOldValues: useOldValues,
+          skipValuesCount: skipValuesCount,
+          takeValuesCount: takeValuesCount,
+          valuesPerScroll: valuesPerScroll,
+          isEnabledPullDown: isEnabledPullDown,
+          isEnabledPullUp: isEnabledPullUp,
+          loadingBuilder: loadingBuilder,
+          errorBuilder: errorBuilder,
+          emptyBuilder: emptyBuilder,
+        );
 
-  /// [ScrollView.reverse]
-  final bool reverse;
+  @override
+  Widget buildScrollView(
+    BuildContext context,
+    IterableCubitState<Value, Object> state,
+    BuiltList<Value> values,
+  ) {
+    return builder(context, state, values);
+  }
+}
 
-  /// [ScrollView.controller]
-  final ScrollController controller;
-
-  /// [ScrollView.primary]
-  final bool primary;
-
-  /// [ScrollView.physics]
-  final ScrollPhysics physics;
-
-  /// [ScrollView.shrinkWrap]
-  final bool shrinkWrap;
-
-  /// [BoxScrollView.padding]
-  final EdgeInsetsGeometry padding;
-
-  final bool useOldValues;
-
-  /// [CubitViewBuilder.loadingBuilder]
-  final LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
-      loadingBuilder;
-
-  /// [CubitViewBuilder.errorBuilder]
-  final ErrorCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
-      errorBuilder;
-
-  /// [CubitViewBuilder.emptyBuilder]
-  final EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
-      emptyBuilder;
-
-  /// [ListView.itemBuilder]
-  final ViewWidgetBuilder<Value> builder;
+abstract class ScrollViewCubitBuilderBase<Value> extends IterableCubitBuilderBase<Value> {
+  final int valuesPerScroll;
+  final bool isEnabledPullDown;
+  final bool isEnabledPullUp;
 
   const ScrollViewCubitBuilderBase({
     Key key,
-    @required this.iterableCubit,
-    this.scrollDirection = Axis.vertical,
-    this.reverse = false,
-    this.controller,
-    this.primary,
-    this.physics,
-    this.shrinkWrap = false,
-    this.padding,
-    this.useOldValues = false,
-    this.loadingBuilder = CubitViewBuilder.buildLoading,
-    this.errorBuilder = CubitViewBuilder.buildError,
-    this.emptyBuilder = CubitViewBuilder.buildEmpty,
-    @required this.builder,
+    @required MultiCubit<Value, Object, Object> iterableCubit,
+    bool useOldValues = true,
+    int skipValuesCount = 0,
+    int takeValuesCount,
+    this.valuesPerScroll,
+    this.isEnabledPullDown = true,
+    this.isEnabledPullUp = false,
+    LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+        loadingBuilder = CubitViewBuilder.buildLoading,
+    ErrorCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+        errorBuilder = CubitViewBuilder.buildError,
+    EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+        emptyBuilder = CubitViewBuilder.buildEmpty,
   })  : assert(iterableCubit != null),
         assert(useOldValues != null),
-        assert(builder != null),
-        super(key: key);
-
-  Widget buildDecoration(BuildContext context, Widget child) => child;
-
-  Widget buildScrollView(BuildContext context, BuiltList<Value> values);
+        super(
+          key: key,
+          iterableCubit: iterableCubit,
+          skipValuesCount: skipValuesCount,
+          takeValuesCount: takeValuesCount,
+          useOldValues: useOldValues,
+          loadingBuilder: loadingBuilder,
+          errorBuilder: errorBuilder,
+          emptyBuilder: emptyBuilder,
+        );
 
   @override
-  Widget build(BuildContext context) {
-    final current = BlocBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>(
-      cubit: iterableCubit,
-      builder: (context, state) {
-        if (state is IterableCubitUpdating<Value, Object>) {
-          if ((!useOldValues || state.oldAllValues.isEmpty) && loadingBuilder != null) {
-            return loadingBuilder(context, iterableCubit, state);
-          }
-        } else if (state is IterableCubitUpdateFailed<Value, Object>) {
-          if (errorBuilder != null) {
-            return errorBuilder(context, iterableCubit, state);
-          }
-        } else if (state.values.isEmpty) {
-          if (emptyBuilder != null) {
-            return emptyBuilder(context, iterableCubit, state);
-          }
-        }
-
-        final values = useOldValues && state is IterableCubitUpdating<Value, Object>
-            ? state.oldValues
-            : state.values;
-
-        return buildScrollView(context, values);
-      },
-    );
-    return buildDecoration(context, current);
+  Widget buildDecoration(BuildContext context, Widget child) {
+    final multiCubit = iterableCubit;
+    if (multiCubit is MultiCubit<Value, Object, Object>) {
+      return ViewCubitInitializer<MultiCubit<Value, Object, Object>>(
+        cubit: multiCubit,
+        initializer: (context, c) => c.fetch(
+          section: IterableSection(skipValuesCount, min(valuesPerScroll, takeValuesCount)),
+        ),
+        child: super.buildDecoration(context, child),
+      );
+    }
+    return super.buildDecoration(context, child);
   }
+
+  @override
+  Widget buildValues(
+    BuildContext context,
+    IterableCubitState<Value, Object> state,
+    BuiltList<Value> values,
+  ) {
+    final multiCubit = iterableCubit;
+    if (multiCubit is MultiCubit<Value, Object, Object> && isEnabledPullDown && isEnabledPullUp) {
+      return SmartRefresherCubitBuilder.multi(
+        multiCubit: multiCubit,
+        firstOffsetScroll: skipValuesCount,
+        valuesPerScroll: min(valuesPerScroll, takeValuesCount),
+        isEnabledPullDown: isEnabledPullDown,
+        isEnabledPullUp: isEnabledPullUp,
+        child: buildScrollView(context, state, values),
+      );
+    }
+    return buildScrollView(context, state, values);
+  }
+
+  Widget buildScrollView(
+    BuildContext context,
+    IterableCubitState<Value, Object> state,
+    BuiltList<Value> values,
+  );
 }

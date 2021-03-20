@@ -7,7 +7,7 @@ import 'package:value_bloc/value_bloc.dart';
 
 void main() {
   group('ListFetcherPlugin tests', () {
-    final ListFetcherPlugin fetcher = SimpleListFetcherPlugin();
+    final ListFetcherPlugin fetcher = ContinuousListFetcherPlugin();
 
     test('Add scheme before an exist scheme', () {
       final schemes = BuiltSet<IterableSection>.build((b) {
@@ -15,7 +15,7 @@ void main() {
           ..withBase(() => HashSet())
           ..addAll([IterableSection(5, 10)]);
       });
-      final res = fetcher.update(schemes, IterableSection(0, 10));
+      final res = fetcher.addTo(schemes, IterableSection(0, 10));
       expect(res, BuiltSet<IterableSection>([IterableSection(0, 5), IterableSection(5, 10)]));
     });
 
@@ -25,7 +25,7 @@ void main() {
           ..withBase(() => HashSet())
           ..addAll([IterableSection(5, 10)]);
       });
-      final res = fetcher.update(schemes, IterableSection(0, 15));
+      final res = fetcher.addTo(schemes, IterableSection(0, 15));
       expect(
         res,
         BuiltSet<IterableSection>([
@@ -41,7 +41,7 @@ void main() {
           ..withBase(() => HashSet())
           ..addAll([IterableSection(20, 10), IterableSection(30, 10)]);
       });
-      final res = fetcher.update(schemes, IterableSection(10, 10));
+      final res = fetcher.addTo(schemes, IterableSection(10, 10));
       expect(
         res,
         BuiltSet<IterableSection>([
@@ -58,7 +58,7 @@ void main() {
           ..withBase(() => HashSet())
           ..addAll([IterableSection(5, 5)]);
       });
-      final res = fetcher.update(schemes, IterableSection(0, 15));
+      final res = fetcher.addTo(schemes, IterableSection(0, 15));
       expect(
         res,
         BuiltSet<IterableSection>([
@@ -75,7 +75,7 @@ void main() {
           ..withBase(() => HashSet())
           ..addAll([IterableSection(15, 5)]);
       });
-      final beforeRes = fetcher.update(schemes, IterableSection(5, 5));
+      final beforeRes = fetcher.addTo(schemes, IterableSection(5, 5));
       expect(
         beforeRes,
         BuiltSet<IterableSection>([
@@ -83,7 +83,7 @@ void main() {
           IterableSection(15, 5),
         ]),
       );
-      final afterRes = fetcher.update(beforeRes, IterableSection(25, 5));
+      final afterRes = fetcher.addTo(beforeRes, IterableSection(25, 5));
       expect(
         afterRes,
         BuiltSet<IterableSection>([

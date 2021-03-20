@@ -4,6 +4,8 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 abstract class SmartRefresherCubitBuilder extends StatefulWidget {
+  static int defaultValuesPerScroll = 20;
+
   final bool isEnabledPullDown;
   final bool isEnabledPullUp;
   final Widget child;
@@ -26,6 +28,7 @@ abstract class SmartRefresherCubitBuilder extends StatefulWidget {
   factory SmartRefresherCubitBuilder.multi({
     Key key,
     @required MultiCubit<Object, Object, Object> multiCubit,
+    int firstOffsetScroll,
     int valuesPerScroll,
     bool isEnabledPullDown,
     bool isEnabledPullUp,
@@ -108,16 +111,19 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
 
 class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
   final MultiCubit<Object, Object, Object> multiCubit;
+  final int firstOffsetScroll;
   final int valuesPerScroll;
 
-  const _SmartRefresherMultiCubitBuilder({
+  _SmartRefresherMultiCubitBuilder({
     Key key,
     @required this.multiCubit,
-    this.valuesPerScroll = 50,
+    this.firstOffsetScroll = 0,
+    int valuesPerScroll,
     bool isEnabledPullDown = true,
     bool isEnabledPullUp = false,
     @required Widget child,
-  }) : super._(
+  })  : valuesPerScroll = valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll,
+        super._(
           key: key,
           isEnabledPullDown: isEnabledPullDown,
           isEnabledPullUp: isEnabledPullUp,
@@ -152,7 +158,7 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
 
   /// Update section to first section and fetch it
   void init() {
-    _section = IterableSection(0, widget.valuesPerScroll);
+    _section = IterableSection(widget.firstOffsetScroll, widget.valuesPerScroll);
     widget.multiCubit.fetch(section: _section);
   }
 

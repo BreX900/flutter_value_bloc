@@ -8,7 +8,7 @@ class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, CloseCubi
 
   TableScreenCubit() : super(0) {
     personsCubit
-      ..applyFetcher(fetcher: (section, filter) async* {
+      ..updateFetcher(fetcher: (section, filter) async* {
         // Fetch values on database
         print('Fetching... ${section}');
         await Future.delayed(Duration(seconds: 1));

@@ -1,7 +1,79 @@
-// import 'dart:math';
-//
-// import 'package:built_collection/built_collection.dart';
-//
+import 'package:built_collection/built_collection.dart';
+import 'package:meta/meta.dart';
+import 'package:value_bloc/src/utils.dart';
+
+/// You can override how the [MultiCubit] handles the sections to be requested
+///
+/// You can use:
+/// - [ContinuousListFetcherPlugin] Requires section only once per filter
+/// - [SpasmodicListFetcherPlugin] Request the section every time the current section changes
+@immutable
+abstract class ListFetcherPlugin {
+  const ListFetcherPlugin();
+
+  BuiltSet<IterableSection> addTo(BuiltSet<IterableSection> queue, IterableSection newSection);
+}
+
+/// It caches all the sections that have been requested by the UI
+/// The fetcher will be called only once per section
+class ContinuousListFetcherPlugin extends ListFetcherPlugin {
+  const ContinuousListFetcherPlugin();
+
+  /// find in queue the first scheme contains the offset
+  IterableSection findContainer(BuiltSet<IterableSection> queue, int offset) {
+    return queue.firstWhere((s) => s.containsOffset(offset), orElse: () => null);
+  }
+
+  /// find in the queue for the first possible not-existent scheme offset
+  ///
+  /// Returns null if the offset exist
+  int findFirstNotExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
+    for (var i = scheme.startAt; i < scheme.endAt; i++) {
+      final container = findContainer(queue, i);
+      if (container == null) return i;
+    }
+    return null;
+  }
+
+  /// find in the queue for the first possible existent scheme offset
+  ///
+  /// Returns null if the offset not exist
+  int findFirstExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
+    for (var i = scheme.startAt; i < scheme.endAt; i++) {
+      final container = findContainer(queue, i);
+      if (container != null) return i;
+    }
+    return null;
+  }
+
+  @override
+  BuiltSet<IterableSection> addTo(BuiltSet<IterableSection> queue, IterableSection scheme) {
+    do {
+      final newStartAt = findFirstNotExistOffset(queue, scheme);
+      if (newStartAt == null) return queue;
+      final startScheme = scheme.mergeWith(startAt: newStartAt);
+      final newEndAt = findFirstExistOffset(queue, startScheme);
+      final newScheme = newEndAt == null ? startScheme : startScheme.mergeWith(endAt: newEndAt);
+
+      queue = queue.rebuild((b) => b.add(newScheme));
+      scheme = newScheme.endAt >= scheme.endAt ? null : scheme.mergeWith(startAt: newScheme.endAt);
+    } while (scheme != null);
+
+    return queue;
+  }
+}
+
+/// It only caches the last section that the UI requested
+/// The fetcher will be called for each new section (different from the previous one)
+class SpasmodicListFetcherPlugin extends ListFetcherPlugin {
+  const SpasmodicListFetcherPlugin();
+
+  @override
+  BuiltSet<IterableSection> addTo(BuiltSet<IterableSection> queue, IterableSection newScheme) {
+    return BuiltSet.of([newScheme]);
+  }
+}
+
 // /// This class permit a custom fetching for [ListValueCubit]
 // abstract class ValueFetcher {
 //   const ValueFetcher();
@@ -85,99 +157,3 @@
 //     return schemes..removeWhere(values.containsKey);
 //   }
 // }
-//
-// /// It represent a request for retrieving a values determined by [offset] and [limit]
-// class FetchScheme {
-//   /// it is a start fetching position
-//   final int offset;
-//
-//   /// it is a max number of values fetching
-//   final int limit;
-//
-//   /// it is a end fetching position
-//   int get end => offset + limit;
-//
-//   FetchScheme(this.offset, this.limit);
-//
-//   /// it check if [other] scheme is in [this] scheme
-//   bool contains(FetchScheme other) => offset <= other.offset && end >= other.end;
-//
-//   /// it check if [other] offset is in [this] scheme
-//   bool containsOffset(int other) => offset <= other && end > other;
-//
-//   FetchScheme copyWith({int offset, int limit}) {
-//     return FetchScheme(offset ?? this.offset, limit ?? this.limit);
-//   }
-//
-//   @override
-//   bool operator ==(Object other) =>
-//       identical(this, other) ||
-//       other is FetchScheme &&
-//           runtimeType == other.runtimeType &&
-//           offset == other.offset &&
-//           limit == other.limit;
-//
-//   @override
-//   int get hashCode => offset.hashCode ^ limit.hashCode;
-//
-//   @override
-//   String toString() => 'Scheme(offset: $offset, limit: $limit)';
-// }
-
-import 'package:built_collection/built_collection.dart';
-import 'package:value_bloc/src/utils.dart';
-
-abstract class ListFetcherPlugin {
-  const ListFetcherPlugin();
-
-  BuiltSet<IterableSection> update(BuiltSet<IterableSection> schemes, IterableSection newScheme);
-}
-
-/// Merge the new scheme in queue without reply the offset
-/// It ignore scheme and offset if it already exist in queue
-class SimpleListFetcherPlugin extends ListFetcherPlugin {
-  const SimpleListFetcherPlugin();
-
-  /// find in queue the first scheme contains the offset
-  IterableSection findContainer(BuiltSet<IterableSection> queue, int offset) {
-    return queue.firstWhere((s) => s.containsOffset(offset), orElse: () => null);
-  }
-
-  /// find in the queue for the first possible not-existent scheme offset
-  ///
-  /// Returns null if the offset exist
-  int findFirstNotExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
-    for (var i = scheme.startAt; i < scheme.endAt; i++) {
-      final container = findContainer(queue, i);
-      if (container == null) return i;
-    }
-    return null;
-  }
-
-  /// find in the queue for the first possible existent scheme offset
-  ///
-  /// Returns null if the offset not exist
-  int findFirstExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
-    for (var i = scheme.startAt; i < scheme.endAt; i++) {
-      final container = findContainer(queue, i);
-      if (container != null) return i;
-    }
-    return null;
-  }
-
-  @override
-  BuiltSet<IterableSection> update(BuiltSet<IterableSection> queue, IterableSection scheme) {
-    do {
-      final newStartAt = findFirstNotExistOffset(queue, scheme);
-      if (newStartAt == null) return queue;
-      final startScheme = scheme.mergeWith(startAt: newStartAt);
-      final newEndAt = findFirstExistOffset(queue, startScheme);
-      final newScheme = newEndAt == null ? startScheme : startScheme.mergeWith(endAt: newEndAt);
-
-      queue = queue.rebuild((b) => b.add(newScheme));
-      scheme = newScheme.endAt >= scheme.endAt ? null : scheme.mergeWith(startAt: newScheme.endAt);
-    } while (scheme != null);
-
-    return queue;
-  }
-}

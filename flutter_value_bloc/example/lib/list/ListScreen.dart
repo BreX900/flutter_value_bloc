@@ -8,7 +8,7 @@ class ListScreenCubit extends ModularCubit<int> with CloseCubitModule {
 
   ListScreenCubit() : super(0) {
     personsCubit
-      ..applyFetcher(fetcher: (section, filter) async* {
+      ..updateFetcher(fetcher: (section, filter) async* {
         // Fetch values on database
         print('Fetching... ${section}');
         await Future.delayed(Duration(seconds: 1));
@@ -38,8 +38,8 @@ class ListScreen extends StatelessWidget {
           builder: (context, state) {
             final screenCubit = BlocProvider.of<ListScreenCubit>(context);
 
-            return SmartListViewCubitBuilder<Person>(
-              multiCubit: screenCubit.personsCubit,
+            return ListViewCubitBuilder<Person>(
+              iterableCubit: screenCubit.personsCubit,
               valuesPerScroll: 20,
               isEnabledPullUp: true,
               builder: (context, person) {

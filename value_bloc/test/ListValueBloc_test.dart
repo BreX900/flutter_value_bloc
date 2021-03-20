@@ -12,7 +12,7 @@ void main() {
   EquatableConfig.stringify = true;
   final values = List.generate(100, (index) => index);
 
-  group('Test IterableCubit', () {
+  group('Test IterableCubit with ContinuousListFetcherPlugin', () {
     test('Fetch on page and stop after four page is empty', () async {
       IterableCubitState<int, $> state = IterableCubitUpdating<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -151,7 +151,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.reset(),
+            act: (c) => c.clear(),
             expect: [
               state = state.toUpdating(),
             ],
@@ -244,7 +244,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.reset(),
+            act: (c) => c.clear(),
             expect: [
               state = state.toUpdating(),
             ],

@@ -8,6 +8,8 @@ import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:rxdart/src/utils/forwarding_sink.dart';
+import 'package:rxdart/src/utils/forwarding_stream.dart';
 import 'package:value_bloc/src/fetchers.dart';
 import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/src/screen/DynamicCubit.dart';
@@ -19,7 +21,7 @@ abstract class IterableCubit<Value, ExtraData> extends Cubit<IterableCubitState<
     implements DynamicCubit<IterableCubitState<Value, ExtraData>> {
   IterableCubit(IterableCubitState<Value, ExtraData> state) : super(state);
 
-  void reset();
+  void clear();
 }
 
 class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
@@ -44,12 +46,18 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
   //                    CUBIT / UI
   // ==================================================
 
+  /// Update the current values with the new [values]
+  ///
+  /// The status will be set to [IterableCubitUpdated]
   void update({@required Iterable<Value> values}) {
     emit(state.toUpdated(
       allValues: values.toList().asMap().build(),
     ));
   }
 
+  /// Removes the a [values] to the current values
+  ///
+  /// The status will be set to [IterableCubitUpdated]
   void remove({@required Iterable<Value> values}) {
     emit(state.toUpdated(
       allValues: state.allValues.rebuild((b) {
@@ -58,14 +66,20 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
     ));
   }
 
+  /// Adds the a [values] to the current values
+  ///
+  /// The status will be set to [IterableCubitUpdated]
   void add({@required Iterable<Value> values}) {
     emit(state.toUpdated(
       allValues: state.allValues.rebuild((b) => b.addAll(values.toList().asMap())),
     ));
   }
 
+  /// All values are cleared and the initial state is restored
+  ///
+  /// The status will be set to [IterableCubitUpdating]
   @override
-  void reset() {
+  void clear() {
     emit(state.toUpdating());
   }
 }
@@ -77,6 +91,8 @@ typedef ListFetcher<Value, Filter> = Stream<IterableFetchEvent<Iterable<Value>>>
 
 class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraData>
     with FilteredCubit<Filter, IterableCubitState<Value, ExtraData>> {
+  static ListFetcherPlugin defaultFetcherPlugin = const ContinuousListFetcherPlugin();
+
   final ListFetcherPlugin _fetcherPlugin;
 
   final _fetcherSubject = BehaviorSubject<ListFetcher<Value, Filter>>();
@@ -85,7 +101,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   StreamSubscription _sub;
 
   MultiCubit({
-    ListFetcherPlugin fetcherPlugin = const SimpleListFetcherPlugin(),
+    ListFetcherPlugin fetcherPlugin,
     ListFetcher<Value, Filter> fetcher,
     Map<int, Value> initialAllValues,
     Filter initialFilter,
@@ -93,7 +109,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
     bool Function(Filter e1, Filter e2) filterEquals,
     Duration filterDebounceTime,
     ExtraData initialExtraData,
-  })  : _fetcherPlugin = fetcherPlugin,
+  })  : _fetcherPlugin = fetcherPlugin ?? defaultFetcherPlugin,
         super(IterableCubitUpdating(
           allValues: BuiltMap.build((b) {
             b.withBase(() => HashMap());
@@ -125,14 +141,14 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
       return _selectionsSubject.distinct().pairwise().map((vls) {
         // final oldSchemes = vls.first.without(vls.last);
         return vls.last.without(vls.first);
-      }).where((newSections) {
-        return newSections.isNotEmpty;
-      }).flatMap((newSections) {
-        return Rx.merge(newSections.map((section) {
-          return fetcher(section, filter).map((event) {
-            return Tuple2(section, event);
-          });
-        }));
+      }).expand((newSections) {
+        return newSections;
+      }).makeUnique((section) {
+        return MapEntry(
+            section,
+            fetcher(section, filter).map((event) {
+              return Tuple2(section, event);
+            }));
       });
     }).listen((res) {
       final section = res.value1;
@@ -169,7 +185,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
         ));
       }
     });
-    if (fetcher != null) applyFetcher(fetcher: fetcher);
+    if (fetcher != null) updateFetcher(fetcher: fetcher);
     if (!canWaitFirstFilter || initialFilter == null) applyFilter(filter: initialFilter);
   }
 
@@ -177,7 +193,12 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   //                        CUBIT
   // ==================================================
 
-  void applyFetcher({@required ListFetcher<Value, Filter> fetcher}) async {
+  /// Update method for fetching values/sections
+  ///
+  /// Once the fetcher has been set up, the cubit will be restored to its initial state.
+  /// Listeners will have to request the sections
+  /// The status will be set to [IterableCubitUpdating]
+  void updateFetcher({@required ListFetcher<Value, Filter> fetcher}) async {
     assert(fetcher != null);
     await Future.delayed(Duration());
     if (_fetcherSubject.value == fetcher) return;
@@ -188,15 +209,29 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   //                         UI
   // ==================================================
 
+  /// Scum the section
+  ///
+  /// The Fetcher can return these events:
+  /// - [FailedFetchEvent] Section fetch failed
+  /// - [EmptyFetchEvent] No value was found for the section
+  /// - [IterableFetchedEvent] The values for the section were found
+  ///
+  /// Call the fetcher method and update the status with the new scum [section]
+  /// The status will be set to [IterableCubitUpdated] once the data is scrapped but
+  /// if you receive an error it will be [IterableCubitUpdateFailed]
   void fetch({@required IterableSection section}) async {
     assert(section != null);
     await Future.delayed(Duration());
-    final newSchemes = _fetcherPlugin.update(_selectionsSubject.value, section);
+    final newSchemes = _fetcherPlugin.addTo(_selectionsSubject.value, section);
     _selectionsSubject.add(newSchemes);
   }
 
+  /// Sets the status to updating and removes all data but does not remove the fetcher
+  ///
+  /// Listeners will have to request the sections
+  /// The status will be set to [IterableCubitUpdating]
   @override
-  void reset() async {
+  void clear() async {
     await Future.delayed(Duration());
     _fetcherSubject.add(_fetcherSubject.value);
   }
@@ -211,5 +246,87 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
     _fetcherSubject.close();
     _selectionsSubject.close();
     return super.close();
+  }
+}
+
+class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
+  final MapEntry<Object, Stream<T>> Function(S value) _mapper;
+  final List<StreamSubscription<T>> _subscriptions = <StreamSubscription<T>>[];
+  final keys = <Object>{};
+  bool _inputClosed = false;
+
+  _MakeUniqueStreamSink(this._mapper);
+
+  @override
+  void add(EventSink<T> sink, S data) {
+    final entityStream = _mapper(data);
+    final keyStream = entityStream.key;
+    final mappedStream = entityStream.value;
+
+    if (keys.contains(keyStream)) return;
+
+    keys.add(keyStream);
+
+    StreamSubscription<T> subscription;
+
+    subscription = mappedStream.listen(
+      sink.add,
+      onError: sink.addError,
+      onDone: () {
+        keys.remove(keyStream);
+        _subscriptions.remove(subscription);
+
+        if (_inputClosed && keys.isEmpty) {
+          sink.close();
+        }
+      },
+    );
+
+    _subscriptions.add(subscription);
+  }
+
+  @override
+  void addError(EventSink<T> sink, dynamic e, [st]) => sink.addError(e, st);
+
+  @override
+  void close(EventSink<T> sink) {
+    _inputClosed = true;
+
+    if (keys.isEmpty) {
+      sink.close();
+    }
+  }
+
+  @override
+  FutureOr onCancel(EventSink<T> sink) =>
+      Future.wait<dynamic>(_subscriptions.map((s) => s.cancel()));
+
+  @override
+  void onListen(EventSink<T> sink) {}
+
+  @override
+  void onPause(EventSink<T> sink, [Future resumeSignal]) =>
+      _subscriptions.forEach((s) => s.pause(resumeSignal));
+
+  @override
+  void onResume(EventSink<T> sink) => _subscriptions.forEach((s) => s.resume());
+}
+
+class MakeUniqueStreamTransformer<S, T> extends StreamTransformerBase<S, T> {
+  final MapEntry<Object, Stream<T>> Function(S value) mapper;
+
+  MakeUniqueStreamTransformer(this.mapper);
+
+  @override
+  Stream<T> bind(Stream<S> stream) => forwardStream(stream, _MakeUniqueStreamSink(mapper));
+}
+
+extension MakeUniqueStreamExtension<S> on Stream<S> {
+  /// Similar to flatMap but only listen to one stream per key.
+  ///
+  /// If it is already listening to a stream with the same key it will ignore the new stream.
+  /// It will only listen to the new stream if the previous stream with the same key has been closed.
+  Stream<T> makeUnique<T>(MapEntry<Object, Stream<T>> Function(S value) mapper) {
+    return transform(MakeUniqueStreamTransformer(mapper));
   }
 }
