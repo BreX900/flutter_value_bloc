@@ -5,6 +5,19 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/object/ObjectCubit.dart';
 
+class Optional<TValue> {
+  final bool hasValue;
+  final TValue value;
+
+  const Optional()
+      : hasValue = false,
+        value = null;
+
+  Optional.of(this.value) : hasValue = true;
+
+  TValue ifAbsent(TValue value) => hasValue ? this.value : value;
+}
+
 class Tuple2<Value1, Value2> {
   final Value1 value1;
   final Value2 value2;

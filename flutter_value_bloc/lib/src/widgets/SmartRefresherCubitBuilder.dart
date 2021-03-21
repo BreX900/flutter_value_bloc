@@ -192,7 +192,7 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
   }
 
   void refresh() {
-    widget.multiCubit.reset();
+    widget.multiCubit.clear();
   }
 
   @override

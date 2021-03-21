@@ -98,6 +98,39 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
     );
   }
 
+  IterableCubitState<Value, ExtraData> copyWith({
+    Optional<BuiltMap<int, Value>> allValues = const Optional(),
+    Optional<ExtraData> extraData = const Optional(),
+  }) {
+    final state = this;
+    final currentValues = allValues.ifAbsent(this.allValues);
+    final currentExtraData = extraData.ifAbsent(this.extraData);
+    if (state is IterableCubitUpdating<Value, ExtraData>) {
+      return IterableCubitUpdating(
+        length: length,
+        allValues: currentValues,
+        extraData: currentExtraData,
+        oldAllValues: state.oldAllValues,
+      );
+    } else if (state is IterableCubitUpdateFailed<Value, ExtraData>) {
+      return IterableCubitUpdateFailed(
+        length: length,
+        allValues: currentValues,
+        extraData: currentExtraData,
+        failure: state.failure,
+      );
+    } else if (state is IterableCubitUpdated<Value, ExtraData>) {
+      return IterableCubitUpdated(
+        length: length,
+        allValues: currentValues,
+        extraData: currentExtraData,
+        oldAllValues: state.oldAllValues,
+      );
+    } else {
+      throw 'Not known "${this}" state';
+    }
+  }
+
   @override
   List<Object> get props => [length, allValues, extraData];
 }

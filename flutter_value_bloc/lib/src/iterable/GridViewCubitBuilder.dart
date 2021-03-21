@@ -32,7 +32,7 @@ class GridViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
   final EdgeInsetsGeometry padding;
 
   /// [ListView.itemBuilder]
-  final ViewWidgetBuilder<Value> builder;
+  final CubitValueWidgetBuilder<Value> builder;
 
   const GridViewCubitBuilder({
     Key key,

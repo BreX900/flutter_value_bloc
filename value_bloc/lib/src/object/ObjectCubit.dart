@@ -14,6 +14,11 @@ abstract class ObjectCubit<Value, ExtraData> extends Cubit<ObjectCubitState<Valu
     implements DynamicCubit<ObjectCubitState<Value, ExtraData>> {
   ObjectCubit(ObjectCubitState<Value, ExtraData> state) : super(state);
 
+  void updateExtraData(ExtraData extraData) async {
+    await Future.delayed(const Duration());
+    emit(state.copyWith(extraData: Optional.of(extraData)));
+  }
+
   void reset();
 }
 

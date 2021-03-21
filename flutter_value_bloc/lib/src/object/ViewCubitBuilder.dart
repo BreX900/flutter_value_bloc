@@ -20,7 +20,7 @@ class ViewCubitBuilder<Value> extends StatelessWidget {
   final EmptyCubitViewBuilder<ObjectCubit<Value, Object>, ObjectCubitState<Value, Object>>
       emptyBuilder;
 
-  final ViewWidgetBuilder<Value> builder;
+  final CubitValueWidgetBuilder<Value> builder;
 
   const ViewCubitBuilder({
     Key key,

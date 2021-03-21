@@ -24,30 +24,39 @@ class LoadCubit<ExtraData> extends Cubit<LoadCubitState<ExtraData>> {
     await Future.delayed(const Duration());
     if (state is LoadCubitLoading<ExtraData> || state is LoadCubitLoaded<ExtraData>) return;
     emit(state.toLoading());
+    assert(_loader != null);
     _loader();
   }
 
   /// Calls the method to re load the data
-  /// Attention reload the data if it has already been uploaded
+  /// Attention reload the data even if it has already been loaded
   ///
   /// See also [load]
   void reLoad() async {
     await Future.delayed(const Duration());
     if (state is LoadCubitLoading<ExtraData>) return;
     emit(state.toLoading());
+    assert(_loader != null);
     _loader();
   }
 
-  void emitLoading({@required double progress, ExtraData extraData}) async {
+  /// Notify a new loading progress
+  ///
+  /// You can notify the progress using [progress]
+  void emitLoading({@required double progress}) async {
     await Future.delayed(const Duration());
-    emit(state.toLoading(progress: progress, extraData: extraData));
+    emit(state.toLoading(progress: progress));
   }
 
-  void emitLoadFailed({Object failure, ExtraData extraData}) async {
+  /// Notification that the upload is unsuccessful
+  ///
+  /// You can report the error using [failure]
+  void emitLoadFailed({Object failure}) async {
     await Future.delayed(const Duration());
-    emit(state.toFailed(failure: failure, extraData: extraData));
+    emit(state.toFailed(failure: failure));
   }
 
+  /// Notification that the upload was completed successfully
   void emitLoaded() async {
     await Future.delayed(const Duration());
     emit(state.toLoaded());

@@ -21,10 +21,46 @@ abstract class IterableCubit<Value, ExtraData> extends Cubit<IterableCubitState<
     implements DynamicCubit<IterableCubitState<Value, ExtraData>> {
   IterableCubit(IterableCubitState<Value, ExtraData> state) : super(state);
 
+  void updateExtraData(ExtraData extraData) async {
+    await Future.delayed(const Duration());
+    emit(state.copyWith(extraData: Optional.of(extraData)));
+  }
+
   void clear();
 }
 
-class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
+abstract class CollectionCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
+  CollectionCubit(IterableCubitState<Value, ExtraData> state) : super(state);
+
+  // ==================================================
+  //                    CUBIT / UI
+  // ==================================================
+
+  /// Update the current values with the new [values]
+  ///
+  /// The status will be set to [IterableCubitUpdated]
+  void update({@required Iterable<Value> values});
+
+  /// Removes the a [values] to the current values
+  ///
+  /// The status will be set to [IterableCubitUpdated]
+  void remove({@required Iterable<Value> values});
+
+  /// Adds the a [values] to the current values
+  ///
+  /// The status will be set to [IterableCubitUpdated]
+  void add({@required Iterable<Value> values});
+
+  /// All values are cleared and the initial state is restored
+  ///
+  /// The status will be set to [IterableCubitUpdating]
+  @override
+  void clear();
+}
+
+class ListCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
+  var _list = <Value>[];
+
   ListCubit({
     Iterable<Value> values,
     ExtraData initialExtraData,
@@ -42,44 +78,133 @@ class ListCubit<Value, ExtraData> extends IterableCubit<Value, ExtraData> {
                 extraData: initialExtraData,
               ));
 
-  // ==================================================
-  //                    CUBIT / UI
-  // ==================================================
-
-  /// Update the current values with the new [values]
-  ///
-  /// The status will be set to [IterableCubitUpdated]
-  void update({@required Iterable<Value> values}) {
-    emit(state.toUpdated(
-      allValues: values.toList().asMap().build(),
-    ));
-  }
-
-  /// Removes the a [values] to the current values
-  ///
-  /// The status will be set to [IterableCubitUpdated]
-  void remove({@required Iterable<Value> values}) {
-    emit(state.toUpdated(
-      allValues: state.allValues.rebuild((b) {
-        b.removeWhere((_, value) => values.contains(value));
-      }),
-    ));
-  }
-
-  /// Adds the a [values] to the current values
-  ///
-  /// The status will be set to [IterableCubitUpdated]
-  void add({@required Iterable<Value> values}) {
-    emit(state.toUpdated(
-      allValues: state.allValues.rebuild((b) => b.addAll(values.toList().asMap())),
-    ));
-  }
-
-  /// All values are cleared and the initial state is restored
-  ///
-  /// The status will be set to [IterableCubitUpdating]
+  /// See [CollectionCubit.update]
   @override
-  void clear() {
+  void update({@required Iterable<Value> values}) async {
+    assert(values != null);
+    await Future.delayed(const Duration());
+
+    _list = values.toList();
+    emit(state.toUpdated(
+      allValues: _list.asMap().build(),
+    ));
+  }
+
+  /// See [CollectionCubit.remove]
+  @override
+  void remove({@required Iterable<Value> values}) async {
+    assert(values != null);
+    await Future.delayed(const Duration());
+
+    values.forEach(_list.remove);
+    emit(state.toUpdated(
+      allValues: _list.asMap().build(),
+    ));
+  }
+
+  /// See [CollectionCubit.add]
+  @override
+  void add({@required Iterable<Value> values}) async {
+    assert(values != null);
+    await Future.delayed(const Duration());
+
+    _list.addAll(values);
+    emit(state.toUpdated(allValues: _list.asMap().build()));
+  }
+
+  /// See [CollectionCubit.clear]
+  @override
+  void clear() async {
+    await Future.delayed(const Duration());
+
+    emit(state.toUpdating());
+  }
+}
+
+class SetCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
+  Set<Value> Function() _base;
+  Set<Value> _set;
+
+  factory SetCubit({
+    Set<Value> Function() base,
+    Iterable<Value> values,
+    ExtraData initialExtraData,
+  }) {
+    base ??= () => <Value>{};
+    Set<Value> set;
+    if (values != null) set = base()..addAll(values);
+    return SetCubit._(base: base, set: set, initialExtraData: initialExtraData);
+  }
+
+  SetCubit._({
+    Set<Value> Function() base,
+    Set<Value> set,
+    ExtraData initialExtraData,
+  })  : _base = base,
+        _set = set ?? base(),
+        super(set == null
+            ? IterableCubitUpdating(
+                allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
+                extraData: initialExtraData,
+                oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
+              )
+            : IterableCubitUpdated(
+                oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
+                allValues: BuiltMap.build((b) => b
+                  ..withBase(() => HashMap())
+                  ..addAll(set.toList().asMap())),
+                extraData: initialExtraData,
+              ));
+
+  ///  Uses `base` as the collection type for all sets created by this cubit.
+  void updateBase({@required Set<Value> Function() base}) async {
+    assert(base != null);
+    await Future.delayed(const Duration());
+
+    _base = base;
+    _set = base()..addAll(_set);
+    emit(state.copyWith(allValues: Optional.of(_set.toList().asMap().build())));
+  }
+
+  /// See [CollectionCubit.update]
+  @override
+  void update({@required Iterable<Value> values}) async {
+    assert(values != null);
+    await Future.delayed(const Duration());
+
+    _set = _base()..addAll(values);
+    emit(state.toUpdated(
+      allValues: _set.toList().asMap().build(),
+    ));
+  }
+
+  /// See [CollectionCubit.remove]
+  @override
+  void remove({@required Iterable<Value> values}) async {
+    assert(values != null);
+    await Future.delayed(const Duration());
+
+    values.forEach(_set.remove);
+    emit(state.toUpdated(
+      allValues: _set.toList().asMap().build(),
+    ));
+  }
+
+  /// See [CollectionCubit.add]
+  @override
+  void add({@required Iterable<Value> values}) async {
+    assert(values != null);
+    await Future.delayed(const Duration());
+
+    _set.addAll(values);
+    emit(state.toUpdated(allValues: _set.toList().asMap().build()));
+  }
+
+  /// See [CollectionCubit.clear]
+  @override
+  void clear() async {
+    await Future.delayed(const Duration());
+
     emit(state.toUpdating());
   }
 }

@@ -32,7 +32,7 @@ class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
   final IndexedWidgetBuilder separatorBuilder;
 
   /// [ListView.itemBuilder]
-  final ViewWidgetBuilder<Value> builder;
+  final CubitValueWidgetBuilder<Value> builder;
 
   const ListViewCubitBuilder({
     Key key,

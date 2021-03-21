@@ -80,14 +80,10 @@ mixin LoadCubitModule<ExtraData, State> on ModularCubitMixin<State> {
   void onLoading();
 
   @protected
-  void emitLoading({@required double progress, ExtraData extraData}) {
-    loadCubit.emitLoading(progress: progress, extraData: extraData);
-  }
+  void emitLoading({@required double progress}) => loadCubit.emitLoading(progress: progress);
 
   @protected
-  void emitLoadFailed({Object failure, ExtraData extraData}) {
-    loadCubit.emitLoadFailed(failure: failure, extraData: extraData);
-  }
+  void emitLoadFailed({Object failure}) => loadCubit.emitLoadFailed(failure: failure);
 
   @protected
   void emitLoaded() => loadCubit.emitLoaded();

@@ -47,6 +47,35 @@ abstract class ObjectCubitState<Value, ExtraData> extends Equatable {
     );
   }
 
+  ObjectCubitState<Value, ExtraData> copyWith({Optional<ExtraData> extraData = const Optional()}) {
+    final state = this;
+    final currentExtraData = extraData.ifAbsent(this.extraData);
+    if (state is ObjectCubitUpdating<Value, ExtraData>) {
+      return ObjectCubitUpdating(
+        hasValue: hasValue,
+        value: value,
+        extraData: currentExtraData,
+        oldValue: state.oldValue,
+      );
+    } else if (state is ObjectCubitUpdateFailed<Value, ExtraData>) {
+      return ObjectCubitUpdateFailed(
+        hasValue: hasValue,
+        value: value,
+        extraData: currentExtraData,
+        failure: state.failure,
+      );
+    } else if (state is ObjectCubitUpdated<Value, ExtraData>) {
+      return ObjectCubitUpdated(
+        hasValue: hasValue,
+        value: value,
+        extraData: currentExtraData,
+        oldValue: state.oldValue,
+      );
+    } else {
+      throw 'Not known "${this}" state';
+    }
+  }
+
   @override
   List<Object> get props => [hasValue, value, extraData];
 }
