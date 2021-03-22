@@ -23,9 +23,9 @@ void main() {
         build: () => MultiCubit<int, $, $>(
           fetcher: (selection, filter) async* {
             if (selection == IterableSection(30, 10)) {
-              yield IterableFetchEvent.empty();
+              yield MultiFetchEvent.empty();
             } else {
-              yield IterableFetchEvent.fetched(
+              yield MultiFetchEvent.fetched(
                 values.skip(selection.startAt).take(selection.length),
               );
             }
@@ -84,9 +84,9 @@ void main() {
         build: () => MultiCubit<int, $, $>(
           fetcher: (section, filter) async* {
             if (section == IterableSection(20, 10)) {
-              yield IterableFetchEvent.fetched(values.skip(20).take(3));
+              yield MultiFetchEvent.fetched(values.skip(20).take(3));
             } else {
-              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length));
+              yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
             }
           },
         )..listen(print),
@@ -134,7 +134,7 @@ void main() {
       await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
         build: () => MultiCubit<int, $, $>(
           fetcher: (selection, filter) async* {
-            yield IterableFetchEvent.fetched(values.take(3));
+            yield MultiFetchEvent.fetched(values.take(3));
           },
         )..listen(print),
         tests: [
@@ -181,9 +181,9 @@ void main() {
           fetcher: (section, filter) async* {
             print(section);
             if (section == IterableSection(10, 10)) {
-              yield IterableFetchEvent.empty();
+              yield MultiFetchEvent.empty();
             } else {
-              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length));
+              yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
             }
           },
         )..listen(print),
@@ -219,7 +219,7 @@ void main() {
       await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
         build: () => MultiCubit<int, $, $>(
           fetcher: (section, filter) async* {
-            yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length));
+            yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
           },
         )..listen(print),
         tests: [
@@ -283,11 +283,11 @@ void main() {
           fetcher: (section, filter) async* {
             print(section);
             if (section == IterableSection(10, 10)) {
-              yield IterableFetchEvent.empty();
+              yield MultiFetchEvent.empty();
             } else {
-              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length));
+              yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
               await Future.delayed(Duration(seconds: 1));
-              yield IterableFetchEvent.fetched(
+              yield MultiFetchEvent.fetched(
                   values.skip(section.startAt + 20).take(section.length + 20));
             }
           },
@@ -329,10 +329,10 @@ void main() {
         build: () => MultiCubit<int, $, $>(
           fetcher: (section, filter) async* {
             if (filter == null) {
-              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length),
+              yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length),
                   total: 10);
             } else {
-              yield IterableFetchEvent.fetched(values.skip(section.startAt).take(section.length),
+              yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length),
                   total: 10);
             }
           },

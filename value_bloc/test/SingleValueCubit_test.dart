@@ -51,7 +51,7 @@ void main() {
         wait: Duration(milliseconds: 100),
         build: () => SingleCubit<int, $, $>(
           fetcher: (filter) async* {
-            yield ObjectFetchEvent.fetched(1);
+            yield SingleFetchEvent.fetched(1);
           },
         )..listen(print),
         tests: [
@@ -85,7 +85,7 @@ void main() {
         wait: Duration(milliseconds: 100),
         build: () => SingleCubit<int, $, $>(
           fetcher: (filter) async* {
-            yield ObjectFetchEvent.fetched(filter != null ? 2 : 1);
+            yield SingleFetchEvent.fetched(filter != null ? 2 : 1);
           },
         )..listen(print),
         tests: [

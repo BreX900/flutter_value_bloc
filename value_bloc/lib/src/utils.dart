@@ -1,38 +1,38 @@
 import 'dart:math';
 
-abstract class ObjectFetchEvent<V> {
-  factory ObjectFetchEvent.failed({Object failure}) = FailedFetchEvent<V>;
+abstract class SingleFetchEvent<V> {
+  factory SingleFetchEvent.failed({Object failure}) = FailedFetchEvent<V>;
 
-  factory ObjectFetchEvent.empty() = EmptyFetchEvent<V>;
+  factory SingleFetchEvent.empty() = EmptyFetchEvent<V>;
 
-  factory ObjectFetchEvent.fetched(V value) = ObjectFetchedEvent<V>;
+  factory SingleFetchEvent.fetched(V value) = ObjectFetchedEvent<V>;
 }
 
-abstract class IterableFetchEvent<V> {
-  factory IterableFetchEvent.failed({Object failure}) = FailedFetchEvent<V>;
+abstract class MultiFetchEvent<V> {
+  factory MultiFetchEvent.failed({Object failure}) = FailedFetchEvent<V>;
 
-  factory IterableFetchEvent.empty() = EmptyFetchEvent<V>;
+  factory MultiFetchEvent.empty() = EmptyFetchEvent<V>;
 
-  factory IterableFetchEvent.fetched(V value, {int total}) = IterableFetchedEvent<V>;
+  factory MultiFetchEvent.fetched(V value, {int total}) = IterableFetchedEvent<V>;
 }
 
-class FailedFetchEvent<V> implements ObjectFetchEvent<V>, IterableFetchEvent<V> {
+class FailedFetchEvent<V> implements SingleFetchEvent<V>, MultiFetchEvent<V> {
   final Object failure;
 
   FailedFetchEvent({this.failure});
 }
 
-class EmptyFetchEvent<V> implements ObjectFetchEvent<V>, IterableFetchEvent<V> {
+class EmptyFetchEvent<V> implements SingleFetchEvent<V>, MultiFetchEvent<V> {
   EmptyFetchEvent();
 }
 
-class ObjectFetchedEvent<V> implements ObjectFetchEvent<V> {
+class ObjectFetchedEvent<V> implements SingleFetchEvent<V> {
   final V value;
 
   ObjectFetchedEvent(this.value);
 }
 
-class IterableFetchedEvent<V> implements IterableFetchEvent<V> {
+class IterableFetchedEvent<V> implements MultiFetchEvent<V> {
   final V values;
   final int total;
 

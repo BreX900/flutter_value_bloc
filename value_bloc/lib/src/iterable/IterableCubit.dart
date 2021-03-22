@@ -8,8 +8,6 @@ import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:rxdart/src/utils/forwarding_sink.dart';
-import 'package:rxdart/src/utils/forwarding_stream.dart';
 import 'package:value_bloc/src/fetchers.dart';
 import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/src/screen/DynamicCubit.dart';
@@ -209,11 +207,12 @@ class SetCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
   }
 }
 
-typedef ListFetcher<Value, Filter> = Stream<IterableFetchEvent<Iterable<Value>>> Function(
+typedef ListFetcher<Value, Filter> = Stream<MultiFetchEvent<Iterable<Value>>> Function(
   IterableSection section,
   Filter filter,
 );
 
+/// Allows you to fetch data in a secure and paginated way using the [fetcher] function
 class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraData>
     with FilteredCubit<Filter, IterableCubitState<Value, ExtraData>> {
   static ListFetcherPlugin defaultFetcherPlugin = const ContinuousListFetcherPlugin();
@@ -371,87 +370,5 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
     _fetcherSubject.close();
     _selectionsSubject.close();
     return super.close();
-  }
-}
-
-class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
-  final MapEntry<Object, Stream<T>> Function(S value) _mapper;
-  final List<StreamSubscription<T>> _subscriptions = <StreamSubscription<T>>[];
-  final keys = <Object>{};
-  bool _inputClosed = false;
-
-  _MakeUniqueStreamSink(this._mapper);
-
-  @override
-  void add(EventSink<T> sink, S data) {
-    final entityStream = _mapper(data);
-    final keyStream = entityStream.key;
-    final mappedStream = entityStream.value;
-
-    if (keys.contains(keyStream)) return;
-
-    keys.add(keyStream);
-
-    StreamSubscription<T> subscription;
-
-    subscription = mappedStream.listen(
-      sink.add,
-      onError: sink.addError,
-      onDone: () {
-        keys.remove(keyStream);
-        _subscriptions.remove(subscription);
-
-        if (_inputClosed && keys.isEmpty) {
-          sink.close();
-        }
-      },
-    );
-
-    _subscriptions.add(subscription);
-  }
-
-  @override
-  void addError(EventSink<T> sink, dynamic e, [st]) => sink.addError(e, st);
-
-  @override
-  void close(EventSink<T> sink) {
-    _inputClosed = true;
-
-    if (keys.isEmpty) {
-      sink.close();
-    }
-  }
-
-  @override
-  FutureOr onCancel(EventSink<T> sink) =>
-      Future.wait<dynamic>(_subscriptions.map((s) => s.cancel()));
-
-  @override
-  void onListen(EventSink<T> sink) {}
-
-  @override
-  void onPause(EventSink<T> sink, [Future resumeSignal]) =>
-      _subscriptions.forEach((s) => s.pause(resumeSignal));
-
-  @override
-  void onResume(EventSink<T> sink) => _subscriptions.forEach((s) => s.resume());
-}
-
-class MakeUniqueStreamTransformer<S, T> extends StreamTransformerBase<S, T> {
-  final MapEntry<Object, Stream<T>> Function(S value) mapper;
-
-  MakeUniqueStreamTransformer(this.mapper);
-
-  @override
-  Stream<T> bind(Stream<S> stream) => forwardStream(stream, _MakeUniqueStreamSink(mapper));
-}
-
-extension MakeUniqueStreamExtension<S> on Stream<S> {
-  /// Similar to flatMap but only listen to one stream per key.
-  ///
-  /// If it is already listening to a stream with the same key it will ignore the new stream.
-  /// It will only listen to the new stream if the previous stream with the same key has been closed.
-  Stream<T> makeUnique<T>(MapEntry<Object, Stream<T>> Function(S value) mapper) {
-    return transform(MakeUniqueStreamTransformer(mapper));
   }
 }

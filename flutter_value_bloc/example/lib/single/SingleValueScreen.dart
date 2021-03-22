@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class SingleScreenCubit extends ModularCubit<int> with CloseCubitModule, LoadCubitModule {
+class SingleScreenCubit extends ModularCubit<int> with CloserCubitModule, LoadCubitModule {
   final personCubit = SingleCubit<Person, int, int>();
 
   SingleScreenCubit() : super(0) {
@@ -12,7 +12,7 @@ class SingleScreenCubit extends ModularCubit<int> with CloseCubitModule, LoadCub
         await Future.delayed(Duration(seconds: 2));
         yield ObjectFetchedEvent(personList[0]);
       })
-      ..addToContainer(this);
+      ..addToCloserCubit(this);
   }
 
   @override

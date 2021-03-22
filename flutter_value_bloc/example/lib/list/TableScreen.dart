@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, CloseCubitModule {
+class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, CloserCubitModule {
   final personsCubit = MultiCubit<Person, int, int>();
 
   TableScreenCubit() : super(0) {
@@ -19,7 +19,7 @@ class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, CloseCubi
           yield IterableFetchedEvent(persons);
         }
       })
-      ..addToContainer(this);
+      ..addToCloserCubit(this);
   }
 
   @override
@@ -51,7 +51,7 @@ class TableScreen extends StatelessWidget {
                 header: Text('Names'),
                 actions: [
                   IconButton(
-                    onPressed: () => screenCubit.personsCubit.reset(),
+                    onPressed: () => screenCubit.personsCubit.clear(),
                     icon: const Icon(Icons.refresh),
                   ),
                 ],

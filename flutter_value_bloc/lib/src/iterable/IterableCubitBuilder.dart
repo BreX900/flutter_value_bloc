@@ -62,13 +62,6 @@ abstract class IterableCubitBuilderBase<Value> extends StatelessWidget {
           if (errorBuilder != null) {
             return errorBuilder(context, iterableCubit, state);
           }
-        } else {
-          final length = skipValuesCount - state.values.length;
-          if (length <= 0) {
-            if (emptyBuilder != null) {
-              return emptyBuilder(context, iterableCubit, state);
-            }
-          }
         }
 
         var values = useOldValues && state is IterableCubitUpdating<Value, Object>
@@ -79,6 +72,12 @@ abstract class IterableCubitBuilderBase<Value> extends StatelessWidget {
           if (skipValuesCount > 0) b.skip(skipValuesCount);
           if (takeValuesCount != null) b.take(takeValuesCount);
         });
+
+        if (values.isEmpty) {
+          if (emptyBuilder != null) {
+            return emptyBuilder(context, iterableCubit, state);
+          }
+        }
 
         return buildValues(context, state, values);
       },

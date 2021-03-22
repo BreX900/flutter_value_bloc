@@ -7,7 +7,7 @@ import 'package:value_bloc/src/load/LoadCubit.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 /// It allows you to automatic unsubscribe to a [StreamSubscription] with [CloseableStreamSubscriptionExtension]
-mixin CloseStreamSubscriptionModule<State> on Cubit<State> {
+mixin CloserStreamSubscriptionModule<State> on Cubit<State> {
   final _compositeStream = CompositeSubscription();
 
   @override
@@ -18,34 +18,34 @@ mixin CloseStreamSubscriptionModule<State> on Cubit<State> {
 }
 
 extension CloseableStreamSubscriptionExtension<T> on StreamSubscription<T> {
-  void addToContainer(CloseStreamSubscriptionModule container) {
-    container._compositeStream.add(this);
+  void addToCloserCubit(CloserStreamSubscriptionModule module) {
+    module._compositeStream.add(this);
   }
 
-  void removeFromContainer(CloseStreamSubscriptionModule container) {
-    container._compositeStream.remove(this);
+  void removeFromCloserCubit(CloserStreamSubscriptionModule module) {
+    module._compositeStream.remove(this);
   }
 }
 
 /// It allows you to automatic close [Cubit] with [CloseableCubitExtension]
-mixin CloseCubitModule<State> on Cubit<State> {
-  final _viewCubits = <Cubit>[];
+mixin CloserCubitModule<State> on Cubit<State> {
+  final _cubits = <Cubit>[];
 
   @override
   Future<void> close() {
-    _viewCubits.forEach((c) => c.close());
+    _cubits.forEach((c) => c.close());
     return super.close();
   }
 }
 
 extension CloseableCubitExtension<State> on Cubit<State> {
-  void addToContainer(CloseCubitModule container) {
-    container._viewCubits.add(this);
+  void addToCloserCubit(CloserCubitModule module) {
+    module._cubits.add(this);
   }
 
-  void removeFromContainer(CloseCubitModule container) {
+  void removeFromCloserCubit(CloserCubitModule module) {
     close();
-    container._viewCubits.remove(container);
+    module._cubits.remove(module);
   }
 }
 
@@ -79,12 +79,15 @@ mixin LoadCubitModule<ExtraData, State> on ModularCubitMixin<State> {
   @protected
   void onLoading();
 
+  /// See [LoadCubit.emitLoading]
   @protected
   void emitLoading({@required double progress}) => loadCubit.emitLoading(progress: progress);
 
+  /// See [LoadCubit.emitLoadFailed]
   @protected
   void emitLoadFailed({Object failure}) => loadCubit.emitLoadFailed(failure: failure);
 
+  /// See [LoadCubit.emitLoaded]
   @protected
   void emitLoaded() => loadCubit.emitLoaded();
 

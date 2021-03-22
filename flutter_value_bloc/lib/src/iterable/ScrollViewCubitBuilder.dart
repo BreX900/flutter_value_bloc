@@ -89,14 +89,23 @@ abstract class ScrollViewCubitBuilderBase<Value> extends IterableCubitBuilderBas
           emptyBuilder: emptyBuilder,
         );
 
+  int get effectiveValuesPerScroll {
+    final valuesPerScroll =
+        this.valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll;
+    if (takeValuesCount != null) min(valuesPerScroll, takeValuesCount);
+    return valuesPerScroll;
+  }
+
   @override
   Widget buildDecoration(BuildContext context, Widget child) {
     final multiCubit = iterableCubit;
     if (multiCubit is MultiCubit<Value, Object, Object>) {
-      return ViewCubitInitializer<MultiCubit<Value, Object, Object>>(
+      return ViewCubitInitializer<MultiCubit<Value, Object, Object>,
+          IterableCubitState<Value, Object>>(
         cubit: multiCubit,
+        initializeWhen: (state) => state is IterableCubitUpdating<Value, Object>,
         initializer: (context, c) => c.fetch(
-          section: IterableSection(skipValuesCount, min(valuesPerScroll, takeValuesCount)),
+          section: IterableSection(skipValuesCount, effectiveValuesPerScroll),
         ),
         child: super.buildDecoration(context, child),
       );
@@ -115,7 +124,7 @@ abstract class ScrollViewCubitBuilderBase<Value> extends IterableCubitBuilderBas
       return SmartRefresherCubitBuilder.multi(
         multiCubit: multiCubit,
         firstOffsetScroll: skipValuesCount,
-        valuesPerScroll: min(valuesPerScroll, takeValuesCount),
+        valuesPerScroll: effectiveValuesPerScroll,
         isEnabledPullDown: isEnabledPullDown,
         isEnabledPullUp: isEnabledPullUp,
         child: buildScrollView(context, state, values),

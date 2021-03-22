@@ -8,73 +8,53 @@
 
 
 ## Getting Started
-ValueBloc and ListBloc allow you to retrieve data from a repository / database and display it on the screen
-Both blocs allow you to pre-load before showing the data on the screen
-They also allow you to update data based on a filter and reload data
+You can find many cubits that are right for you.
 
+### Modular cubits
 
+You can integrate modules into your cubits
 
-### ValueBloc
-ValueBloc allows you to display a value
+#### LoadCubitModule
+For example you can mix `LoadCubitModule` to integrate a load function
 ```dart
-class NameValueBloc extends SingleValueBloc<String, Object> {
-  // Required loading
-  NameValueBloc() : super(isLoading: true);
-
+class MyCubit extends ModularCubit<State> with LoadCubitModule {
   void onLoading() {
     // write your code for initializing bloc
     emitLoading();
   }
-
-  void onFetching() {
-    // write your code for fetching value
-    emitFetched('Mario');
-  }
-}
-
-void main() {
-  final valueBloc = NameBloc();
-
-  valueBloc.listen(print);
-  // LoadingSingleValueState
-  // LoadedSingleValueState
-  // FetchingValueState
-  // FetchedValueState(value:'Mario')
 }
 ```
 
 
-
-### ListBloc
-ListBloc allows you to view a set of recoverable values from a sql, 
-graph or document database, regardless of the database used it will work
-
+#### Local Value/s cubits
+Cubit as: `ValueCubit`, `ListCubit`, `SetCubit` is recommended to use as described below
 ```dart
-class NamesListBloc extends ListValueCubit<String, Object> {
-  NamesListBloc() : super(isFetching: false);
-
-  void onLoading() {
-    // write your code for initializing bloc
-    emitLoading();
-  }
-
-  void onFetching(int offset, [int limit]) {
-    // write your code for fetching value
-    emitFetchedCount(offset, limit, ['Mario', 'Luigi'], 2);
+class MyCubit extends Cubit<State> {
+  final userCubit = ValueCubit<User, Object>();
+  
+  MyCubit() {
+    userCubit.updateValue(value: User('Piero'));
   }
 }
+```
 
-void main() async {
-  final valueBloc = NameBloc();
+#### Fetch Value/s cubits
 
-  print(valueBloc.state); // IdleListValueState
-
-  valueBloc.load(); 
-  print(await valueBloc.first); // LoadingListValueState
-  print(await valueBloc.first); // LoadedListValueState
-
-  valueBloc.fetch(); 
-  print(await valueBloc.first); // FetchingListValueState
-  print(await valueBloc.first); // FetchedListValueState(values:['Mario','Luigi'])
+Cubist as: `SingleCubit` and `MultiCubit` is recommended to use as described below
+```dart
+class MyCubit extends Cubit<State> {
+  final userCubit = SingleCubit<User, Filter, Object>();
+  
+  MyCubit() {
+    userCubit.fetcher(fetcher: _fetcher);
+  }
+  
+  _fetcher(Filter filter) async* {
+    if (filter == Filter.empty) {
+      yield SingleFetchEvent.empty();
+    } else {
+      yield SingleFetchEvent.fetched(User('Piero'));
+    }
+  }
 }
 ```
