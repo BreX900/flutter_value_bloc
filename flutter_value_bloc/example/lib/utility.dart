@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 void dumpErrorToConsole(FlutterErrorDetails details, {bool forceReport = false}) {
   assert(details != null);
   assert(details.exception != null);
-  bool reportError = details.silent != true; // could be null
+  var reportError = details.silent != true; // could be null
   assert(() {
 // In checked mode, we ignore the "silent" flag.
     reportError = true;

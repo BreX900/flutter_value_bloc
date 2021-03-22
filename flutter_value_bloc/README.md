@@ -6,44 +6,62 @@
 | [flutter_value_bloc](https://github.com/BreX900/flutter_value_bloc/tree/master/flutter_value_bloc) | [flutter_value_bloc](https://pub.dev/packages/flutter_value_bloc) |
 
 
-### Single Value example
-Define a SingleValueCubit and use it for build a screen with single value
+## Getting Started
+Create your ui in just a few taps
+
+1. Wrap your `MaterialApp` with ViewsProviders to allow your Cubits to auto build loading, empty and error views
 ```dart
-import 'package:value_bloc/value_bloc.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-
-class SingleNameCubit extends SingleValueCubit<String, Object> {
-  SingleNameCubit() : super(isLoading: true);
+class MyApp extends StatelessWidget {
+  const MyApp({Key key}) : super(key: key);
 
   @override
-  void onLoading() async {
-    await Future.delayed(Duration(seconds: 2));
-    emitLoaded();
-  }
-
-  @override
-  void onFetching() async {
-    await Future.delayed(Duration(seconds: 1));
-    emitFetched('Mario');
+  Widget build(BuildContext context) {
+    return ViewsProvider.value(
+      value: Views(),
+      child: CubitViewsProvider.value(
+        value: CubitViews(),
+        child: MaterialApp(
+          home: HomeScreen(),
+        ),
+      ),
+    );
   }
 }
+```
 
-class SingleScreen extends StatelessWidget {
-  const SingleScreen({Key key}) : super(key: key);
+2. Define your own screen block
+ - If you need to load data mix it with `LoadCubitModule`
+ - If you need to close of the cubits you can mix `CloserCubitModule`
+ - If you need to close of the stream subscriptions you can mix `CloserStreamSubscriptionModule`
+```dart
+class HomeScreenCubit extends ModularCubit<State> with LoadCubitModule {
+  HomeScreenCubit();
+
+  void onLoading() {
+    // write your code for initializing bloc
+    emitLoading();
+  }
+}
+```
+
+3. Build your screen view. 
+ - Use ModularViewCubitBuilder to make the ui show the loader until the cubit is loaded or has failed to load
+```dart
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SingleNameCubit(),
+      create: (context) => HomeScreenCubit(),
       child: Scaffold(
         appBar: AppBar(),
-        body: Center(
-          child: SingleViewValueCubitBuilder<SingleNameCubit, String, Object>(
-            plugin: RefresherValueCubitPlugin(),
-            builder: (context, state) {
-              return Text('${state.value}');
-            },
-          ),
+        body: ModularViewCubitBuilder<HomeScreenCubit, State>(
+          builder: (context, state) {
+            final screenCubit = BlocProvider.of<HomeScreenCubit>(context);
+
+            return Text('...');
+          },
         ),
       ),
     );
@@ -51,91 +69,38 @@ class SingleScreen extends StatelessWidget {
 }
 ```
 
-### Values example 
-Define a ListValueCubit and use it in list, grid, table or more widgets
+4. I add other cubits such as:
+ - `ValueCubit` Manage a single value
+ - `SingleCubit` Fetch and manage a single value
+ - `ListCubit` Manage a list values
+ - `SetCubit` Manage a set values
+ - `MultiCubit` Fetch and manage paginated values
 ```dart
-import 'package:value_bloc/value_bloc.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+class HomeScreenCubit extends ModularCubit<State> with LoadCubitModule, CloseCubitModule {
+  final userCubit = ValueCubit<Person, Object>();
 
-class ListPersonCubit extends ListValueCubit<Person, Object> {
-  @override
-  void onFetching(FetchScheme scheme) async {
-    await Future.delayed(Duration(seconds: 2));
-    emitFetched(scheme, personList.skip(scheme.offset).take(scheme.limit));
+  HomeScreenCubit() {
+    userCubit.addToCloserCubit(this);
+  }
+  
+  void onLoading() async {
+    // A very long operation
+    await Future.delay(Duration(seconds: 1));
+    
+    userCubit.updateValue(User('Piero'));
+    emitLoading();
   }
 }
 ```
 
-#### List Values example
+5. Build your graphics however you like
 ```dart
-class ListScreen extends StatelessWidget {
-  const ListScreen({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ListPersonCubit(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('List with ListValueCubit'),
-        ),
-        body: ListViewValueCubitBuilder<ListPersonCubit, Person, Object>(
-          plugin: RefresherValueCubitPlugin(),
-          builder: (context, state) => ListView.separated(
-            itemCount: state.values.length,
-            separatorBuilder: (context, index) => Divider(),
-            itemBuilder: (context, index) {
-              final person = state.values[index];
-
-              return ListTile(
-                title: Text('${person.name} ${person.surname}'),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
+Widget build(BuildContext context) {
+  return ViewCubitBuilder<Person>(
+    objectCubit: screenCubit.userCubit,
+    builder: (context, user) {
+      return Text(user.name);
+    },
+  );
 }
-```
-
-### Paginated Table Example
-```dart
-class TableScreen extends StatelessWidget {
-  const TableScreen({Key key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => ListPersonCubit(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('Table with ListValueCubit'),
-        ),
-        body: SingleChildScrollView(
-          child: PaginatedTableListValueCubitBuilder<ListPersonCubit, Person, Object>(
-            header: Text('Names'),
-            columns: [
-              DataColumn(label: Text('Name')),
-              DataColumn(label: Text('Surname'))
-            ],
-            builder: (person) {
-              if (person == null)
-                return DataRow(cells: [
-                  DataCell.empty,
-                  DataCell.empty,
-                ]);
-
-              return DataRow(cells: [
-                DataCell(Text(person.name)),
-                DataCell(Text(person.surname)),
-              ]);
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 ```
