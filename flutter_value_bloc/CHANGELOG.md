@@ -1,3 +1,6 @@
+## 0.5.1
+- Fix not show failure
+
 ## 0.5.0
 - Now you can build your ui with the new modular cubits! `ModularViewCubitBuilder`
 - Introduced new builders: `ListViewCubitBuilder`, `GridViewCubitBuilder`

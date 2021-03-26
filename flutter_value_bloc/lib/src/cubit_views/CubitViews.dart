@@ -61,7 +61,13 @@ class CubitViews {
 
   static Widget buildErrorView(BuildContext context, Cubit<Object> cubit, Object state) {
     final viewData = ViewsProvider.of(context);
-    return viewData.errorBuilder(context, null);
+    if (state is ObjectCubitUpdateFailed<Object, Object>) {
+      return viewData.errorBuilder(context, state.failure);
+    } else if (state is IterableCubitUpdateFailed<Object, Object>) {
+      return viewData.errorBuilder(context, state.failure);
+    } else {
+      return viewData.errorBuilder(context, null);
+    }
   }
 
   static Widget buildEmptyView(BuildContext context, Cubit<Object> cubit, Object state) {
