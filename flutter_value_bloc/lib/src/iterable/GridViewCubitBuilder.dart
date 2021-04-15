@@ -41,7 +41,7 @@ class GridViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
     int skipValuesCount = 0,
     int takeValuesCount,
     int valuesPerScroll,
-    bool isEnabledPullDown = true,
+    bool isEnabledPullDown = false,
     bool isEnabledPullUp = false,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
@@ -88,7 +88,7 @@ class GridViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
       padding: padding,
       gridDelegate: gridDelegate,
       childrenDelegate: SliverChildBuilderDelegate(
-        (BuildContext context, int index) {
+        (context, index) {
           return builder(context, values[index]);
         },
         childCount: values.length,

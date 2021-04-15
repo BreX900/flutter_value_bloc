@@ -68,7 +68,7 @@ abstract class ScrollViewCubitBuilderBase<Value> extends IterableCubitBuilderBas
     int skipValuesCount = 0,
     int takeValuesCount,
     this.valuesPerScroll,
-    this.isEnabledPullDown = true,
+    this.isEnabledPullDown = false,
     this.isEnabledPullUp = false,
     LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         loadingBuilder = CubitViewBuilder.buildLoading,

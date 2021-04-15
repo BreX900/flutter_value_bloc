@@ -41,7 +41,7 @@ class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
     int skipValuesCount = 0,
     int takeValuesCount,
     int valuesPerScroll,
-    bool isEnabledPullDown = true,
+    bool isEnabledPullDown = false,
     bool isEnabledPullUp = false,
     this.scrollDirection = Axis.vertical,
     this.reverse = false,

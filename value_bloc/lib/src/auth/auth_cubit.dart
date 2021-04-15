@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
@@ -7,22 +5,15 @@ import 'package:meta/meta.dart';
 part 'auth_state.dart';
 
 abstract class AuthCubit<ExtraData> extends Cubit<AuthCubitState<ExtraData>> {
-  StreamSubscription _authorizationSub;
-
   AuthCubit({
-    Authorization initialAuthorization,
-    Stream<Authorization> onAuthorizationChanges,
+    bool isAuthorized = false,
   }) : super(() {
-          if (initialAuthorization == null) {
+          if (isAuthorized) {
             return AuthCubitUnauthorized();
           } else {
-            return AuthCubitAuthorized(authorization: initialAuthorization);
+            return AuthCubitAuthorized();
           }
-        }()) {
-    _authorizationSub = onAuthorizationChanges?.listen((authorization) {
-      emit(state.copyWith(authorization: authorization));
-    });
-  }
+        }());
 
   void revokeAuthorization() {
     emit(state.toUnauthorizing());
@@ -31,17 +22,15 @@ abstract class AuthCubit<ExtraData> extends Cubit<AuthCubitState<ExtraData>> {
 
   void onRevokingAuthorization();
 
-  void emitAuthorization({@required Authorization authorization}) {
-    emit(state.toAuthorized(authorization: authorization));
+  void emitAuthorizing() {
+    emit(state.toAuthorizing());
+  }
+
+  void emitAuthorization() {
+    emit(state.toAuthorized());
   }
 
   void emitUnauthorized() {
     emit(state.toUnauthorized());
-  }
-
-  @override
-  Future<void> close() {
-    _authorizationSub?.cancel();
-    return super.close();
   }
 }
