@@ -2,11 +2,11 @@ part of 'IterableCubit.dart';
 
 extension FirstValuesBuiltListExtension<Value> on BuiltMap<int, Value> {
   BuiltList<Value> get firstValues {
-    final values = <Value?>[];
+    final values = <Value>[];
     for (var i = 0; containsKey(i); i++) {
-      values.add(this[i]);
+      values.add(this[i]!);
     }
-    return values.toBuiltList() as BuiltList<Value>;
+    return values.toBuiltList();
   }
 }
 
