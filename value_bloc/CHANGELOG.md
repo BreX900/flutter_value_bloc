@@ -1,3 +1,13 @@
+# Changelog
+
+
+## 1.0.0
+- Migrated to null-safety
+
+## 0.5.0
+- Now the cubits are modular inside your cubit! `ValueCubit`, `ListCubit`, `SetCubit`, `SingleCubit` and `MultiCubit`
+- Now you can mix your cubit with loading cubit!
+
 ## 0.4.3
 Added `analysis_options.yaml`
 

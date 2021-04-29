@@ -10,21 +10,24 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key key}) : super(key: key);
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return ViewDataProvider.value(
-      value: ViewData(),
-      child: MaterialApp(
-        home: HomeScreen(),
+    return ViewsProvider.value(
+      value: Views(),
+      child: CubitViewsProvider.value(
+        value: CubitViews(),
+        child: MaterialApp(
+          home: HomeScreen(),
+        ),
       ),
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key key}) : super(key: key);
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -35,19 +38,19 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            RaisedButton(
+            ElevatedButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SingleScreen(),
               )),
               child: Text('SingleValueCubit'),
             ),
-            RaisedButton(
+            ElevatedButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => ListScreen(),
               )),
               child: Text('ListValueCubit in List'),
             ),
-            RaisedButton(
+            ElevatedButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => TableScreen(),
               )),

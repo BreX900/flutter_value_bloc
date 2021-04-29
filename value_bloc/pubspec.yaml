@@ -1,6 +1,6 @@
 name: value_bloc
 description: A predictable state management library that helps implement a fetch data from database or another storage
-version: 0.4.3
+version: 1.0.0+1
 repository: https://github.com/BreX900/flutter_value_bloc/tree/master/value_bloc
 issue_tracker: https://github.com/BreX900/flutter_value_bloc/issues
 homepage: https://github.com/BreX900/flutter_value_bloc/
@@ -8,25 +8,31 @@ homepage: https://github.com/BreX900/flutter_value_bloc/
 # flutter pub publish --dry-run
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  meta: ^1.2.4
 
-  equatable: ^1.2.5
-  quiver: ^2.1.5
+  meta: ^1.3.0
 
-  built_value: ^7.1.0
-  built_collection: ^4.3.2
+  rxdart: ^0.26.0
+  pure_extensions: ^3.0.0
+#  pure_extensions:
+#    path: ../../dart_extensions/pure_extensions
 
-  bloc: ^6.1.0
+  equatable: ^2.0.0
+  quiver: ^3.0.1
+  collection: ^1.15.0
+  built_value: ^8.0.5
+  built_collection: ^5.0.0
+
+  bloc: ^7.0.0
 
 dev_dependencies:
   # flutter packages pub run build_runner build --delete-conflicting-outputs
   # flutter packages pub run build_runner watch --delete-conflicting-outputs
-  analyzer: 0.39.17
-  build_runner: 1.10.2
-  built_value_generator: ^7.1.0
+  analyzer: ^1.5.0
+  build_runner: ^1.0.0
+  built_value_generator: ^8.0.5
 
-  test: ^1.15.7
-  bloc_test: ^7.0.6
+  # wait null safety
+  test: ^1.17.2

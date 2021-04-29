@@ -1,13 +1,13 @@
-import 'package:value_bloc/src/value/ValueState.dart';
+import 'package:value_bloc/value_bloc.dart';
 
 class ValueCubitObserver {
-  static bool isEnabledPrintMethodIgnored = false;
+  static bool canPrintMethodIgnored = false;
 
   static ValueCubitObserver instance = ValueCubitObserver();
 
-  void methodIgnored(ValueState<dynamic> state, String nameMethod) {
-    if (!ValueCubitObserver.isEnabledPrintMethodIgnored) return;
-    print('method:$nameMethod,state:$state');
+  void methodIgnored(Cubit<dynamic> cubit, String nameMethod) {
+    if (!ValueCubitObserver.canPrintMethodIgnored) return;
+    print('method:$nameMethod,state:${cubit.state}');
     print(StackTrace.current);
   }
 }

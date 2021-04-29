@@ -3,15 +3,13 @@ description: Example
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.0
-
-  value_bloc: ^0.4.1
+  value_bloc: 1.0.0+1
 #  value_bloc:
 #    path: ../../value_bloc
 
