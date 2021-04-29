@@ -1,5 +1,7 @@
 # Changelog
 
+
+## 1.0.0
 - Migrated to null-safety
 
 ## 0.5.0
