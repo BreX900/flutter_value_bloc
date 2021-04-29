@@ -9,7 +9,7 @@ import 'package:flutter_value_bloc/src/iterable/IterableCubitBuilder.dart';
 import 'package:flutter_value_bloc/src/widgets/SmartRefresherCubitBuilder.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ScrollViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
+class ScrollViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilderBase<Value> {
   final Widget Function(
     BuildContext context,
     IterableCubitState<Value, Object> state,
@@ -17,12 +17,12 @@ class ScrollViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
   ) builder;
 
   ScrollViewCubitBuilder({
-    Key key,
-    @required MultiCubit<Value, Object, Object> iterableCubit,
+    Key? key,
+    required MultiCubit<Value, Object, Object> iterableCubit,
     bool useOldValues = true,
     int skipValuesCount = 0,
-    int takeValuesCount,
-    int valuesPerScroll,
+    int? takeValuesCount,
+    int? valuesPerScroll,
     bool isEnabledPullDown = true,
     bool isEnabledPullUp = false,
     LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
@@ -31,7 +31,7 @@ class ScrollViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
         errorBuilder = CubitViewBuilder.buildError,
     EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         emptyBuilder = CubitViewBuilder.buildEmpty,
-    @required this.builder,
+    required this.builder,
   }) : super(
           key: key,
           iterableCubit: iterableCubit,
@@ -56,17 +56,18 @@ class ScrollViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
   }
 }
 
-abstract class ScrollViewCubitBuilderBase<Value> extends IterableCubitBuilderBase<Value> {
-  final int valuesPerScroll;
+abstract class ScrollViewCubitBuilderBase<Value extends Object>
+    extends IterableCubitBuilderBase<Value> {
+  final int? valuesPerScroll;
   final bool isEnabledPullDown;
   final bool isEnabledPullUp;
 
   const ScrollViewCubitBuilderBase({
-    Key key,
-    @required MultiCubit<Value, Object, Object> iterableCubit,
+    Key? key,
+    required MultiCubit<Value, Object, Object> iterableCubit,
     bool useOldValues = true,
     int skipValuesCount = 0,
-    int takeValuesCount,
+    int? takeValuesCount,
     this.valuesPerScroll,
     this.isEnabledPullDown = false,
     this.isEnabledPullUp = false,
@@ -76,9 +77,7 @@ abstract class ScrollViewCubitBuilderBase<Value> extends IterableCubitBuilderBas
         errorBuilder = CubitViewBuilder.buildError,
     EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         emptyBuilder = CubitViewBuilder.buildEmpty,
-  })  : assert(iterableCubit != null),
-        assert(useOldValues != null),
-        super(
+  }) : super(
           key: key,
           iterableCubit: iterableCubit,
           skipValuesCount: skipValuesCount,
@@ -92,7 +91,7 @@ abstract class ScrollViewCubitBuilderBase<Value> extends IterableCubitBuilderBas
   int get effectiveValuesPerScroll {
     final valuesPerScroll =
         this.valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll;
-    if (takeValuesCount != null) min(valuesPerScroll, takeValuesCount);
+    if (takeValuesCount != null) min(valuesPerScroll, takeValuesCount!);
     return valuesPerScroll;
   }
 

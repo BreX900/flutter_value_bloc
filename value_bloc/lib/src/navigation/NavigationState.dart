@@ -7,14 +7,14 @@ class NavigationCubitState<T> extends Equatable {
   T get currentPage => pages[currentIndexPage];
 
   NavigationCubitState({
-    @required this.pages,
-    @required this.currentIndexPage,
-  })  : assert(pages != null && pages.isNotEmpty),
+    required this.pages,
+    required this.currentIndexPage,
+  })   : assert(pages.isNotEmpty),
         assert(currentIndexPage < pages.length);
 
-  NavigationCubitState copyWith({
-    BuiltList<T> pages,
-    int currentIndexPage,
+  NavigationCubitState<T> copyWith({
+    BuiltList<T>? pages,
+    required int currentIndexPage,
   }) {
     return NavigationCubitState(
       pages: pages ?? this.pages,

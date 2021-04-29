@@ -4,20 +4,20 @@ import 'package:flutter_value_bloc/src/cubit_views/CubitViews.dart';
 import 'package:flutter_value_bloc/src/cubit_views/CubitViewsProvider.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-abstract class CubitViewBuilder<C extends Cubit<S>, S> extends StatelessWidget {
-  final C cubit;
+abstract class CubitViewBuilder<C extends Cubit<S>, S extends Object> extends StatelessWidget {
+  final C? cubit;
   final LoadingCubitViewBuilder<C, S> loadingBuilder;
   final ErrorCubitViewBuilder<C, S> errorBuilder;
   final EmptyCubitViewBuilder<C, S> emptyBuilder;
   final BlocWidgetBuilder<S> builder;
 
   const CubitViewBuilder._({
-    Key key,
+    Key? key,
     this.cubit,
     this.loadingBuilder = CubitViewBuilder.buildLoading,
     this.errorBuilder = CubitViewBuilder.buildError,
     this.emptyBuilder = CubitViewBuilder.buildEmpty,
-    @required this.builder,
+    required this.builder,
   }) : super(key: key);
 
   static Widget buildError(BuildContext context, Cubit<Object> cubit, Object state) {
@@ -39,7 +39,7 @@ abstract class CubitViewBuilder<C extends Cubit<S>, S> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<C, S>(
-      cubit: cubit,
+      bloc: cubit,
       builder: (context, state) {
         return builder(context, state);
       },

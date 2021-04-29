@@ -1,18 +1,20 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 
 part 'LoadState.dart';
 
-class LoadCubit<ExtraData> extends Cubit<LoadCubitState<ExtraData>> {
-  Loader _loader;
+class LoadCubit<ExtraData> extends Cubit<LoadCubitState<ExtraData?>> {
+  late Loader _loader;
 
   LoadCubit({
-    Loader loader,
-  })  : _loader = loader,
-        super(LoadCubitIdle());
+    Loader? loader,
+  }) : super(LoadCubitIdle()) {
+    if (loader != null) {
+      _loader = loader;
+    }
+  }
 
-  void updateLoader({@required Loader loader}) {
+  void updateLoader({required Loader loader}) {
     _loader = loader;
   }
 
@@ -24,7 +26,6 @@ class LoadCubit<ExtraData> extends Cubit<LoadCubitState<ExtraData>> {
     await Future.delayed(const Duration());
     if (state is LoadCubitLoading<ExtraData> || state is LoadCubitLoaded<ExtraData>) return;
     emit(state.toLoading());
-    assert(_loader != null);
     _loader();
   }
 
@@ -36,14 +37,13 @@ class LoadCubit<ExtraData> extends Cubit<LoadCubitState<ExtraData>> {
     await Future.delayed(const Duration());
     if (state is LoadCubitLoading<ExtraData>) return;
     emit(state.toLoading());
-    assert(_loader != null);
     _loader();
   }
 
   /// Notify a new loading progress
   ///
   /// You can notify the progress using [progress]
-  void emitLoading({@required double progress}) async {
+  void emitLoading({required double progress}) async {
     await Future.delayed(const Duration());
     emit(state.toLoading(progress: progress));
   }
@@ -51,7 +51,7 @@ class LoadCubit<ExtraData> extends Cubit<LoadCubitState<ExtraData>> {
   /// Notification that the upload is unsuccessful
   ///
   /// You can report the error using [failure]
-  void emitLoadFailed({Object failure}) async {
+  void emitLoadFailed({Object? failure}) async {
     await Future.delayed(const Duration());
     emit(state.toFailed(failure: failure));
   }

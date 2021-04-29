@@ -6,22 +6,22 @@ import 'package:provider/provider.dart';
 /// [ListViewValueCubitBuilder] the defaults builders
 class ViewsProvider extends Provider<Views> {
   ViewsProvider({
-    @required Create<Views> create,
-    TransitionBuilder builder,
-    Widget child,
+    required Create<Views> create,
+    TransitionBuilder? builder,
+    Widget? child,
   }) : super(create: create, builder: builder, child: child);
 
   ViewsProvider.value({
-    @required Views value,
-    TransitionBuilder builder,
-    Widget child,
+    required Views value,
+    TransitionBuilder? builder,
+    Widget? child,
   }) : super.value(value: value, builder: builder, child: child);
 
   static Views of(BuildContext context) {
     return context.watch<Views>();
   }
 
-  static Views tryOf(BuildContext context) {
+  static Views? tryOf(BuildContext context) {
     try {
       return context.watch<Views>();
     } on ProviderNotFoundException {
@@ -33,5 +33,5 @@ class ViewsProvider extends Provider<Views> {
 extension ViewsProviderOnBuildContext on BuildContext {
   Views views() => ViewsProvider.of(this);
 
-  Views tryViews() => ViewsProvider.tryOf(this);
+  Views? tryViews() => ViewsProvider.tryOf(this);
 }

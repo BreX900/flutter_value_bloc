@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:rxdart/src/utils/forwarding_sink.dart';
 import 'package:rxdart/src/utils/forwarding_stream.dart';
@@ -9,7 +8,7 @@ import 'package:value_bloc/src/object/ObjectCubit.dart';
 
 class Optional<TValue> {
   final bool hasValue;
-  final TValue value;
+  final TValue? value;
 
   const Optional()
       : hasValue = false,
@@ -17,7 +16,7 @@ class Optional<TValue> {
 
   Optional.of(this.value) : hasValue = true;
 
-  TValue ifAbsent(TValue value) => hasValue ? this.value : value;
+  TValue? ifAbsent(TValue value) => hasValue ? this.value : value;
 }
 
 class Tuple2<Value1, Value2> {
@@ -39,13 +38,13 @@ class Tuple2<Value1, Value2> {
 }
 
 mixin FilteredCubit<Filter, State> on Cubit<State> {
-  final _filterSubject = PublishSubject<Filter>();
-  StreamSubscription _filterSub;
+  final _filterSubject = PublishSubject<Filter?>();
+  StreamSubscription? _filterSub;
 
-  Stream<Filter> get onFilterChanges => _filterSubject;
+  Stream<Filter?> get onFilterChanges => _filterSubject;
 
   void applyFilter({
-    @required Filter filter,
+    required Filter filter,
   }) async {
     await Future.delayed(Duration());
     await _filterSub?.cancel();
@@ -53,21 +52,19 @@ mixin FilteredCubit<Filter, State> on Cubit<State> {
   }
 
   void applyFilterChanges({
-    @required Stream<Filter> onFilterChanges,
+    required Stream<Filter> onFilterChanges,
   }) async {
-    assert(onFilterChanges != null);
     await Future.delayed(Duration());
     await _filterSub?.cancel();
     _filterSub = onFilterChanges.listen(_filterSubject.add);
   }
 
   void applyFilterCubit({
-    @required ObjectCubit<Filter, Object> filterCubit,
+    required ObjectCubit<Filter, Object> filterCubit,
   }) async {
-    assert(filterCubit != null);
     await Future.delayed(Duration());
     await _filterSub?.cancel();
-    _filterSub = filterCubit.listen((filterState) {
+    _filterSub = filterCubit.stream.listen((filterState) {
       if (filterState is ObjectCubitUpdated<Filter, Object>) {
         _filterSubject.add(filterState.value);
       }
@@ -84,11 +81,11 @@ mixin FilteredCubit<Filter, State> on Cubit<State> {
 
 class Utils {
   static Stream<Filter> createFilterStream<Filter>({
-    @required Stream<Filter> filterStream,
-    Filter initialFilter,
+    required Stream<Filter> filterStream,
+    Filter? initialFilter,
     bool canWaitFirstFilter = false,
-    bool Function(Filter e1, Filter e2) filterEquals,
-    Duration filterDebounceTime,
+    bool Function(Filter e1, Filter e2)? filterEquals,
+    Duration? filterDebounceTime,
   }) {
     if (filterDebounceTime != null) filterStream.debounceTime(filterDebounceTime);
     return filterStream.distinct(filterEquals);
@@ -113,7 +110,7 @@ class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
 
     keys.add(keyStream);
 
-    StreamSubscription<T> subscription;
+    StreamSubscription<T>? subscription;
 
     subscription = mappedStream.listen(
       sink.add,
@@ -151,7 +148,7 @@ class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
   void onListen(EventSink<T> sink) {}
 
   @override
-  void onPause(EventSink<T> sink, [Future resumeSignal]) =>
+  void onPause(EventSink<T> sink, [Future? resumeSignal]) =>
       _subscriptions.forEach((s) => s.pause(resumeSignal));
 
   @override

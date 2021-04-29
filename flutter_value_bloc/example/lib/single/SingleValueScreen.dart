@@ -24,7 +24,7 @@ class SingleScreenCubit extends ModularCubit<int> with CloserCubitModule, LoadCu
 }
 
 class SingleScreen extends StatelessWidget {
-  const SingleScreen({Key key}) : super(key: key);
+  const SingleScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

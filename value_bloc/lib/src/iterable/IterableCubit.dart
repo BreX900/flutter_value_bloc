@@ -5,7 +5,6 @@ import 'dart:math' as math;
 import 'package:bloc/bloc.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/fetchers.dart';
@@ -37,17 +36,17 @@ abstract class CollectionCubit<Value, ExtraData> extends IterableCubit<Value, Ex
   /// Update the current values with the new [values]
   ///
   /// The status will be set to [IterableCubitUpdated]
-  void update({@required Iterable<Value> values});
+  void update({required Iterable<Value> values});
 
   /// Removes the a [values] to the current values
   ///
   /// The status will be set to [IterableCubitUpdated]
-  void remove({@required Iterable<Value> values});
+  void remove({required Iterable<Value> values});
 
   /// Adds the a [values] to the current values
   ///
   /// The status will be set to [IterableCubitUpdated]
-  void add({@required Iterable<Value> values});
+  void add({required Iterable<Value> values});
 
   /// All values are cleared and the initial state is restored
   ///
@@ -60,8 +59,8 @@ class ListCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
   var _list = <Value>[];
 
   ListCubit({
-    Iterable<Value> values,
-    ExtraData initialExtraData,
+    Iterable<Value>? values,
+    ExtraData? initialExtraData,
   }) : super(values == null
             ? IterableCubitUpdating(
                 allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -78,8 +77,7 @@ class ListCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
 
   /// See [CollectionCubit.update]
   @override
-  void update({@required Iterable<Value> values}) async {
-    assert(values != null);
+  void update({required Iterable<Value> values}) async {
     await Future.delayed(const Duration());
 
     _list = values.toList();
@@ -90,8 +88,7 @@ class ListCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
 
   /// See [CollectionCubit.remove]
   @override
-  void remove({@required Iterable<Value> values}) async {
-    assert(values != null);
+  void remove({required Iterable<Value> values}) async {
     await Future.delayed(const Duration());
 
     values.forEach(_list.remove);
@@ -102,8 +99,7 @@ class ListCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
 
   /// See [CollectionCubit.add]
   @override
-  void add({@required Iterable<Value> values}) async {
-    assert(values != null);
+  void add({required Iterable<Value> values}) async {
     await Future.delayed(const Duration());
 
     _list.addAll(values);
@@ -124,22 +120,22 @@ class SetCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
   Set<Value> _set;
 
   factory SetCubit({
-    Set<Value> Function() base,
-    Iterable<Value> values,
-    ExtraData initialExtraData,
+    Set<Value> Function()? base,
+    Iterable<Value>? values,
+    ExtraData? initialExtraData,
   }) {
     base ??= () => <Value>{};
-    Set<Value> set;
+    Set<Value>? set;
     if (values != null) set = base()..addAll(values);
     return SetCubit._(base: base, set: set, initialExtraData: initialExtraData);
   }
 
   SetCubit._({
-    Set<Value> Function() base,
-    Set<Value> set,
-    ExtraData initialExtraData,
-  })  : _base = base,
-        _set = set ?? base(),
+    Set<Value> Function()? base,
+    Set<Value>? set,
+    ExtraData? initialExtraData,
+  })  : _base = base ?? (() => <Value>{}),
+        _set = set ?? base!(),
         super(set == null
             ? IterableCubitUpdating(
                 allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -155,8 +151,7 @@ class SetCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
               ));
 
   ///  Uses `base` as the collection type for all sets created by this cubit.
-  void updateBase({@required Set<Value> Function() base}) async {
-    assert(base != null);
+  void updateBase({required Set<Value> Function() base}) async {
     await Future.delayed(const Duration());
 
     _base = base;
@@ -166,8 +161,7 @@ class SetCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
 
   /// See [CollectionCubit.update]
   @override
-  void update({@required Iterable<Value> values}) async {
-    assert(values != null);
+  void update({required Iterable<Value> values}) async {
     await Future.delayed(const Duration());
 
     _set = _base()..addAll(values);
@@ -178,8 +172,7 @@ class SetCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
 
   /// See [CollectionCubit.remove]
   @override
-  void remove({@required Iterable<Value> values}) async {
-    assert(values != null);
+  void remove({required Iterable<Value> values}) async {
     await Future.delayed(const Duration());
 
     values.forEach(_set.remove);
@@ -190,8 +183,7 @@ class SetCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
 
   /// See [CollectionCubit.add]
   @override
-  void add({@required Iterable<Value> values}) async {
-    assert(values != null);
+  void add({required Iterable<Value> values}) async {
     await Future.delayed(const Duration());
 
     _set.addAll(values);
@@ -214,25 +206,25 @@ typedef ListFetcher<Value, Filter> = Stream<MultiFetchEvent<Iterable<Value>>> Fu
 
 /// Allows you to fetch data in a secure and paginated way using the [fetcher] function
 class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraData>
-    with FilteredCubit<Filter, IterableCubitState<Value, ExtraData>> {
+    with FilteredCubit<Filter?, IterableCubitState<Value, ExtraData>> {
   static ListFetcherPlugin defaultFetcherPlugin = const ContinuousListFetcherPlugin();
 
   final ListFetcherPlugin _fetcherPlugin;
 
-  final _fetcherSubject = BehaviorSubject<ListFetcher<Value, Filter>>();
+  final _fetcherSubject = BehaviorSubject<ListFetcher<Value, Filter?>>();
   final _selectionsSubject = BehaviorSubject<BuiltSet<IterableSection>>();
 
-  StreamSubscription _sub;
+  late StreamSubscription _sub;
 
   MultiCubit({
-    ListFetcherPlugin fetcherPlugin,
-    ListFetcher<Value, Filter> fetcher,
-    Map<int, Value> initialAllValues,
-    Filter initialFilter,
+    ListFetcherPlugin? fetcherPlugin,
+    ListFetcher<Value, Filter?>? fetcher,
+    Map<int, Value>? initialAllValues,
+    Filter? initialFilter,
     bool canWaitFirstFilter = false,
-    bool Function(Filter e1, Filter e2) filterEquals,
-    Duration filterDebounceTime,
-    ExtraData initialExtraData,
+    bool Function(Filter? e1, Filter? e2)? filterEquals,
+    Duration? filterDebounceTime,
+    ExtraData? initialExtraData,
   })  : _fetcherPlugin = fetcherPlugin ?? defaultFetcherPlugin,
         super(IterableCubitUpdating(
           allValues: BuiltMap.build((b) {
@@ -250,8 +242,8 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
       filterDebounceTime: filterDebounceTime,
     );
 
-    _sub = Rx.combineLatest2<ListFetcher<Value, Filter>, Filter,
-        Tuple2<ListFetcher<Value, Filter>, Filter>>(_fetcherSubject, filterStream, (a, b) {
+    _sub = Rx.combineLatest2<ListFetcher<Value, Filter?>, Filter?,
+        Tuple2<ListFetcher<Value, Filter?>, Filter?>>(_fetcherSubject, filterStream, (a, b) {
       return Tuple2(a, b);
     }).switchMap((data) {
       final fetcher = data.value1;
@@ -278,11 +270,11 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
       final section = res.value1;
       final event = res.value2;
 
-      int calculateLength(BuiltMap<int, Value> allValues, int pageLength, {int total}) {
+      int? calculateLength(BuiltMap<int, Value>? allValues, int pageLength, {int? total}) {
         if (total != null) {
           return total;
         } else if (section.length > pageLength) {
-          return math.max(section.startAt, allValues.length);
+          return math.max(section.startAt, allValues!.length);
         }
         return state.length;
       }
@@ -322,8 +314,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   /// Once the fetcher has been set up, the cubit will be restored to its initial state.
   /// Listeners will have to request the sections
   /// The status will be set to [IterableCubitUpdating]
-  void updateFetcher({@required ListFetcher<Value, Filter> fetcher}) async {
-    assert(fetcher != null);
+  void updateFetcher({required ListFetcher<Value, Filter?> fetcher}) async {
     await Future.delayed(Duration());
     if (_fetcherSubject.value == fetcher) return;
     _fetcherSubject.add(fetcher);
@@ -343,10 +334,9 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   /// Call the fetcher method and update the status with the new scum [section]
   /// The status will be set to [IterableCubitUpdated] once the data is scrapped but
   /// if you receive an error it will be [IterableCubitUpdateFailed]
-  void fetch({@required IterableSection section}) async {
-    assert(section != null);
+  void fetch({required IterableSection section}) async {
     await Future.delayed(Duration());
-    final newSchemes = _fetcherPlugin.addTo(_selectionsSubject.value, section);
+    final newSchemes = _fetcherPlugin.addTo(_selectionsSubject.value!, section);
     _selectionsSubject.add(newSchemes);
   }
 
@@ -357,7 +347,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   @override
   void clear() async {
     await Future.delayed(Duration());
-    _fetcherSubject.add(_fetcherSubject.value);
+    _fetcherSubject.add(_fetcherSubject.value!);
   }
 
   // ==================================================

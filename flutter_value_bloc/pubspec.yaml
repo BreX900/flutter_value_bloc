@@ -8,7 +8,7 @@ homepage: https://github.com/BreX900/flutter_value_bloc/tree/master/flutter_valu
 # flutter pub publish --dry-run
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.12.0 <3.0.0'
   flutter: ">=1.17.0 <2.0.0"
 
 dependencies:
@@ -16,16 +16,16 @@ dependencies:
     sdk: flutter
 
   # wait null safety
-  built_collection: ^4.3.2
+  built_collection: ^5.0.0
 
-  flutter_bloc: ^6.1.2
+  flutter_bloc: ^7.0.0
 
-  value_bloc: ^0.5.0
-#  value_bloc:
-#    path: ../value_bloc
+#  value_bloc: ^0.5.0
+  value_bloc:
+    path: ../value_bloc
 
-  provider: ^4.3.3
-  pull_to_refresh: ^1.6.3
+  provider: ^5.0.0
+  pull_to_refresh: 1.6.4-nullsafety.1
 
 dev_dependencies:
   flutter_test:

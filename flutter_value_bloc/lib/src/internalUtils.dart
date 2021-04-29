@@ -8,15 +8,12 @@ class ViewCubitInitializer<C extends Cubit<S>, S> extends StatefulWidget {
   final Widget child;
 
   const ViewCubitInitializer({
-    Key key,
-    @required this.cubit,
-    @required this.initializeWhen,
-    @required this.initializer,
-    @required this.child,
-  })  : assert(cubit != null),
-        assert(initializer != null),
-        assert(child != null),
-        super(key: key);
+    Key? key,
+    required this.cubit,
+    required this.initializeWhen,
+    required this.initializer,
+    required this.child,
+  }) : super(key: key);
 
   @override
   _ViewCubitInitializerState<C, S> createState() => _ViewCubitInitializerState();
@@ -46,7 +43,7 @@ class _ViewCubitInitializerState<C extends Cubit<S>, S> extends State<ViewCubitI
   @override
   Widget build(BuildContext context) {
     return BlocListener<C, S>(
-      cubit: widget.cubit,
+      bloc: widget.cubit,
       listenWhen: (p, c) => p.runtimeType != c.runtimeType,
       listener: (context, state) => initialize(),
       child: widget.child,

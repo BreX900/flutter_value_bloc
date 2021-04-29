@@ -24,7 +24,7 @@ class ListScreenCubit extends ModularCubit<int> with CloserCubitModule {
 }
 
 class ListScreen extends StatelessWidget {
-  const ListScreen({Key key}) : super(key: key);
+  const ListScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

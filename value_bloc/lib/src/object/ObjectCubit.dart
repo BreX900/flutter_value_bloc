@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/internalUtils.dart';
 import 'package:value_bloc/src/screen/DynamicCubit.dart';
@@ -28,7 +27,7 @@ class ValueCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
   /// Create the cubit that is waiting to receive a value,
   /// the initial state is [ObjectCubitUpdating]
   ValueCubit({
-    ExtraData initialExtraData,
+    ExtraData? initialExtraData,
   }) : super(ObjectCubitUpdating(
           hasValue: null,
           value: null,
@@ -38,8 +37,8 @@ class ValueCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
 
   /// Create the cubit with an initial value, the initial state is [ObjectCubitUpdated]
   ValueCubit.seed({
-    @required Value value,
-    ExtraData initialExtraData,
+    required Value value,
+    ExtraData? initialExtraData,
   }) : super(ObjectCubitUpdated(
           hasValue: true,
           value: value,
@@ -49,7 +48,7 @@ class ValueCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
 
   /// Create the cubit without a value, the initial state is [ObjectCubitUpdated]
   ValueCubit.empty({
-    ExtraData initialExtraData,
+    ExtraData? initialExtraData,
   }) : super(ObjectCubitUpdated(
           hasValue: false,
           value: null,
@@ -64,7 +63,7 @@ class ValueCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
   /// Update the current value
   ///
   ///
-  void update({@required Value value}) {
+  void update({required Value value}) {
     emit(state.toUpdated(hasValue: true, value: value));
   }
 
@@ -78,27 +77,27 @@ class ValueCubit<Value, ExtraData> extends ObjectCubit<Value, ExtraData> {
   }
 }
 
-typedef ValueFetcher<Value, Filter> = Stream<SingleFetchEvent<Value>> Function(Filter filter);
+typedef ValueFetcher<Value, Filter> = Stream<SingleFetchEvent<Value>> Function(Filter? filter);
 
 /// It allows you to wait for the fetch of a value,
 /// if it is not successful it notifies the failure,
 /// if the value does not exist it notifies the non-existence
 /// otherwise it notifies the new value.
 class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData>
-    with FilteredCubit<Filter, ObjectCubitState<Value, ExtraData>> {
+    with FilteredCubit<Filter?, ObjectCubitState<Value, ExtraData>> {
   final _fetcherSubject = BehaviorSubject<ValueFetcher<Value, Filter>>();
   final _canFetchSubject = BehaviorSubject<bool>();
-  StreamSubscription _sub;
+  late StreamSubscription _sub;
 
   /// Create the cubit that is waiting to receive a value,
   /// the initial state is [ObjectCubitUpdating]
   SingleCubit({
-    ValueFetcher<Value, Filter> fetcher,
-    Filter initialFilter,
+    ValueFetcher<Value, Filter>? fetcher,
+    Filter? initialFilter,
     bool canWaitFirstFilter = false,
-    bool Function(Filter e1, Filter e2) filterEquals,
-    Duration filterDebounceTime,
-    ExtraData initialExtraData,
+    bool Function(Filter? e1, Filter? e2)? filterEquals,
+    Duration? filterDebounceTime,
+    ExtraData? initialExtraData,
   }) : this._(
           ObjectCubitUpdating(extraData: initialExtraData, oldValue: null),
           fetcher: fetcher,
@@ -110,13 +109,13 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
 
   /// Create the cubit with an initial value, the initial state is [ObjectCubitUpdated]
   SingleCubit.seed({
-    ValueFetcher<Value, Filter> fetcher,
-    Filter initialFilter,
+    ValueFetcher<Value, Filter>? fetcher,
+    Filter? initialFilter,
     bool canWaitFirstFilter = false,
-    bool Function(Filter e1, Filter e2) filterEquals,
-    Duration filterDebounceTime,
-    ExtraData initialExtraData,
-    @required Value initialValue,
+    bool Function(Filter? e1, Filter? e2)? filterEquals,
+    Duration? filterDebounceTime,
+    ExtraData? initialExtraData,
+    required Value initialValue,
   }) : this._(
           ObjectCubitUpdated(
             hasValue: true,
@@ -133,12 +132,12 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
 
   /// Create the cubit without a value, the initial state is [ObjectCubitUpdated]
   SingleCubit.empty({
-    ValueFetcher<Value, Filter> fetcher,
-    Filter initialFilter,
+    ValueFetcher<Value, Filter>? fetcher,
+    Filter? initialFilter,
     bool canWaitFirstFilter = false,
-    bool Function(Filter e1, Filter e2) filterEquals,
-    Duration filterDebounceTime,
-    ExtraData initialExtraData,
+    bool Function(Filter? e1, Filter? e2)? filterEquals,
+    Duration? filterDebounceTime,
+    ExtraData? initialExtraData,
   }) : this._(
           ObjectCubitUpdated(
             hasValue: false,
@@ -155,11 +154,11 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
 
   SingleCubit._(
     ObjectCubitState<Value, ExtraData> superState, {
-    @required ValueFetcher<Value, Filter> fetcher,
-    Filter initialFilter,
+    required ValueFetcher<Value, Filter>? fetcher,
+    Filter? initialFilter,
     bool canWaitFirstFilter = false,
-    bool Function(Filter e1, Filter e2) filterEquals,
-    Duration filterDebounceTime,
+    bool Function(Filter? e1, Filter? e2)? filterEquals,
+    Duration? filterDebounceTime,
   }) : super(superState) {
     final filterStream = Utils.createFilterStream(
       filterStream: onFilterChanges,
@@ -169,8 +168,8 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
       filterDebounceTime: filterDebounceTime,
     );
 
-    _sub = Rx.combineLatest2<ValueFetcher<Value, Filter>, Filter,
-        Tuple2<ValueFetcher<Value, Filter>, Filter>>(_fetcherSubject, filterStream, (a, b) {
+    _sub = Rx.combineLatest2<ValueFetcher<Value, Filter>, Filter?,
+        Tuple2<ValueFetcher<Value, Filter>, Filter?>>(_fetcherSubject, filterStream, (a, b) {
       return Tuple2(a, b);
     }).switchMap<SingleFetchEvent<Value>>((data) async* {
       final fetcher = data.value1;
@@ -200,8 +199,7 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
     if (!canWaitFirstFilter || initialFilter == null) applyFilter(filter: initialFilter);
   }
 
-  void applyFetcher({@required ValueFetcher<Value, Filter> fetcher}) async {
-    assert(fetcher != null);
+  void applyFetcher({required ValueFetcher<Value, Filter> fetcher}) async {
     await Future.delayed(const Duration());
 
     if (_fetcherSubject.value == fetcher) return;
@@ -218,7 +216,7 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
   void reset() async {
     await Future.delayed(const Duration());
 
-    _fetcherSubject.add(_fetcherSubject.value);
+    _fetcherSubject.add(_fetcherSubject.value!);
   }
 
   @override

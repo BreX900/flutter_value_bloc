@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
 import 'package:test/test.dart' as test;
 
 void testPrint(Object object) {
@@ -9,26 +8,26 @@ void testPrint(Object object) {
 }
 
 Future<void> runBlocTest<C extends Cubit<State>, State>({
-  @required C Function() build,
-  Function(C cubit) act,
-  Duration wait,
+  required C Function() build,
+  Function(C cubit)? act,
+  Duration? wait,
   int skip = 0,
-  Iterable expect,
-  Function(C cubit) verify,
-  Iterable errors,
+  Iterable? expect,
+  Function(C cubit)? verify,
+  Iterable? errors,
 }) async {
   final unhandledErrors = <Object>[];
   var shallowEquality = false;
   final states = <State>[];
-  await runZoned(() async {
+  await runZonedGuarded(() async {
     final cubit = build();
     states.add(cubit.state);
-    final subscription = cubit.skip(skip).listen(states.add);
+    final subscription = cubit.stream.skip(skip).listen(states.add);
     try {
       await act?.call(cubit);
     } on Exception catch (error) {
       unhandledErrors.add(
-        error is CubitUnhandledErrorException ? error.error : error,
+        error is BlocUnhandledErrorException ? error.error : error,
       );
       print(states);
     }
@@ -41,16 +40,16 @@ Future<void> runBlocTest<C extends Cubit<State>, State>({
     }
     await subscription.cancel();
     await verify?.call(cubit);
-  }, onError: (Object error) {
+  }, (Object error, StackTrace stackTrace) {
     print(states);
-    if (error is CubitUnhandledErrorException) {
+    if (error is BlocUnhandledErrorException) {
       unhandledErrors.add(error.error);
     } else if (shallowEquality && error is test.TestFailure) {
       // ignore: only_throw_errors
       throw test.TestFailure(
         '''${error.message}
 WARNING: Please ensure state instances extend Equatable, override == and hashCode, or implement Comparable.
-Alternatively, consider using Matchers in the expect of the blocTest rather than concrete state instances.\n''',
+Alternatively, consider using Matchers in the expect of the blocTest rather than concrete state instances.\n$stackTrace''',
       );
     } else {
       // ignore: only_throw_errors
@@ -61,34 +60,34 @@ Alternatively, consider using Matchers in the expect of the blocTest rather than
 }
 
 class CubitTest<C extends Cubit<S>, S> {
-  final void Function(C cubit) act;
-  final Iterable expect;
+  final FutureOr<void> Function(C cubit)? act;
+  final Iterable? expect;
 
   CubitTest({this.act, this.expect});
 }
 
 Future<void> runCubitTest<C extends Cubit<State>, State>({
-  @required C Function() build,
+  required C Function() build,
   Duration wait = Duration.zero,
   int skip = 0,
-  Iterable<CubitTest<C, State>> tests,
-  Function(C cubit) verify,
-  Iterable errors,
+  Iterable<CubitTest<C, State>>? tests,
+  Function(C cubit)? verify,
+  Iterable? errors,
 }) async {
   final unhandledErrors = <Object>[];
   var shallowEquality = false;
   var allStates = <State>[];
-  await runZoned(() async {
+  await runZonedGuarded(() async {
     final cubit = build();
     final currentStates = <State>[];
     currentStates.add(cubit.state);
-    final subscription = cubit.skip(skip).listen(currentStates.add);
-    for (var t in tests) {
+    final subscription = cubit.stream.skip(skip).listen(currentStates.add);
+    for (var t in tests!) {
       try {
         await t.act?.call(cubit);
       } on Exception catch (error) {
         unhandledErrors.add(
-          error is CubitUnhandledErrorException ? error.error : error,
+          error is BlocUnhandledErrorException ? error.error : error,
         );
         print([allStates, currentStates]);
       }
@@ -99,22 +98,22 @@ Future<void> runCubitTest<C extends Cubit<State>, State>({
         shallowEquality = '${[allStates, currentStates]}' == '${[allStates, t.expect]}';
         test.expect([allStates, currentStates], [allStates, t.expect]);
       }
-      allStates..addAll(currentStates);
+      allStates.addAll(currentStates);
       currentStates.clear();
     }
     await cubit.close();
     await subscription.cancel();
     await verify?.call(cubit);
-  }, onError: (Object error) {
+  }, (Object error, StackTrace stackTrace) {
     print(allStates);
-    if (error is CubitUnhandledErrorException) {
+    if (error is BlocUnhandledErrorException) {
       unhandledErrors.add(error.error);
     } else if (shallowEquality && error is test.TestFailure) {
       // ignore: only_throw_errors
       throw test.TestFailure(
         '''${error.message}
 WARNING: Please ensure state instances extend Equatable, override == and hashCode, or implement Comparable.
-Alternatively, consider using Matchers in the expect of the blocTest rather than concrete state instances.\n''',
+Alternatively, consider using Matchers in the expect of the blocTest rather than concrete state instances.\n$stackTrace''',
       );
     } else {
       // ignore: only_throw_errors

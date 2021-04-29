@@ -1,10 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 
 part 'auth_state.dart';
 
-abstract class AuthCubit<ExtraData> extends Cubit<AuthCubitState<ExtraData>> {
+abstract class AuthCubit<ExtraData> extends Cubit<AuthCubitState<ExtraData?>> {
   AuthCubit({
     bool isAuthorized = false,
   }) : super(() {
@@ -13,7 +12,7 @@ abstract class AuthCubit<ExtraData> extends Cubit<AuthCubitState<ExtraData>> {
           } else {
             return AuthCubitAuthorized();
           }
-        }());
+        }() as AuthCubitState<ExtraData>);
 
   void revokeAuthorization() {
     emit(state.toUnauthorizing());

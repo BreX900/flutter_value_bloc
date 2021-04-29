@@ -2,17 +2,17 @@ part of 'IterableCubit.dart';
 
 extension FirstValuesBuiltListExtension<Value> on BuiltMap<int, Value> {
   BuiltList<Value> get firstValues {
-    final values = <Value>[];
+    final values = <Value?>[];
     for (var i = 0; containsKey(i); i++) {
       values.add(this[i]);
     }
-    return values.toBuiltList();
+    return values.toBuiltList() as BuiltList<Value>;
   }
 }
 
 abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   /// Defines the maximum amount of possible values. If it is null, it is not known.
-  final int length;
+  final int? length;
 
   /// Contains all indexed values.
   ///
@@ -21,21 +21,21 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   final BuiltMap<int, Value> allValues;
 
   /// What you want :)
-  final ExtraData extraData;
+  final ExtraData? extraData;
 
   IterableCubitState({
-    @required this.length,
-    @required this.allValues,
-    @required this.extraData,
+    required this.length,
+    required this.allValues,
+    required this.extraData,
   });
 
-  BuiltList<Value> _values;
+  BuiltList<Value>? _values;
   BuiltList<Value> get values => _values ??= allValues.firstValues;
 
-  BuiltList<IterableSection> _sections;
+  BuiltList<IterableSection>? _sections;
   BuiltList<IterableSection> get sections {
     if (allValues.isEmpty) return BuiltList<IterableSection>();
-    if (_sections != null) return _sections;
+    if (_sections != null) return _sections!;
 
     final sections = ListBuilder<IterableSection>();
     var startAt = allValues.keys.first;
@@ -55,7 +55,6 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   }
 
   bool containsSection(IterableSection section) {
-    assert(section != null);
     return sections.any((s) => s.containsOffset(section.startAt));
   }
 
@@ -77,7 +76,7 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
     );
   }
 
-  IterableCubitState<Value, ExtraData> toUpdateFailed({Object failure}) {
+  IterableCubitState<Value, ExtraData> toUpdateFailed({Object? failure}) {
     return IterableCubitUpdateFailed(
       length: length,
       allValues: allValues,
@@ -87,8 +86,8 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   }
 
   IterableCubitState<Value, ExtraData> toUpdated({
-    int length,
-    BuiltMap<int, Value> allValues,
+    int? length,
+    BuiltMap<int, Value>? allValues,
   }) {
     return IterableCubitUpdated(
       length: length ?? this.length,
@@ -99,8 +98,8 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   }
 
   IterableCubitState<Value, ExtraData> copyWith({
-    Optional<BuiltMap<int, Value>> allValues = const Optional(),
-    Optional<ExtraData> extraData = const Optional(),
+    Optional<BuiltMap<int, Value>?> allValues = const Optional(),
+    Optional<ExtraData?> extraData = const Optional(),
   }) {
     final state = this;
     final currentValues = allValues.ifAbsent(this.allValues);
@@ -108,21 +107,21 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
     if (state is IterableCubitUpdating<Value, ExtraData>) {
       return IterableCubitUpdating(
         length: length,
-        allValues: currentValues,
+        allValues: currentValues!,
         extraData: currentExtraData,
         oldAllValues: state.oldAllValues,
       );
     } else if (state is IterableCubitUpdateFailed<Value, ExtraData>) {
       return IterableCubitUpdateFailed(
         length: length,
-        allValues: currentValues,
+        allValues: currentValues!,
         extraData: currentExtraData,
         failure: state.failure,
       );
     } else if (state is IterableCubitUpdated<Value, ExtraData>) {
       return IterableCubitUpdated(
         length: length,
-        allValues: currentValues,
+        allValues: currentValues!,
         extraData: currentExtraData,
         oldAllValues: state.oldAllValues,
       );
@@ -132,7 +131,7 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   }
 
   @override
-  List<Object> get props => [length, allValues, extraData];
+  List<Object?> get props => [length, allValues, extraData];
 }
 
 /// The job list is being updated.
@@ -144,10 +143,10 @@ class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, 
   final BuiltMap<int, Value> oldAllValues;
 
   IterableCubitUpdating({
-    int length,
-    @required BuiltMap<int, Value> allValues,
-    ExtraData extraData,
-    @required this.oldAllValues,
+    int? length,
+    required BuiltMap<int, Value> allValues,
+    ExtraData? extraData,
+    required this.oldAllValues,
   }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
@@ -155,17 +154,17 @@ class IterableCubitUpdating<Value, ExtraData> extends IterableCubitState<Value, 
 ///
 /// The reason for the failure is saved on failure.
 class IterableCubitUpdateFailed<Value, ExtraData> extends IterableCubitState<Value, ExtraData> {
-  final Object failure;
+  final Object? failure;
 
   IterableCubitUpdateFailed({
-    int length,
-    @required BuiltMap<int, Value> allValues,
-    ExtraData extraData,
+    int? length,
+    required BuiltMap<int, Value> allValues,
+    ExtraData? extraData,
     this.failure,
   }) : super(length: length, allValues: allValues, extraData: extraData);
 
   @override
-  List<Object> get props => super.props..add(failure);
+  List<Object?> get props => super.props..add(failure);
 }
 
 /// The job list has been updated.
@@ -177,23 +176,23 @@ class IterableCubitUpdated<Value, ExtraData> extends IterableCubitState<Value, E
   final BuiltMap<int, Value> oldAllValues;
 
   IterableCubitUpdated({
-    int length,
-    @required BuiltMap<int, Value> allValues,
-    ExtraData extraData,
-    @required this.oldAllValues,
+    int? length,
+    required BuiltMap<int, Value> allValues,
+    ExtraData? extraData,
+    required this.oldAllValues,
   }) : super(length: length, allValues: allValues, extraData: extraData);
 }
 
 mixin _OldValues<Value, ExtraData> on IterableCubitState<Value, ExtraData> {
   BuiltMap<int, Value> get oldAllValues;
 
-  BuiltList<Value> _oldValues;
+  BuiltList<Value>? _oldValues;
   BuiltList<Value> get oldValues => _oldValues ??= oldAllValues.firstValues;
 
   /// Is a difference between [oldValues] and [values]
   ///
   /// Ex. <oldValues>[1, 2, 3, 4] - <values>[1, 2, 3] = <lostValues>[4]
-  BuiltList<Value> _lostValues;
+  BuiltList<Value>? _lostValues;
   BuiltList<Value> get lostValues {
     return _lostValues ??= oldValues.where((value) => !values.contains(value)).toBuiltList();
   }
@@ -201,7 +200,7 @@ mixin _OldValues<Value, ExtraData> on IterableCubitState<Value, ExtraData> {
   /// Is a difference between [values] and [oldValues]
   ///
   /// Ex. <values>[1, 2, 3] - <oldValues>[1] = <acquiredValues>[2, 3]
-  BuiltList<Value> _acquiredValues;
+  BuiltList<Value>? _acquiredValues;
   BuiltList<Value> get acquiredValues {
     return _acquiredValues ??= values.where((value) => !oldValues.contains(value)).toBuiltList();
   }

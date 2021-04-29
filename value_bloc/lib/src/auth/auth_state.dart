@@ -8,10 +8,10 @@ abstract class AuthCubitState<ExtraData> extends Equatable {
   final ExtraData extraData;
 
   const AuthCubitState({
-    @required this.extraData,
+    required this.extraData,
   });
 
-  AuthCubitState<ExtraData> toUnauthorizing() {
+  AuthCubitState<ExtraData?> toUnauthorizing() {
     final state = this;
     if (state is AuthCubitAuthorized<ExtraData>) {
       return AuthCubitUnauthorizing(extraData: extraData);
@@ -20,7 +20,7 @@ abstract class AuthCubitState<ExtraData> extends Equatable {
     }
   }
 
-  AuthCubitState<ExtraData> toUnauthorized() {
+  AuthCubitState<ExtraData?> toUnauthorized() {
     final state = this;
     if (state is AuthCubitAuthorized<ExtraData>) {
       return AuthCubitUnauthorized();
@@ -29,7 +29,7 @@ abstract class AuthCubitState<ExtraData> extends Equatable {
     }
   }
 
-  AuthCubitState<ExtraData> toAuthorizing() {
+  AuthCubitState<ExtraData?> toAuthorizing() {
     final state = this;
     if (state is AuthCubitUnauthorized<ExtraData>) {
       return AuthCubitAuthorizing(extraData: extraData);
@@ -40,7 +40,7 @@ abstract class AuthCubitState<ExtraData> extends Equatable {
     }
   }
 
-  AuthCubitState<ExtraData> toAuthorized() {
+  AuthCubitState<ExtraData?> toAuthorized() {
     final state = this;
     if (state is AuthCubitUnauthorized<ExtraData>) {
       return AuthCubitAuthorized(extraData: extraData);
@@ -49,7 +49,7 @@ abstract class AuthCubitState<ExtraData> extends Equatable {
     }
   }
 
-  AuthCubitState<ExtraData> copyWith({Authorization authorization, ExtraData extraData}) {
+  AuthCubitState<ExtraData?> copyWith({Authorization? authorization, ExtraData? extraData}) {
     final state = this;
     if (state is AuthCubitReauthorizing<ExtraData>) {
       return AuthCubitReauthorizing(
@@ -77,34 +77,34 @@ abstract class AuthCubitState<ExtraData> extends Equatable {
   }
 
   @override
-  List<Object> get props => [extraData];
+  List<Object?> get props => [extraData];
 }
 
-class AuthCubitUnauthorized<ExtraData> extends AuthCubitState<ExtraData> {
-  const AuthCubitUnauthorized({ExtraData extraData}) : super(extraData: extraData);
+class AuthCubitUnauthorized<ExtraData> extends AuthCubitState<ExtraData?> {
+  const AuthCubitUnauthorized({ExtraData? extraData}) : super(extraData: extraData);
 }
 
 class AuthCubitAuthorizing<ExtraData> extends AuthCubitUnauthorized<ExtraData> {
-  const AuthCubitAuthorizing({ExtraData extraData}) : super(extraData: extraData);
+  const AuthCubitAuthorizing({ExtraData? extraData}) : super(extraData: extraData);
 }
 
-class AuthCubitAuthorized<ExtraData> extends AuthCubitState<ExtraData> {
+class AuthCubitAuthorized<ExtraData> extends AuthCubitState<ExtraData?> {
   AuthCubitAuthorized({
-    ExtraData extraData,
+    ExtraData? extraData,
   }) : super(extraData: extraData);
 
   @override
-  List<Object> get props => super.props;
+  List<Object?> get props => super.props;
 }
 
 class AuthCubitUnauthorizing<ExtraData> extends AuthCubitAuthorized<ExtraData> {
   AuthCubitUnauthorizing({
-    ExtraData extraData,
+    ExtraData? extraData,
   }) : super(extraData: extraData);
 }
 
 class AuthCubitReauthorizing<ExtraData> extends AuthCubitAuthorized<ExtraData> {
   AuthCubitReauthorizing({
-    ExtraData extraData,
+    ExtraData? extraData,
   }) : super(extraData: extraData);
 }

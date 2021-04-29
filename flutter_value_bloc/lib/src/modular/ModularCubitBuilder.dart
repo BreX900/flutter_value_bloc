@@ -6,19 +6,19 @@ import 'package:value_bloc/value_bloc.dart';
 typedef _LoadModuleBuilder = Widget Function(BuildContext context, LoadCubit cubit);
 
 class ModularViewCubitBuilder<C extends ModularCubitMixin<S>, S> extends StatelessWidget {
-  final C modularCubit;
+  final C? modularCubit;
 
-  final _LoadModuleBuilder loadModuleBuilder;
+  final _LoadModuleBuilder? loadModuleBuilder;
 
-  final BlocBuilderCondition<S> buildWhen;
+  final BlocBuilderCondition<S>? buildWhen;
   final BlocWidgetBuilder<S> builder;
 
   const ModularViewCubitBuilder({
-    Key key,
+    Key? key,
     this.modularCubit,
     this.loadModuleBuilder,
     this.buildWhen,
-    @required this.builder,
+    required this.builder,
   }) : super(key: key);
 
   @override
@@ -27,7 +27,7 @@ class ModularViewCubitBuilder<C extends ModularCubitMixin<S>, S> extends Statele
 
     if (modularCubit is LoadCubitModule<Object, S>) {
       if (loadModuleBuilder != null) {
-        return loadModuleBuilder(context, modularCubit.loadCubit);
+        return loadModuleBuilder!(context, modularCubit.loadCubit);
       } else {
         return LoadViewCubitBuilder(
           loadCubit: modularCubit.loadCubit,
@@ -41,7 +41,7 @@ class ModularViewCubitBuilder<C extends ModularCubitMixin<S>, S> extends Statele
 
   Widget _buildView(BuildContext context, C modularCubit) {
     return BlocBuilder<C, S>(
-      cubit: modularCubit,
+      bloc: modularCubit,
       buildWhen: buildWhen,
       builder: builder,
     );
@@ -49,24 +49,24 @@ class ModularViewCubitBuilder<C extends ModularCubitMixin<S>, S> extends Statele
 }
 
 class ModularViewCubitConsumer<C extends ModularCubitMixin<S>, S> extends StatelessWidget {
-  final C modularCubit;
+  final C? modularCubit;
 
-  final _LoadModuleBuilder loadModuleBuilder;
+  final _LoadModuleBuilder? loadModuleBuilder;
 
-  final BlocBuilderCondition<S> listenWhen;
+  final BlocBuilderCondition<S>? listenWhen;
   final BlocWidgetListener<S> listener;
 
-  final BlocBuilderCondition<S> buildWhen;
+  final BlocBuilderCondition<S>? buildWhen;
   final BlocWidgetBuilder<S> builder;
 
   const ModularViewCubitConsumer({
-    Key key,
+    Key? key,
     this.modularCubit,
     this.loadModuleBuilder,
     this.listenWhen,
-    @required this.listener,
+    required this.listener,
     this.buildWhen,
-    @required this.builder,
+    required this.builder,
   }) : super(key: key);
 
   @override
@@ -74,7 +74,7 @@ class ModularViewCubitConsumer<C extends ModularCubitMixin<S>, S> extends Statel
     final modularCubit = this.modularCubit ?? BlocProvider.of<C>(context);
 
     return BlocListener<C, S>(
-      cubit: modularCubit,
+      bloc: modularCubit,
       listenWhen: listenWhen,
       listener: listener,
       child: ModularViewCubitBuilder(

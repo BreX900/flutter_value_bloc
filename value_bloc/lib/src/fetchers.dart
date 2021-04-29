@@ -1,4 +1,5 @@
 import 'package:built_collection/built_collection.dart';
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:meta/meta.dart';
 import 'package:value_bloc/src/utils.dart';
 
@@ -20,14 +21,14 @@ class ContinuousListFetcherPlugin extends ListFetcherPlugin {
   const ContinuousListFetcherPlugin();
 
   /// find in queue the first scheme contains the offset
-  IterableSection findContainer(BuiltSet<IterableSection> queue, int offset) {
-    return queue.firstWhere((s) => s.containsOffset(offset), orElse: () => null);
+  IterableSection? findContainer(BuiltSet<IterableSection> queue, int offset) {
+    return queue.firstWhereOrNull((s) => s.containsOffset(offset));
   }
 
   /// find in the queue for the first possible not-existent scheme offset
   ///
   /// Returns null if the offset exist
-  int findFirstNotExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
+  int? findFirstNotExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
     for (var i = scheme.startAt; i < scheme.endAt; i++) {
       final container = findContainer(queue, i);
       if (container == null) return i;
@@ -38,7 +39,7 @@ class ContinuousListFetcherPlugin extends ListFetcherPlugin {
   /// find in the queue for the first possible existent scheme offset
   ///
   /// Returns null if the offset not exist
-  int findFirstExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
+  int? findFirstExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
     for (var i = scheme.startAt; i < scheme.endAt; i++) {
       final container = findContainer(queue, i);
       if (container != null) return i;
@@ -48,6 +49,7 @@ class ContinuousListFetcherPlugin extends ListFetcherPlugin {
 
   @override
   BuiltSet<IterableSection> addTo(BuiltSet<IterableSection> queue, IterableSection scheme) {
+    IterableSection? tmpScheme = scheme;
     do {
       final newStartAt = findFirstNotExistOffset(queue, scheme);
       if (newStartAt == null) return queue;
@@ -56,8 +58,9 @@ class ContinuousListFetcherPlugin extends ListFetcherPlugin {
       final newScheme = newEndAt == null ? startScheme : startScheme.mergeWith(endAt: newEndAt);
 
       queue = queue.rebuild((b) => b.add(newScheme));
-      scheme = newScheme.endAt >= scheme.endAt ? null : scheme.mergeWith(startAt: newScheme.endAt);
-    } while (scheme != null);
+      tmpScheme =
+          newScheme.endAt >= scheme.endAt ? null : scheme.mergeWith(startAt: newScheme.endAt);
+    } while (tmpScheme != null);
 
     return queue;
   }

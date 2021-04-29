@@ -11,33 +11,32 @@ abstract class IterableCubitBuilderBase<Value> extends StatelessWidget {
   final int skipValuesCount;
 
   /// Number of values to show
-  final int takeValuesCount;
+  final int? takeValuesCount;
 
   final bool useOldValues;
 
   /// [CubitViewBuilder.loadingBuilder]
-  final LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+  final LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>?
       loadingBuilder;
 
   /// [CubitViewBuilder.errorBuilder]
-  final ErrorCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+  final ErrorCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>?
       errorBuilder;
 
   /// [CubitViewBuilder.emptyBuilder]
-  final EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
+  final EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>?
       emptyBuilder;
 
   const IterableCubitBuilderBase({
-    Key key,
-    @required this.iterableCubit,
+    Key? key,
+    required this.iterableCubit,
     this.skipValuesCount = 0,
     this.takeValuesCount,
     this.useOldValues = false,
     this.loadingBuilder = CubitViewBuilder.buildLoading,
     this.errorBuilder = CubitViewBuilder.buildError,
     this.emptyBuilder = CubitViewBuilder.buildEmpty,
-  })  : assert(iterableCubit != null),
-        assert(skipValuesCount != null && skipValuesCount >= 0, '${skipValuesCount}'),
+  })  : assert(skipValuesCount >= 0, '${skipValuesCount}'),
         assert(takeValuesCount == null || takeValuesCount > 0, '${takeValuesCount}'),
         super(key: key);
 
@@ -52,15 +51,15 @@ abstract class IterableCubitBuilderBase<Value> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final current = BlocBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>(
-      cubit: iterableCubit,
+      bloc: iterableCubit,
       builder: (context, state) {
         if (state is IterableCubitUpdating<Value, Object>) {
           if ((!useOldValues || state.oldAllValues.isEmpty) && loadingBuilder != null) {
-            return loadingBuilder(context, iterableCubit, state);
+            return loadingBuilder!(context, iterableCubit, state);
           }
         } else if (state is IterableCubitUpdateFailed<Value, Object>) {
           if (errorBuilder != null) {
-            return errorBuilder(context, iterableCubit, state);
+            return errorBuilder!(context, iterableCubit, state);
           }
         }
 
@@ -70,12 +69,12 @@ abstract class IterableCubitBuilderBase<Value> extends StatelessWidget {
 
         values = values.rebuild((b) {
           if (skipValuesCount > 0) b.skip(skipValuesCount);
-          if (takeValuesCount != null) b.take(takeValuesCount);
+          if (takeValuesCount != null) b.take(takeValuesCount!);
         });
 
         if (values.isEmpty) {
           if (emptyBuilder != null) {
-            return emptyBuilder(context, iterableCubit, state);
+            return emptyBuilder!(context, iterableCubit, state);
           }
         }
 

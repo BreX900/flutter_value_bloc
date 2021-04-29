@@ -31,7 +31,7 @@ class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, CloserCub
 }
 
 class TableScreen extends StatelessWidget {
-  const TableScreen({Key key}) : super(key: key);
+  const TableScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

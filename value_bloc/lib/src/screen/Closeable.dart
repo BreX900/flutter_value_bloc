@@ -54,7 +54,7 @@ extension CloseableCubitExtension<State> on Cubit<State> {
 // ==================================================
 
 /// It allows you to combine several modules into a single cubit
-mixin ModularCubitMixin<State> on Cubit<State> {}
+mixin ModularCubitMixin<State> on BlocBase<State> {}
 
 /// See [ModularCubitMixin]
 abstract class ModularCubit<State> extends Cubit<State> with ModularCubitMixin<State> {
@@ -71,7 +71,7 @@ abstract class ModularBloc<Event, State> extends Bloc<Event, State> with Modular
 // ==================================================
 
 mixin LoadCubitModule<ExtraData, State> on ModularCubitMixin<State> {
-  LoadCubit _loadCubit;
+  LoadCubit? _loadCubit;
   LoadCubit get loadCubit {
     return _loadCubit ??= LoadCubit(loader: onLoading)..load();
   }
@@ -81,11 +81,11 @@ mixin LoadCubitModule<ExtraData, State> on ModularCubitMixin<State> {
 
   /// See [LoadCubit.emitLoading]
   @protected
-  void emitLoading({@required double progress}) => loadCubit.emitLoading(progress: progress);
+  void emitLoading({required double progress}) => loadCubit.emitLoading(progress: progress);
 
   /// See [LoadCubit.emitLoadFailed]
   @protected
-  void emitLoadFailed({Object failure}) => loadCubit.emitLoadFailed(failure: failure);
+  void emitLoadFailed({Object? failure}) => loadCubit.emitLoadFailed(failure: failure);
 
   /// See [LoadCubit.emitLoaded]
   @protected

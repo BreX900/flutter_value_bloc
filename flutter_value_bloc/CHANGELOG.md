@@ -1,3 +1,7 @@
+# Changelog
+
+- Migrated to null-safety
+
 ## 0.5.1
 - Fix not show failure
 

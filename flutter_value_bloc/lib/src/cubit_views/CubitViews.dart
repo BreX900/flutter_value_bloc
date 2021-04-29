@@ -31,15 +31,15 @@ class CubitViews {
   });
 
   const CubitViews.raw({
-    @required this.loadingBuilder,
-    @required this.errorBuilder,
-    @required this.emptyBuilder,
+    required this.loadingBuilder,
+    required this.errorBuilder,
+    required this.emptyBuilder,
   });
 
   CubitViews copyWith({
-    LoadingCubitViewBuilder<Cubit<Object>, Object> loadingBuilder,
-    ErrorCubitViewBuilder<Cubit<Object>, Object> errorBuilder,
-    EmptyCubitViewBuilder<Cubit<Object>, Object> emptyBuilder,
+    LoadingCubitViewBuilder<Cubit<Object>, Object>? loadingBuilder,
+    ErrorCubitViewBuilder<Cubit<Object>, Object>? errorBuilder,
+    EmptyCubitViewBuilder<Cubit<Object>, Object>? emptyBuilder,
   }) {
     if ((errorBuilder == null || identical(errorBuilder, this.errorBuilder)) &&
         (loadingBuilder == null || identical(loadingBuilder, this.loadingBuilder)) &&
@@ -56,22 +56,22 @@ class CubitViews {
 
   static Widget buildLoaderView(BuildContext context, Cubit<Object> cubit, Object state) {
     final viewData = ViewsProvider.of(context);
-    return viewData.loadingBuilder(context, 0.0);
+    return viewData.loadingBuilder!(context, 0.0);
   }
 
   static Widget buildErrorView(BuildContext context, Cubit<Object> cubit, Object state) {
     final viewData = ViewsProvider.of(context);
     if (state is ObjectCubitUpdateFailed<Object, Object>) {
-      return viewData.errorBuilder(context, state.failure);
+      return viewData.errorBuilder!(context, state.failure);
     } else if (state is IterableCubitUpdateFailed<Object, Object>) {
-      return viewData.errorBuilder(context, state.failure);
+      return viewData.errorBuilder!(context, state.failure);
     } else {
-      return viewData.errorBuilder(context, null);
+      return viewData.errorBuilder!(context, null);
     }
   }
 
   static Widget buildEmptyView(BuildContext context, Cubit<Object> cubit, Object state) {
     final viewData = ViewsProvider.of(context);
-    return viewData.emptyBuilder(context);
+    return viewData.emptyBuilder!(context);
   }
 }

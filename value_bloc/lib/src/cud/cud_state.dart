@@ -4,37 +4,37 @@ abstract class CudCubitState<RawValue, PartialValue, Value> extends Equatable {
   const CudCubitState();
 
   CudCubitState<RawValue, PartialValue, Value> toCreating({
-    @required BuiltList<RawValue> values,
+    required BuiltList<RawValue> values,
   }) {
     return CudCubitCreating(values: values);
   }
 
   CudCubitState<RawValue, PartialValue, Value> toCreated({
-    @required BuiltList<Value> values,
+    required BuiltList<Value> values,
   }) {
     return CudCubitCreated(values: values);
   }
 
   CudCubitState<RawValue, PartialValue, Value> toUpdating({
-    @required BuiltList<PartialValue> values,
+    required BuiltList<PartialValue> values,
   }) {
     return CudCubitUpdating(values: values);
   }
 
   CudCubitState<RawValue, PartialValue, Value> toUpdated({
-    @required BuiltList<Value> values,
+    required BuiltList<Value> values,
   }) {
     return CudCubitUpdated(values: values);
   }
 
   CudCubitState<RawValue, PartialValue, Value> toDeleting({
-    @required BuiltList<Value> values,
+    required BuiltList<Value> values,
   }) {
     return CudCubitDeleting(values: values);
   }
 
   CudCubitState<RawValue, PartialValue, Value> toDeleted({
-    @required BuiltList<Value> values,
+    required BuiltList<Value> values,
   }) {
     return CudCubitDeleted(values: values);
   }
@@ -51,7 +51,7 @@ class CudCubitCreating<RawValue, PartialValue, Value>
   final BuiltList<RawValue> values;
 
   const CudCubitCreating({
-    @required this.values,
+    required this.values,
   });
 
   @override
@@ -63,7 +63,7 @@ class CudCubitCreated<RawValue, PartialValue, Value>
   final BuiltList<Value> values;
 
   const CudCubitCreated({
-    @required this.values,
+    required this.values,
   });
 
   @override
@@ -75,7 +75,7 @@ class CudCubitUpdating<RawValue, PartialValue, Value>
   final BuiltList<PartialValue> values;
 
   const CudCubitUpdating({
-    @required this.values,
+    required this.values,
   });
 
   @override
@@ -87,7 +87,7 @@ class CudCubitUpdated<RawValue, PartialValue, Value>
   final BuiltList<Value> values;
 
   const CudCubitUpdated({
-    @required this.values,
+    required this.values,
   });
 
   @override
@@ -99,7 +99,7 @@ class CudCubitDeleting<RawValue, PartialValue, Value>
   final BuiltList<Value> values;
 
   const CudCubitDeleting({
-    @required this.values,
+    required this.values,
   });
 
   @override
@@ -111,7 +111,7 @@ class CudCubitDeleted<RawValue, PartialValue, Value>
   final BuiltList<Value> values;
 
   const CudCubitDeleted({
-    @required this.values,
+    required this.values,
   });
 
   @override

@@ -1,7 +1,7 @@
 import 'dart:math';
 
 abstract class SingleFetchEvent<V> {
-  factory SingleFetchEvent.failed({Object failure}) = FailedFetchEvent<V>;
+  factory SingleFetchEvent.failed({Object? failure}) = FailedFetchEvent<V>;
 
   factory SingleFetchEvent.empty() = EmptyFetchEvent<V>;
 
@@ -9,15 +9,15 @@ abstract class SingleFetchEvent<V> {
 }
 
 abstract class MultiFetchEvent<V> {
-  factory MultiFetchEvent.failed({Object failure}) = FailedFetchEvent<V>;
+  factory MultiFetchEvent.failed({Object? failure}) = FailedFetchEvent<V>;
 
   factory MultiFetchEvent.empty() = EmptyFetchEvent<V>;
 
-  factory MultiFetchEvent.fetched(V value, {int total}) = IterableFetchedEvent<V>;
+  factory MultiFetchEvent.fetched(V value, {int? total}) = IterableFetchedEvent<V>;
 }
 
 class FailedFetchEvent<V> implements SingleFetchEvent<V>, MultiFetchEvent<V> {
-  final Object failure;
+  final Object? failure;
 
   FailedFetchEvent({this.failure});
 }
@@ -34,7 +34,7 @@ class ObjectFetchedEvent<V> implements SingleFetchEvent<V> {
 
 class IterableFetchedEvent<V> implements MultiFetchEvent<V> {
   final V values;
-  final int total;
+  final int? total;
 
   IterableFetchedEvent(this.values, {this.total});
 }
@@ -51,9 +51,7 @@ class IterableSection {
   /// Todo: Fix it with match with last position
   int get endAt => startAt + length;
 
-  IterableSection(this.startAt, this.length)
-      : assert(startAt != null, 'startAt is "$startAt"'),
-        assert(length != null && length > 0, 'length is "$length"');
+  IterableSection(this.startAt, this.length) : assert(length > 0, 'length is "$length"');
 
   IterableSection.of(int startAt, int endAt) : this(startAt, endAt - startAt);
 
@@ -67,11 +65,11 @@ class IterableSection {
   /// it check if [other] offset is in [this] scheme
   bool containsOffset(int other) => startAt <= other && endAt > other;
 
-  IterableSection copyWith({int startAt, int length}) {
+  IterableSection copyWith({int? startAt, int? length}) {
     return IterableSection(startAt ?? this.startAt, length ?? this.length);
   }
 
-  IterableSection mergeWith({int startAt, int endAt}) {
+  IterableSection mergeWith({int? startAt, int? endAt}) {
     startAt ??= this.startAt;
     endAt ??= this.endAt;
 
@@ -81,11 +79,11 @@ class IterableSection {
   }
 
   IterableSection applyEnd(int offset) {
-    assert(offset != null && offset < endAt, 'Not possible apply "$offset" to "$this"');
+    assert(offset < endAt, 'Not possible apply "$offset" to "$this"');
     return IterableSection(offset, endAt - offset);
   }
 
-  IterableSection find(IterableSection other) {
+  IterableSection? find(IterableSection other) {
     if (!containsOffset(other.startAt)) return null;
     return IterableSection(other.startAt, min(length, other.length));
   }

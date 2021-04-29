@@ -1,21 +1,19 @@
 import 'package:bloc/bloc.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:equatable/equatable.dart';
-import 'package:meta/meta.dart';
 
 part 'NavigationState.dart';
 
-class NavigationCubit<T> extends Cubit<NavigationCubitState<T>> {
+class NavigationCubit<T> extends Cubit<NavigationCubitState<T?>> {
   NavigationCubit({
-    @required Iterable<T> pages,
-    T initialPage,
-  })  : assert(pages != null),
-        super(NavigationCubitState(
+    required Iterable<T> pages,
+    T? initialPage,
+  }) : super(NavigationCubitState(
           pages: pages.toBuiltList(),
           currentIndexPage: initialPage != null ? pages.toList().indexOf(initialPage) : 0,
         ));
 
-  static NavigationCubit<int> from({@required int pagesCount, int initialPage}) {
+  static NavigationCubit<int> from({required int pagesCount, int? initialPage}) {
     return NavigationCubit(
       pages: List.generate(pagesCount, (index) => index),
       initialPage: initialPage,
@@ -30,7 +28,7 @@ class NavigationCubit<T> extends Cubit<NavigationCubitState<T>> {
     emit(state.copyWith(currentIndexPage: indexPage));
   }
 
-  void updatePages(Iterable<T> pages, [T page]) {
+  void updatePages(Iterable<T> pages, [T? page]) {
     final newPages = pages.toBuiltList();
     emit(state.copyWith(
       pages: newPages,

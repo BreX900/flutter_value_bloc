@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-typedef _RowBuilder<V> = DataRow Function(V value);
+typedef _RowBuilder<V> = DataRow? Function(V? value);
 
 /// Build a [PaginatedDataTable] with [ListValueCubit]
 ///
@@ -20,7 +20,7 @@ class PaginatedDataTableCubitBuilder<V> extends StatefulWidget {
   final List<int> availableRowsPerPage;
 
   /// See [PaginatedDataTable.sortColumnIndex]
-  final int sortColumnIndex;
+  final int? sortColumnIndex;
 
   /// See [PaginatedDataTable.sortAscending]
   final bool sortAscending;
@@ -57,8 +57,8 @@ class PaginatedDataTableCubitBuilder<V> extends StatefulWidget {
   final _RowBuilder<V> builder;
 
   const PaginatedDataTableCubitBuilder({
-    Key key,
-    @required this.iterableCubit,
+    Key? key,
+    required this.iterableCubit,
     this.initialFirstRowIndex = 0,
     this.rowsPerPage = PaginatedDataTable.defaultRowsPerPage,
     this.availableRowsPerPage = const <int>[
@@ -74,21 +74,19 @@ class PaginatedDataTableCubitBuilder<V> extends StatefulWidget {
     this.horizontalMargin = 24.0,
     this.columnSpacing = 56.0,
     this.dragStartBehavior = DragStartBehavior.start,
-    @required this.header,
+    required this.header,
     this.actions = const <Widget>[],
-    @required this.columns,
-    @required this.builder,
-  })  : assert(iterableCubit != null),
-        assert(builder != null),
-        super(key: key);
+    required this.columns,
+    required this.builder,
+  }) : super(key: key);
 
   @override
   _PaginatedDataTableCubitBuilderState<V> createState() => _PaginatedDataTableCubitBuilderState();
 }
 
 class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCubitBuilder<V>> {
-  _DataTableSource<V> _source;
-  int _currentPageOffset;
+  late _DataTableSource<V> _source;
+  late int _currentPageOffset;
 
   @override
   void initState() {
@@ -125,7 +123,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
     final iterableCubit = widget.iterableCubit;
 
     return BlocListener<IterableCubit<V, Object>, IterableCubitState<V, Object>>(
-      cubit: iterableCubit,
+      bloc: iterableCubit,
       listener: (context, state) {
         _source.data = getData(state);
         if (state is IterableCubitUpdating<V, Object> &&
@@ -166,12 +164,12 @@ class _DataTableSource<V> extends DataTableSource {
   _RowBuilder<V> _builder;
 
   _DataTableSource({
-    @required _Data data,
-    @required _RowBuilder<V> builder,
-  })  : _data = data,
+    required _Data<V> data,
+    required _RowBuilder<V> builder,
+  })   : _data = data,
         _builder = builder;
 
-  set data(_Data data) {
+  set data(_Data<V> data) {
     if (_data == data) return;
     _data = data;
     notifyListeners();
@@ -193,7 +191,7 @@ class _DataTableSource<V> extends DataTableSource {
   int get selectedRowCount => 0;
 
   @override
-  DataRow getRow(int index) {
+  DataRow? getRow(int index) {
     return _builder(_data.values[index]);
   }
 }
@@ -204,9 +202,9 @@ class _Data<V> {
   final int rowCount;
 
   const _Data({
-    @required this.values,
-    @required this.isRowCountApproximate,
-    @required this.rowCount,
+    required this.values,
+    required this.isRowCountApproximate,
+    required this.rowCount,
   });
 
   @override

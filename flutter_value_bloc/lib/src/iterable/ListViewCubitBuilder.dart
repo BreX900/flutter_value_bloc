@@ -6,7 +6,7 @@ import 'package:flutter_value_bloc/src/iterable/ScrollViewCubitBuilder.dart';
 import 'package:flutter_value_bloc/src/utils.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
+class ListViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilderBase<Value> {
   /// [ScrollView.scrollDirection]
   final Axis scrollDirection;
 
@@ -14,33 +14,33 @@ class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
   final bool reverse;
 
   /// [ScrollView.controller]
-  final ScrollController controller;
+  final ScrollController? controller;
 
   /// [ScrollView.primary]
-  final bool primary;
+  final bool? primary;
 
   /// [ScrollView.physics]
-  final ScrollPhysics physics;
+  final ScrollPhysics? physics;
 
   /// [ScrollView.shrinkWrap]
   final bool shrinkWrap;
 
   /// [BoxScrollView.padding]
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? padding;
 
   /// [ListView.separatorBuilder]
-  final IndexedWidgetBuilder separatorBuilder;
+  final IndexedWidgetBuilder? separatorBuilder;
 
   /// [ListView.itemBuilder]
   final CubitValueWidgetBuilder<Value> builder;
 
   const ListViewCubitBuilder({
-    Key key,
-    @required MultiCubit<Value, Object, Object> iterableCubit,
+    Key? key,
+    required MultiCubit<Value, Object, Object> iterableCubit,
     bool useOldValues = true,
     int skipValuesCount = 0,
-    int takeValuesCount,
-    int valuesPerScroll,
+    int? takeValuesCount,
+    int? valuesPerScroll,
     bool isEnabledPullDown = false,
     bool isEnabledPullUp = false,
     this.scrollDirection = Axis.vertical,
@@ -57,7 +57,7 @@ class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
     EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         emptyBuilder = CubitViewBuilder.buildEmpty,
     this.separatorBuilder,
-    @required this.builder,
+    required this.builder,
   }) : super(
           key: key,
           iterableCubit: iterableCubit,
@@ -91,7 +91,7 @@ class ListViewCubitBuilder<Value> extends ScrollViewCubitBuilderBase<Value> {
         physics: physics,
         shrinkWrap: shrinkWrap,
         itemCount: values.length,
-        separatorBuilder: separatorBuilder,
+        separatorBuilder: separatorBuilder!,
         itemBuilder: itemBuilder,
       );
     }

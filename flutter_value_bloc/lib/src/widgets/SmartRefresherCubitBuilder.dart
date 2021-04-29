@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:value_bloc/value_bloc.dart';
 
@@ -11,28 +12,28 @@ abstract class SmartRefresherCubitBuilder extends StatefulWidget {
   final Widget child;
 
   const SmartRefresherCubitBuilder._({
-    @required Key key,
-    @required this.isEnabledPullDown,
-    @required this.isEnabledPullUp,
-    @required this.child,
+    required Key? key,
+    required this.isEnabledPullDown,
+    required this.isEnabledPullUp,
+    required this.child,
   }) : super(key: key);
 
   factory SmartRefresherCubitBuilder.single({
-    Key key,
-    @required SingleCubit<Object, Object, Object> singleCubit,
+    Key? key,
+    required SingleCubit<Object, Object, Object> singleCubit,
     bool isEnabledPullDown,
     bool isEnabledPullUp,
-    @required Widget child,
+    required Widget child,
   }) = _SmartRefresherSingleCubitBuilder;
 
   factory SmartRefresherCubitBuilder.multi({
-    Key key,
-    @required MultiCubit<Object, Object, Object> multiCubit,
+    Key? key,
+    required MultiCubit<Object, Object, Object> multiCubit,
     int firstOffsetScroll,
-    int valuesPerScroll,
+    int? valuesPerScroll,
     bool isEnabledPullDown,
     bool isEnabledPullUp,
-    @required Widget child,
+    required Widget child,
   }) = _SmartRefresherMultiCubitBuilder;
 }
 
@@ -40,11 +41,11 @@ class _SmartRefresherSingleCubitBuilder extends SmartRefresherCubitBuilder {
   final SingleCubit<Object, Object, Object> singleCubit;
 
   const _SmartRefresherSingleCubitBuilder({
-    Key key,
-    @required this.singleCubit,
+    Key? key,
+    required this.singleCubit,
     bool isEnabledPullDown = true,
     bool isEnabledPullUp = false,
-    @required Widget child,
+    required Widget child,
   }) : super._(
           key: key,
           isEnabledPullDown: isEnabledPullDown,
@@ -57,7 +58,7 @@ class _SmartRefresherSingleCubitBuilder extends SmartRefresherCubitBuilder {
 }
 
 class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingleCubitBuilder> {
-  RefreshController _refreshController;
+  late RefreshController _refreshController;
 
   @override
   void initState() {
@@ -95,7 +96,7 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
   @override
   Widget build(BuildContext context) {
     return BlocListener<SingleCubit<Object, Object, Object>, ObjectCubitState<Object, Object>>(
-      cubit: widget.singleCubit,
+      bloc: widget.singleCubit,
       listener: (context, state) => updateStatus(state),
       child: SmartRefresher(
         controller: _refreshController,
@@ -115,14 +116,14 @@ class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
   final int valuesPerScroll;
 
   _SmartRefresherMultiCubitBuilder({
-    Key key,
-    @required this.multiCubit,
+    Key? key,
+    required this.multiCubit,
     this.firstOffsetScroll = 0,
-    int valuesPerScroll,
+    int? valuesPerScroll,
     bool isEnabledPullDown = true,
     bool isEnabledPullUp = false,
-    @required Widget child,
-  })  : valuesPerScroll = valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll,
+    required Widget child,
+  })   : valuesPerScroll = valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll,
         super._(
           key: key,
           isEnabledPullDown: isEnabledPullDown,
@@ -134,9 +135,9 @@ class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
 }
 
 class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCubitBuilder> {
-  RefreshController _refreshController;
+  late RefreshController _refreshController;
 
-  IterableSection _section;
+  late IterableSection _section;
 
   @override
   void initState() {
@@ -176,7 +177,7 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
   }
 
   LoadStatus _getLoadStatus(IterableCubitState<Object, Object> state) {
-    if (state.length != null && _section.endAt >= state.length) {
+    if (state.length != null && _section.endAt >= state.length!) {
       return LoadStatus.noMore;
     } else if (!state.containsSection(_section)) {
       return LoadStatus.loading;
@@ -198,7 +199,7 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
   @override
   Widget build(BuildContext context) {
     return BlocListener<MultiCubit<Object, Object, Object>, IterableCubitState<Object, Object>>(
-      cubit: widget.multiCubit,
+      bloc: widget.multiCubit,
       listener: (context, state) {
         if (state is IterableCubitUpdating<Object, Object>) {
           init();

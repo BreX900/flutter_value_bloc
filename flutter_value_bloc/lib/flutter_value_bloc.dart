@@ -1,7 +1,6 @@
 library flutter_value_bloc;
 
 export 'package:flutter_bloc/flutter_bloc.dart';
-export 'package:pull_to_refresh/pull_to_refresh.dart' show RefreshConfiguration;
 
 export 'src/cubit_views/CubitViews.dart';
 export 'src/cubit_views/CubitViewsProvider.dart';

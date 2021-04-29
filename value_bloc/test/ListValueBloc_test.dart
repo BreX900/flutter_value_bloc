@@ -14,7 +14,7 @@ void main() {
 
   group('Test IterableCubit with ContinuousListFetcherPlugin', () {
     test('Fetch on page and stop after four page is empty', () async {
-      IterableCubitState<int, $> state = IterableCubitUpdating<int, $>(
+      IterableCubitState<int, $?> state = IterableCubitUpdating<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
         oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -30,7 +30,7 @@ void main() {
               );
             }
           },
-        )..listen(print),
+        )..stream.listen(print),
         tests: [
           CubitTest(
             act: (c) => c.fetch(section: IterableSection(0, 10)),
@@ -75,7 +75,7 @@ void main() {
     });
 
     test('Set length and fetch partial data', () async {
-      IterableCubitState<int, $> state = IterableCubitUpdating<int, $>(
+      IterableCubitState<int, $?> state = IterableCubitUpdating<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
         oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -89,7 +89,7 @@ void main() {
               yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
             }
           },
-        )..listen(print),
+        )..stream.listen(print),
         tests: [
           CubitTest(
             act: (c) => c.fetch(section: IterableSection(0, 10)),
@@ -126,7 +126,7 @@ void main() {
     });
 
     test('When change the fetcher clean all values and refetch', () async {
-      IterableCubitState<int, $> state = IterableCubitUpdating<int, $>(
+      IterableCubitState<int, $?> state = IterableCubitUpdating<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
         oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -136,7 +136,7 @@ void main() {
           fetcher: (selection, filter) async* {
             yield MultiFetchEvent.fetched(values.take(3));
           },
-        )..listen(print),
+        )..stream.listen(print),
         tests: [
           CubitTest(
             act: (c) => c.fetch(section: IterableSection(0, 10)),
@@ -171,7 +171,7 @@ void main() {
     });
 
     test('Reverse fetching', () async {
-      IterableCubitState<int, $> state = IterableCubitUpdating<int, $>(
+      IterableCubitState<int, $?> state = IterableCubitUpdating<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
         oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -186,7 +186,7 @@ void main() {
               yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
             }
           },
-        )..listen(print),
+        )..stream.listen(print),
         tests: [
           CubitTest(
             act: (c) => c.fetch(section: IterableSection(10, 10)),
@@ -211,7 +211,7 @@ void main() {
     });
 
     test('Fetch two page and reverse fetching for two page', () async {
-      IterableCubitState<int, $> state = IterableCubitUpdating<int, $>(
+      IterableCubitState<int, $?> state = IterableCubitUpdating<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
         oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -221,7 +221,7 @@ void main() {
           fetcher: (section, filter) async* {
             yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
           },
-        )..listen(print),
+        )..stream.listen(print),
         tests: [
           CubitTest(
             act: (c) => c.fetch(section: IterableSection(0, 10)),
@@ -272,7 +272,7 @@ void main() {
     });
 
     test('Update previous page', () async {
-      IterableCubitState<int, $> state = IterableCubitUpdating<int, $>(
+      IterableCubitState<int, $?> state = IterableCubitUpdating<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
         oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -291,7 +291,7 @@ void main() {
                   values.skip(section.startAt + 20).take(section.length + 20));
             }
           },
-        )..listen(print),
+        )..stream.listen(print),
         tests: [
           CubitTest(
             act: (c) => c.fetch(section: IterableSection(0, 10)),
@@ -319,7 +319,7 @@ void main() {
     });
 
     test('Fetch and update filter', () async {
-      IterableCubitState<int, $> state = IterableCubitUpdating<int, $>(
+      IterableCubitState<int, $?> state = IterableCubitUpdating<int, $>(
         allValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
         extraData: null,
         oldAllValues: BuiltMap.build((b) => b.withBase(() => HashMap())),
@@ -336,7 +336,7 @@ void main() {
                   total: 10);
             }
           },
-        )..listen(print),
+        )..stream.listen(print),
         tests: [
           CubitTest(
             act: (c) => c.fetch(section: IterableSection(0, 10)),
