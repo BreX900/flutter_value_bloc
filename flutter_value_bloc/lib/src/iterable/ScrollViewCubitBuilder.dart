@@ -104,7 +104,7 @@ abstract class ScrollViewCubitBuilderBase<Value extends Object>
         cubit: multiCubit,
         initializeWhen: (state) => state is IterableCubitUpdating<Value, Object>,
         initializer: (context, c) => c.fetch(
-          section: IterableSection(skipValuesCount, effectiveValuesPerScroll),
+          section: PageOffset(skipValuesCount, effectiveValuesPerScroll),
         ),
         child: super.buildDecoration(context, child),
       );

@@ -5,6 +5,8 @@ export 'package:flutter_bloc/flutter_bloc.dart';
 export 'src/cubit_views/CubitViews.dart';
 export 'src/cubit_views/CubitViewsProvider.dart';
 export 'src/cubit_views/ValueViewBuilder.dart';
+export 'src/data/data_cubit_builder.dart';
+export 'src/data/data_cubit_builders.dart';
 export 'src/iterable/GridViewCubitBuilder.dart';
 export 'src/iterable/IterableCubitBuilder.dart';
 export 'src/iterable/ListViewCubitBuilder.dart';

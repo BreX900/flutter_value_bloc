@@ -12,7 +12,7 @@ import 'package:value_bloc/src/utils.dart';
 abstract class ListFetcherPlugin {
   const ListFetcherPlugin();
 
-  BuiltSet<IterableSection> addTo(BuiltSet<IterableSection> queue, IterableSection newSection);
+  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset newSection);
 }
 
 /// It caches all the sections that have been requested by the UI
@@ -21,14 +21,14 @@ class ContinuousListFetcherPlugin extends ListFetcherPlugin {
   const ContinuousListFetcherPlugin();
 
   /// find in queue the first scheme contains the offset
-  IterableSection? findContainer(BuiltSet<IterableSection> queue, int offset) {
+  PageOffset? findContainer(BuiltSet<PageOffset> queue, int offset) {
     return queue.firstWhereOrNull((s) => s.containsOffset(offset));
   }
 
   /// find in the queue for the first possible not-existent scheme offset
   ///
   /// Returns null if the offset exist
-  int? findFirstNotExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
+  int? findFirstNotExistOffset(BuiltSet<PageOffset> queue, PageOffset scheme) {
     for (var i = scheme.startAt; i < scheme.endAt; i++) {
       final container = findContainer(queue, i);
       if (container == null) return i;
@@ -39,7 +39,7 @@ class ContinuousListFetcherPlugin extends ListFetcherPlugin {
   /// find in the queue for the first possible existent scheme offset
   ///
   /// Returns null if the offset not exist
-  int? findFirstExistOffset(BuiltSet<IterableSection> queue, IterableSection scheme) {
+  int? findFirstExistOffset(BuiltSet<PageOffset> queue, PageOffset scheme) {
     for (var i = scheme.startAt; i < scheme.endAt; i++) {
       final container = findContainer(queue, i);
       if (container != null) return i;
@@ -48,8 +48,8 @@ class ContinuousListFetcherPlugin extends ListFetcherPlugin {
   }
 
   @override
-  BuiltSet<IterableSection> addTo(BuiltSet<IterableSection> queue, IterableSection scheme) {
-    IterableSection? tmpScheme = scheme;
+  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset scheme) {
+    PageOffset? tmpScheme = scheme;
     do {
       final newStartAt = findFirstNotExistOffset(queue, scheme);
       if (newStartAt == null) return queue;
@@ -72,7 +72,7 @@ class SpasmodicListFetcherPlugin extends ListFetcherPlugin {
   const SpasmodicListFetcherPlugin();
 
   @override
-  BuiltSet<IterableSection> addTo(BuiltSet<IterableSection> queue, IterableSection newScheme) {
+  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset newScheme) {
     return BuiltSet.of([newScheme]);
   }
 }

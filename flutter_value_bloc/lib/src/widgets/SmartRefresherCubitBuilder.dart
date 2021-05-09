@@ -137,7 +137,7 @@ class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
 class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCubitBuilder> {
   late RefreshController _refreshController;
 
-  late IterableSection _section;
+  late PageOffset _section;
 
   @override
   void initState() {
@@ -159,7 +159,7 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
 
   /// Update section to first section and fetch it
   void init() {
-    _section = IterableSection(widget.firstOffsetScroll, widget.valuesPerScroll);
+    _section = PageOffset(widget.firstOffsetScroll, widget.valuesPerScroll);
     widget.multiCubit.fetch(section: _section);
   }
 
@@ -188,7 +188,7 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
   }
 
   void loadNextPage() {
-    _section = _section.moveOf(widget.valuesPerScroll);
+    _section = _section.move(widget.valuesPerScroll);
     widget.multiCubit.fetch(section: _section);
   }
 

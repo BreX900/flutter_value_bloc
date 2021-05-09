@@ -98,7 +98,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
     );
     final iterableCubit = widget.iterableCubit;
     if (iterableCubit is MultiCubit<V, Object, Object>) {
-      iterableCubit.fetch(section: IterableSection(_currentPageOffset, widget.rowsPerPage));
+      iterableCubit.fetch(section: PageOffset(_currentPageOffset, widget.rowsPerPage));
     }
   }
 
@@ -130,7 +130,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
             iterableCubit is MultiCubit<V, Object, Object>) {
           // Todo: When page is empty after first work but if you navigate to previous page
           //       the values not fetching
-          iterableCubit.fetch(section: IterableSection(_currentPageOffset, widget.rowsPerPage));
+          iterableCubit.fetch(section: PageOffset(_currentPageOffset, widget.rowsPerPage));
         }
       },
       child: PaginatedDataTable(
@@ -149,7 +149,7 @@ class _PaginatedDataTableCubitBuilderState<V> extends State<PaginatedDataTableCu
         onPageChanged: (offset) {
           _currentPageOffset = offset;
           if (iterableCubit is MultiCubit<V, Object, Object>) {
-            iterableCubit.fetch(section: IterableSection(offset, widget.rowsPerPage));
+            iterableCubit.fetch(section: PageOffset(offset, widget.rowsPerPage));
           }
         },
         source: _source,

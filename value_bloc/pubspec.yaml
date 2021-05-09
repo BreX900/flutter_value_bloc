@@ -22,8 +22,10 @@ dependencies:
   equatable: ^2.0.0
   quiver: ^3.0.1
   collection: ^1.15.0
-  built_value: ^8.0.5
+  built_value: ^8.0.6
   built_collection: ^5.0.0
+
+  dartz: ^0.10.0-nullsafety.2
 
   bloc: ^7.0.0
 
@@ -32,7 +34,7 @@ dev_dependencies:
   # flutter packages pub run build_runner watch --delete-conflicting-outputs
   analyzer: ^1.5.0
   build_runner: ^1.0.0
-  built_value_generator: ^8.0.5
+  built_value_generator: ^8.0.6
 
   # wait null safety
   test: ^1.17.2

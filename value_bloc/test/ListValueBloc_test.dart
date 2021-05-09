@@ -22,7 +22,7 @@ void main() {
       await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
         build: () => MultiCubit<int, $, $>(
           fetcher: (selection, filter) async* {
-            if (selection == IterableSection(30, 10)) {
+            if (selection == PageOffset(30, 10)) {
               yield MultiFetchEvent.empty();
             } else {
               yield MultiFetchEvent.fetched(
@@ -33,7 +33,7 @@ void main() {
         )..stream.listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state,
               state,
@@ -44,7 +44,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(10, 10)),
+            act: (c) => c.fetch(section: PageOffset(10, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
@@ -53,7 +53,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(20, 10)),
+            act: (c) => c.fetch(section: PageOffset(20, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
@@ -63,7 +63,7 @@ void main() {
           ),
           CubitTest(
             // Fetch empty second page
-            act: (c) => c.fetch(section: IterableSection(30, 10)),
+            act: (c) => c.fetch(section: PageOffset(30, 10)),
             expect: [
               state = state.toUpdated(
                 length: 30,
@@ -83,7 +83,7 @@ void main() {
       await runCubitTest<MultiCubit<int, $, $>, IterableCubitState<int, $>>(
         build: () => MultiCubit<int, $, $>(
           fetcher: (section, filter) async* {
-            if (section == IterableSection(20, 10)) {
+            if (section == PageOffset(20, 10)) {
               yield MultiFetchEvent.fetched(values.skip(20).take(3));
             } else {
               yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
@@ -92,7 +92,7 @@ void main() {
         )..stream.listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state,
               state,
@@ -103,7 +103,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(10, 10)),
+            act: (c) => c.fetch(section: PageOffset(10, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
@@ -112,7 +112,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(20, 10)),
+            act: (c) => c.fetch(section: PageOffset(20, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
@@ -139,7 +139,7 @@ void main() {
         )..stream.listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state,
               state,
@@ -157,7 +157,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state = state.toUpdated(
                 allValues:
@@ -180,7 +180,7 @@ void main() {
         build: () => MultiCubit<int, $, $>(
           fetcher: (section, filter) async* {
             print(section);
-            if (section == IterableSection(10, 10)) {
+            if (section == PageOffset(10, 10)) {
               yield MultiFetchEvent.empty();
             } else {
               yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
@@ -189,7 +189,7 @@ void main() {
         )..stream.listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(10, 10)),
+            act: (c) => c.fetch(section: PageOffset(10, 10)),
             expect: [
               state,
               state,
@@ -197,7 +197,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) =>
@@ -224,7 +224,7 @@ void main() {
         )..stream.listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state,
               state,
@@ -235,7 +235,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(10, 10)),
+            act: (c) => c.fetch(section: PageOffset(10, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
@@ -250,7 +250,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(10, 10)),
+            act: (c) => c.fetch(section: PageOffset(10, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) => b.addEntries(
@@ -259,7 +259,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) =>
@@ -282,7 +282,7 @@ void main() {
         build: () => MultiCubit<int, $, $>(
           fetcher: (section, filter) async* {
             print(section);
-            if (section == IterableSection(10, 10)) {
+            if (section == PageOffset(10, 10)) {
               yield MultiFetchEvent.empty();
             } else {
               yield MultiFetchEvent.fetched(values.skip(section.startAt).take(section.length));
@@ -294,7 +294,7 @@ void main() {
         )..stream.listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state,
               state,
@@ -305,7 +305,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(10, 10)),
+            act: (c) => c.fetch(section: PageOffset(10, 10)),
             expect: [
               state = state.toUpdated(length: 10),
               state = state.toUpdated(
@@ -339,7 +339,7 @@ void main() {
         )..stream.listen(print),
         tests: [
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state,
               state,
@@ -357,7 +357,7 @@ void main() {
             ],
           ),
           CubitTest(
-            act: (c) => c.fetch(section: IterableSection(0, 10)),
+            act: (c) => c.fetch(section: PageOffset(0, 10)),
             expect: [
               state = state.toUpdated(
                 allValues: state.allValues.rebuild((b) =>

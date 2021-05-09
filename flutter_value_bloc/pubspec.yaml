@@ -20,9 +20,9 @@ dependencies:
 
   flutter_bloc: ^7.0.0
 
-  value_bloc: ^1.0.0+1
-#  value_bloc:
-#    path: ../value_bloc
+#  value_bloc: ^1.0.0+1
+  value_bloc:
+    path: ../value_bloc
 
   provider: ^5.0.0
   pull_to_refresh: ^1.6.4-nullsafety.1

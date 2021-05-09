@@ -9,9 +9,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  value_bloc: 1.0.0+1
-#  value_bloc:
-#    path: ../../value_bloc
+#  value_bloc: 1.0.0+1
+  value_bloc:
+    path: ../../value_bloc
 
   flutter_value_bloc:
     path: ../../flutter_value_bloc

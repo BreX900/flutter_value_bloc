@@ -1,110 +1,104 @@
 part of 'auth_cubit.dart';
 
-abstract class Authorization with EquatableMixin {
-  Authorization();
-}
+abstract class AuthCubitState<TFailure, TSuccess> extends Equatable {
+  const AuthCubitState();
 
-abstract class AuthCubitState<ExtraData> extends Equatable {
-  final ExtraData extraData;
+  bool get isAuthorizing =>
+      this is AuthCubitAuthorizing<TFailure, TSuccess> ||
+      this is AuthCubitUnauthorizing<TFailure, TSuccess> ||
+      this is AuthCubitReauthorizing<TFailure, TSuccess>;
 
-  const AuthCubitState({
-    required this.extraData,
-  });
+  bool get isUnauthorized => this is AuthCubitUnauthorized<TFailure, TSuccess>;
 
-  AuthCubitState<ExtraData?> toUnauthorizing() {
+  bool get isAuthorized => this is AuthCubitAuthorized<TFailure, TSuccess>;
+
+  AuthCubitState<TFailure, TSuccess> toUnauthorizing() {
     final state = this;
-    if (state is AuthCubitAuthorized<ExtraData>) {
-      return AuthCubitUnauthorizing(extraData: extraData);
+    if (state is AuthCubitAuthorized<TFailure, TSuccess>) {
+      return AuthCubitUnauthorizing(success: state.success);
     } else {
       return this;
     }
   }
 
-  AuthCubitState<ExtraData?> toUnauthorized() {
+  AuthCubitState<TFailure, TSuccess> toAuthorizationFailed({required TFailure failure}) {
     final state = this;
-    if (state is AuthCubitAuthorized<ExtraData>) {
+    if (state is AuthCubitUnauthorized<TFailure, TSuccess>) {
+      return AuthCubitUnauthorized(failure: failure);
+    } else {
+      return this;
+    }
+  }
+
+  AuthCubitState<TFailure, TSuccess> toUnauthorized() {
+    final state = this;
+    if (state is AuthCubitAuthorized<TFailure, TSuccess>) {
       return AuthCubitUnauthorized();
     } else {
       return this;
     }
   }
 
-  AuthCubitState<ExtraData?> toAuthorizing() {
+  AuthCubitState<TFailure, TSuccess> toAuthorizing() {
     final state = this;
-    if (state is AuthCubitUnauthorized<ExtraData>) {
-      return AuthCubitAuthorizing(extraData: extraData);
-    } else if (state is AuthCubitAuthorized<ExtraData>) {
-      return AuthCubitReauthorizing(extraData: extraData);
+    if (state is AuthCubitUnauthorized<TFailure, TSuccess>) {
+      return AuthCubitAuthorizing();
+    } else if (state is AuthCubitAuthorized<TFailure, TSuccess>) {
+      return AuthCubitReauthorizing(success: state.success);
     } else {
       return this;
     }
   }
 
-  AuthCubitState<ExtraData?> toAuthorized() {
+  AuthCubitState<TFailure, TSuccess> toRevokeFailed({required TFailure failure}) {
     final state = this;
-    if (state is AuthCubitUnauthorized<ExtraData>) {
-      return AuthCubitAuthorized(extraData: extraData);
+    if (state is AuthCubitAuthorized<TFailure, TSuccess>) {
+      return AuthCubitAuthorized(failure: failure, success: state.success);
     } else {
-      return copyWith();
+      return this;
     }
   }
 
-  AuthCubitState<ExtraData?> copyWith({Authorization? authorization, ExtraData? extraData}) {
+  AuthCubitState<TFailure, TSuccess> toAuthorized({required TSuccess success}) {
     final state = this;
-    if (state is AuthCubitReauthorizing<ExtraData>) {
-      return AuthCubitReauthorizing(
-        extraData: extraData ?? state.extraData,
-      );
-    } else if (state is AuthCubitUnauthorizing<ExtraData>) {
-      return AuthCubitUnauthorizing(
-        extraData: extraData ?? state.extraData,
-      );
-    } else if (state is AuthCubitAuthorized<ExtraData>) {
-      return AuthCubitAuthorized(
-        extraData: extraData ?? state.extraData,
-      );
-    } else if (state is AuthCubitAuthorizing<ExtraData>) {
-      return AuthCubitAuthorizing(
-        extraData: extraData ?? state.extraData,
-      );
-    } else if (state is AuthCubitUnauthorized<ExtraData>) {
-      return AuthCubitUnauthorized(
-        extraData: extraData ?? state.extraData,
-      );
+    if (state is AuthCubitUnauthorized<TFailure, TSuccess>) {
+      return AuthCubitAuthorized(success: success);
     } else {
-      throw 'Not support ${state}';
+      return this;
     }
   }
 
   @override
-  List<Object?> get props => [extraData];
+  bool get stringify => true;
 }
 
-class AuthCubitUnauthorized<ExtraData> extends AuthCubitState<ExtraData?> {
-  const AuthCubitUnauthorized({ExtraData? extraData}) : super(extraData: extraData);
-}
+class AuthCubitUnauthorized<TFailure, TSuccess> extends AuthCubitState<TFailure, TSuccess> {
+  final TFailure? failure;
 
-class AuthCubitAuthorizing<ExtraData> extends AuthCubitUnauthorized<ExtraData> {
-  const AuthCubitAuthorizing({ExtraData? extraData}) : super(extraData: extraData);
-}
-
-class AuthCubitAuthorized<ExtraData> extends AuthCubitState<ExtraData?> {
-  AuthCubitAuthorized({
-    ExtraData? extraData,
-  }) : super(extraData: extraData);
+  const AuthCubitUnauthorized({this.failure}) : super();
 
   @override
-  List<Object?> get props => super.props;
+  List<Object?> get props => [failure];
 }
 
-class AuthCubitUnauthorizing<ExtraData> extends AuthCubitAuthorized<ExtraData> {
-  AuthCubitUnauthorizing({
-    ExtraData? extraData,
-  }) : super(extraData: extraData);
+class AuthCubitAuthorizing<TFailure, TSuccess> extends AuthCubitUnauthorized<TFailure, TSuccess> {
+  const AuthCubitAuthorizing() : super();
 }
 
-class AuthCubitReauthorizing<ExtraData> extends AuthCubitAuthorized<ExtraData> {
-  AuthCubitReauthorizing({
-    ExtraData? extraData,
-  }) : super(extraData: extraData);
+class AuthCubitAuthorized<TFailure, TSuccess> extends AuthCubitState<TFailure, TSuccess> {
+  final TFailure? failure;
+  final TSuccess success;
+
+  AuthCubitAuthorized({this.failure, required this.success}) : super();
+
+  @override
+  List<Object?> get props => [failure, success];
+}
+
+class AuthCubitUnauthorizing<TFailure, TSuccess> extends AuthCubitAuthorized<TFailure, TSuccess> {
+  AuthCubitUnauthorizing({required TSuccess success}) : super(success: success);
+}
+
+class AuthCubitReauthorizing<TFailure, TSuccess> extends AuthCubitAuthorized<TFailure, TSuccess> {
+  AuthCubitReauthorizing({required TSuccess success}) : super(success: success);
 }

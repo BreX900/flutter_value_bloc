@@ -32,29 +32,29 @@ abstract class IterableCubitState<Value, ExtraData> with EquatableMixin {
   BuiltList<Value>? _values;
   BuiltList<Value> get values => _values ??= allValues.firstValues;
 
-  BuiltList<IterableSection>? _sections;
-  BuiltList<IterableSection> get sections {
-    if (allValues.isEmpty) return BuiltList<IterableSection>();
+  BuiltList<PageOffset>? _sections;
+  BuiltList<PageOffset> get sections {
+    if (allValues.isEmpty) return BuiltList<PageOffset>();
     if (_sections != null) return _sections!;
 
-    final sections = ListBuilder<IterableSection>();
+    final sections = ListBuilder<PageOffset>();
     var startAt = allValues.keys.first;
     var endAt = allValues.keys.first - 1;
     for (var i = allValues.keys.first; i < allValues.keys.last; i++) {
       if (i == endAt + 1) {
         endAt = i;
       } else {
-        sections.add(IterableSection.of(startAt, endAt));
+        sections.add(PageOffset.of(startAt, endAt));
         startAt = i;
         endAt = i;
       }
     }
-    sections.add(IterableSection.of(startAt, endAt));
+    sections.add(PageOffset.of(startAt, endAt));
 
     return _sections = sections.build();
   }
 
-  bool containsSection(IterableSection section) {
+  bool containsSection(PageOffset section) {
     return sections.any((s) => s.containsOffset(section.startAt));
   }
 
