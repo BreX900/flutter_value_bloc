@@ -25,17 +25,23 @@ class DataCubitBuilders<TFailure> {
     };
   }
 
-  BlocWidgetBuilder<DS> toActionBuilder<DS extends DataState<TFailure, S>, S>({
-    required Widget Function() builder,
-  }) {
-    return (context, state) {
-      if (state.hasFailure) {
-        return buildFailure(context, state);
-      }
-      if (!state.hasData) {
-        return buildProgress(context, state);
-      }
-      return builder(context, state);
-    };
+  // BlocWidgetBuilder<DS> toActionBuilder<DS extends DataState<TFailure, S>, S>({
+  //   required Widget Function() builder,
+  // }) {
+  //   return (context, state) {
+  //     if (state.hasFailure) {
+  //       return buildFailure(context, state);
+  //     }
+  //     if (!state.hasData) {
+  //       return buildProgress(context, state);
+  //     }
+  //     return builder(context, state);
+  //   };
+  // }
+}
+
+extension DataCubitBuildersOnBuildContext on BuildContext {
+  DataCubitBuilders<TFailure> dataCubitBuilders<TFailure>() {
+    return watch<DataCubitBuilders<TFailure>>();
   }
 }

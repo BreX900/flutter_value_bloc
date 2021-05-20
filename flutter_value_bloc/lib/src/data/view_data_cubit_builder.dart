@@ -8,14 +8,14 @@ class ViewDataCubitBuilder<
     TDataCubit extends SingleDataCubit<DataState<TFailure, TData>, TFailure, TData>,
     TFailure,
     TData> extends StatefulWidget {
-  final TDataCubit singleDataCubit;
+  final TDataCubit? singleDataCubit;
   final bool isPullDownEnabled;
   final BlocWidgetListener<DataState<TFailure, TData>>? listener;
   final BlocWidgetBuilder<DataState<TFailure, TData>> builder;
 
   const ViewDataCubitBuilder({
     Key? key,
-    required this.singleDataCubit,
+    this.singleDataCubit,
     this.isPullDownEnabled = false,
     this.listener,
     required this.builder,
@@ -30,11 +30,13 @@ class _ViewDataCubitBuilderState<
     TDataCubit extends SingleDataCubit<DataState<TFailure, TData>, TFailure, TData>,
     TFailure,
     TData> extends State<ViewDataCubitBuilder<TDataCubit, TFailure, TData>> {
+  late TDataCubit _cubit;
   RefreshController? _controller;
 
   @override
   void initState() {
     super.initState();
+    _cubit = widget.singleDataCubit ?? context.read<TDataCubit>();
     _initCubit();
     _initController();
   }
@@ -42,7 +44,10 @@ class _ViewDataCubitBuilderState<
   @override
   void didUpdateWidget(covariant ViewDataCubitBuilder<TDataCubit, TFailure, TData> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.singleDataCubit != oldWidget.singleDataCubit) {
+    final newCubit = widget.singleDataCubit ?? context.read<TDataCubit>();
+    final oldCubit = oldWidget.singleDataCubit ?? _cubit;
+    if (newCubit != oldCubit) {
+      _cubit = newCubit;
       _initCubit();
     }
     if (widget.isPullDownEnabled != oldWidget.isPullDownEnabled) {
@@ -51,15 +56,15 @@ class _ViewDataCubitBuilderState<
   }
 
   void _initCubit() {
-    if (widget.singleDataCubit.state.status.isIdle) {
-      widget.singleDataCubit.read();
+    if (_cubit.state.status.isIdle) {
+      _cubit.read();
     }
   }
 
   void _initController() {
     if (widget.isPullDownEnabled) {
       _controller = RefreshController(
-        initialRefreshStatus: _resolveRefresh(widget.singleDataCubit.state),
+        initialRefreshStatus: _resolveRefresh(_cubit.state),
       );
     } else {
       _controller = null;
@@ -67,7 +72,7 @@ class _ViewDataCubitBuilderState<
   }
 
   RefreshStatus _resolveRefresh(DataState<TFailure, TData> state) {
-    if (_controller!.headerStatus != RefreshStatus.refreshing) return _controller!.headerStatus;
+    if (_controller!.headerStatus != RefreshStatus.refreshing) return _controller!.headerStatus!;
 
     switch (state.status) {
       case DataStatus.reading:
@@ -77,12 +82,12 @@ class _ViewDataCubitBuilderState<
       case DataStatus.read:
         return RefreshStatus.completed;
       default:
-        return _controller!.headerStatus;
+        return _controller!.headerStatus!;
     }
   }
 
   void _refresh() {
-    widget.singleDataCubit.read();
+    _cubit.read();
   }
 
   @override
@@ -102,8 +107,8 @@ class _ViewDataCubitBuilderState<
     }
 
     return DataCubitListener<TDataCubit, TFailure, TData>(
-      dataCubit: widget.singleDataCubit,
-      onIdle: (context, state) => widget.singleDataCubit.read(),
+      dataCubit: _cubit,
+      onIdle: (context, state) => _cubit.read(),
       child: current,
     );
   }

@@ -70,7 +70,7 @@ class _ScrollViewDataCubitBuilderState<TDataCubit extends MapDataCubitBase<TFail
   }
 
   RefreshStatus _resolveRefresh(MultiDataState<TFailure, TData> state) {
-    if (_controller!.headerStatus != RefreshStatus.refreshing) return _controller!.headerStatus;
+    if (_controller!.headerStatus != RefreshStatus.refreshing) return _controller!.headerStatus!;
 
     switch (state.status) {
       case DataStatus.reading:
@@ -80,12 +80,12 @@ class _ScrollViewDataCubitBuilderState<TDataCubit extends MapDataCubitBase<TFail
       case DataStatus.read:
         return RefreshStatus.completed;
       default:
-        return _controller!.headerStatus;
+        return _controller!.headerStatus!;
     }
   }
 
   LoadStatus _resolveLoad(MultiDataState<TFailure, TData> state) {
-    if (_controller!.footerStatus != LoadStatus.loading) return _controller!.footerStatus;
+    if (_controller!.footerStatus != LoadStatus.loading) return _controller!.footerStatus!;
 
     switch (state.status) {
       case DataStatus.reading:
@@ -95,7 +95,7 @@ class _ScrollViewDataCubitBuilderState<TDataCubit extends MapDataCubitBase<TFail
       case DataStatus.read:
         return state.isFull ? LoadStatus.noMore : LoadStatus.idle;
       default:
-        return _controller!.footerStatus;
+        return _controller!.footerStatus!;
     }
   }
 

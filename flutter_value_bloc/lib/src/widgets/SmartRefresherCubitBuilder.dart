@@ -78,7 +78,7 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
   }
 
   void updateStatus(ObjectCubitState<Object, Object> state) {
-    _refreshController.headerMode.value = _getRefreshStatus(state);
+    _refreshController.headerMode!.value = _getRefreshStatus(state);
   }
 
   RefreshStatus _getRefreshStatus(ObjectCubitState<Object, Object> state) {
@@ -164,8 +164,8 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
   }
 
   void updateSmartRefresherController(IterableCubitState<Object, Object> state) {
-    _refreshController.headerMode.value = _getRefreshStatus(state);
-    _refreshController.footerMode.value = _getLoadStatus(state);
+    _refreshController.headerMode!.value = _getRefreshStatus(state);
+    _refreshController.footerMode!.value = _getLoadStatus(state);
   }
 
   RefreshStatus _getRefreshStatus(IterableCubitState<Object, Object> state) {
