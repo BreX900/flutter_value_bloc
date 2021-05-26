@@ -19,7 +19,7 @@ abstract class ObjectDataCubitBase<TFailure, TData>
         );
 
   @override
-  void emitRead({required TData data}) {
+  void emitRead(TData data) {
     emit(state.copyWith(status: DataStatus.read, data: Some(data)));
   }
 
@@ -27,49 +27,49 @@ abstract class ObjectDataCubitBase<TFailure, TData>
     emit(state.copyWith(status: DataStatus.creating, data: None()));
   }
 
-  void emitCreateFailed({required TFailure failure}) {
+  void emitCreateFailed(TFailure failure) {
     emit(state.copyWith(status: DataStatus.createFailed, failure: Some(failure), data: None()));
   }
 
-  void emitCreated({required TData data}) {
+  void emitCreated(TData data) {
     emit(state.copyWith(status: DataStatus.created, data: Some(data)));
   }
 
-  Either<TFailure, TData> emitCreateResult(Either<TFailure, TData> result) {
-    result.fold((failure) {
-      emitCreateFailed(failure: failure);
-    }, (data) {
-      emitCreated(data: data);
-    });
-    return result;
-  }
+  // Either<TFailure, TData> emitCreateResult(Either<TFailure, TData> result) {
+  //   result.fold((failure) {
+  //     emitCreateFailed(failure);
+  //   }, (data) {
+  //     emitCreated(data);
+  //   });
+  //   return result;
+  // }
 
   void emitUpdating() {
     emit(state.copyWith(status: DataStatus.updating));
   }
 
-  void emitUpdateFailed({required TFailure failure}) {
+  void emitUpdateFailed(TFailure failure) {
     emit(state.copyWith(status: DataStatus.updateFailed, failure: Some(failure)));
   }
 
-  void emitUpdated({required TData data}) {
+  void emitUpdated(TData data) {
     emit(state.copyWith(status: DataStatus.updated, data: Some(data)));
   }
 
-  Either<TFailure, TData> emitUpdateResult(Either<TFailure, TData> result) {
-    result.fold((failure) {
-      emitUpdateFailed(failure: failure);
-    }, (data) {
-      emitUpdated(data: data);
-    });
-    return result;
-  }
+  // Either<TFailure, TData> emitUpdateResult(Either<TFailure, TData> result) {
+  //   result.fold((failure) {
+  //     emitUpdateFailed(failure);
+  //   }, (data) {
+  //     emitUpdated(data);
+  //   });
+  //   return result;
+  // }
 
   void emitDeleting() {
     emit(state.copyWith(status: DataStatus.deleting));
   }
 
-  void emitDeleteFailed({required TFailure failure}) {
+  void emitDeleteFailed(TFailure failure) {
     emit(state.copyWith(status: DataStatus.deleteFailed, failure: Some(failure)));
   }
 
@@ -77,19 +77,13 @@ abstract class ObjectDataCubitBase<TFailure, TData>
     emit(state.copyWith(status: DataStatus.deleted));
   }
 
-  Either<TFailure, TData> emitDeleteResult(Either<TFailure, TData> result) {
-    result.fold((failure) {
-      emitDeleteFailed(failure: failure);
-    }, (_) {
-      emitDeleted();
-    });
-    return result;
-  }
-
-  // map() {
-  //   return ObjectDataCubit(reader: () async {
-  //     final res = await read();
-  //   })
+  // Either<TFailure, TData> emitDeleteResult(Either<TFailure, TData> result) {
+  //   result.fold((failure) {
+  //     emitDeleteFailed(failure);
+  //   }, (_) {
+  //     emitDeleted();
+  //   });
+  //   return result;
   // }
 }
 

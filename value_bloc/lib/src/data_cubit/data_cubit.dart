@@ -35,7 +35,7 @@ mixin SingleDataCubit<TState extends DataState<TFailure, TData>, TFailure, TData
       } else if (state.hasData) {
         return Right(state.data);
       }
-      throw "...";
+      throw '...';
     });
   }
 
@@ -45,20 +45,16 @@ mixin SingleDataCubit<TState extends DataState<TFailure, TData>, TFailure, TData
     emit(state.copyWith(status: DataStatus.reading) as TState);
   }
 
-  void emitReadFailed({required TFailure failure}) {
+  void emitReadFailed(TFailure failure) {
     emit(state.copyWith(status: DataStatus.readFailed, failure: Some(failure)) as TState);
   }
 
-  void emitRead({required TData data});
+  void emitRead(TData data);
 
-  Either<TFailure, TData> emitReadResult(Either<TFailure, TData> result) {
-    result.fold((failure) {
-      emitReadFailed(failure: failure);
-    }, (data) {
-      emitRead(data: data);
-    });
-    return result;
-  }
+  // Either<TFailure, TData> emitReadResults(Stream<Either<TFailure, TData>> results) {
+  //   results.listen((result) => result.fold(emitReadFailed, emitRead));
+  //   return result;
+  // }
 }
 
 typedef Equalizer<T> = bool Function(T a, T b);
@@ -74,7 +70,7 @@ abstract class MultiDataCubit<TFailure, TData>
   MultiDataCubit({
     required MultiDataState<TFailure, TData> state,
     required Equalizer<TData> equalizer,
-  })   : _equalizer = equalizer,
+  })  : _equalizer = equalizer,
         super(
             state: MultiDataState(
           status: DataStatus.idle,

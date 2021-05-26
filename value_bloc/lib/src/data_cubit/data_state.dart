@@ -104,7 +104,7 @@ abstract class DataState<TFailure, TData> with EquatableMixin {
     required this.status,
     required Option<TFailure> failure,
     required Option<TData> data,
-  })   : _failure = failure,
+  })  : _failure = failure,
         _data = data;
 
   bool get hasFailure => _failure.isSome();
@@ -151,13 +151,15 @@ class SingleDataState<TFailure, TData> extends DataState<TFailure, TData> {
 class MultiDataState<TFailure, TData> extends DataState<TFailure, BuiltList<TData>> {
   final int? length;
   final Option<BuiltMap<int, TData>> _allData;
+  BuiltMap<int, TData> get allData => tryAllData!;
+  BuiltMap<int, TData>? get tryAllData => _allData.fold(() => null, (a) => a);
 
   MultiDataState({
     required DataStatus status,
     required Option<TFailure> failure,
     required this.length,
     required Option<BuiltMap<int, TData>> allData,
-  })   : _allData = allData,
+  })  : _allData = allData,
         super(status: status, failure: failure, data: allData.map((a) => a.values.toBuiltList()));
 
   bool contains(PageOffset offset) {

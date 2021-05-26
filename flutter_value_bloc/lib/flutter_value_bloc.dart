@@ -1,6 +1,7 @@
 library flutter_value_bloc;
 
 export 'package:flutter_bloc/flutter_bloc.dart';
+export 'package:value_bloc/value_bloc.dart';
 
 export 'src/cubit_views/CubitViews.dart';
 export 'src/cubit_views/CubitViewsProvider.dart';
