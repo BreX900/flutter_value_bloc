@@ -151,6 +151,10 @@ class SingleDataState<TFailure, TData> extends DataState<TFailure, TData> {
 class MultiDataState<TFailure, TData> extends DataState<TFailure, BuiltList<TData>> {
   final int? length;
   final Option<BuiltMap<int, TData>> _allData;
+
+  bool get hasAllData => _allData.isSome();
+  bool get notHasAllData => _allData.isNone();
+
   BuiltMap<int, TData> get allData => tryAllData!;
   BuiltMap<int, TData>? get tryAllData => _allData.fold(() => null, (a) => a);
 

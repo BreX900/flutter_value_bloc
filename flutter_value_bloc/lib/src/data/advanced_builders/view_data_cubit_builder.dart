@@ -9,15 +9,19 @@ class ViewDataCubitBuilder<
     TFailure,
     TData> extends StatefulWidget {
   final TDataCubit? singleDataCubit;
+  final bool? canShowFailure;
   final bool isPullDownEnabled;
-  final BlocWidgetListener<DataState<TFailure, TData>>? listener;
+  final BlocWidgetBuilder<DataState<TFailure, TData>>? progressBuilder;
+  final BlocWidgetBuilder<DataState<TFailure, TData>>? failureBuilder;
   final BlocWidgetBuilder<DataState<TFailure, TData>> builder;
 
   const ViewDataCubitBuilder({
     Key? key,
     this.singleDataCubit,
+    this.canShowFailure,
     this.isPullDownEnabled = false,
-    this.listener,
+    this.progressBuilder,
+    this.failureBuilder,
     required this.builder,
   }) : super(key: key);
 
@@ -87,14 +91,26 @@ class _ViewDataCubitBuilderState<
   }
 
   void _refresh() {
-    _cubit.read();
+    _cubit.clean();
   }
 
   @override
   Widget build(BuildContext context) {
+    final viewTheme = context.watch<ViewDataCubitTheme<TFailure>>();
+
     Widget current = BlocBuilder<TDataCubit, DataState<TFailure, TData>>(
       bloc: widget.singleDataCubit,
-      builder: widget.builder,
+      builder: (context, state) {
+        if (state.hasFailure && (widget.canShowFailure ?? viewTheme.canShowFailure)) {
+          return widget.failureBuilder?.call(context, state) ??
+              viewTheme.failureBuilder(context, _cubit, state);
+        }
+        if (state.notHasData) {
+          return widget.progressBuilder?.call(context, state) ??
+              viewTheme.progressBuilder(context, _cubit, state);
+        }
+        return widget.builder(context, state);
+      },
     );
 
     if (_controller != null) {

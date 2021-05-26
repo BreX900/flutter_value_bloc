@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
 import 'package:value_bloc/src/utils.dart';
 import 'package:value_bloc/value_bloc.dart';
 
@@ -13,6 +14,11 @@ abstract class DataCubit<TState extends DataState<TFailure, TData>, TFailure, TD
     extends Cubit<TState> {
   DataCubit({required TState state}) : super(state);
 
+  /// Clean the cubit (block all operations)
+  void clean() {
+    emitIdle();
+  }
+
   void emitIdle() {
     emit(state.copyWith(status: DataStatus.idle) as TState);
   }
@@ -20,10 +26,19 @@ abstract class DataCubit<TState extends DataState<TFailure, TData>, TFailure, TD
   void emitWaiting() {
     emit(state.copyWith(status: DataStatus.waiting) as TState);
   }
+
+  // Object? _filter;
+  //
+  // void updateFilter(Object filter) {
+  //   _filter = filter;
+  //   emitIdle();
+  // }
 }
 
 mixin SingleDataCubit<TState extends DataState<TFailure, TData>, TFailure, TData>
     on DataCubit<TState, TFailure, TData> {
+  StreamSubscription? _readSub;
+
   Future<Either<TFailure, TData>> read() {
     emitReading();
     onReading();
@@ -39,6 +54,13 @@ mixin SingleDataCubit<TState extends DataState<TFailure, TData>, TFailure, TData
     });
   }
 
+  void refresh() {
+    if (state.status == DataStatus.reading) return;
+    _readSub?.cancel();
+    _readSub = null;
+    emitIdle();
+  }
+
   void onReading();
 
   void emitReading() {
@@ -51,10 +73,10 @@ mixin SingleDataCubit<TState extends DataState<TFailure, TData>, TFailure, TData
 
   void emitRead(TData data);
 
-  // Either<TFailure, TData> emitReadResults(Stream<Either<TFailure, TData>> results) {
-  //   results.listen((result) => result.fold(emitReadFailed, emitRead));
-  //   return result;
-  // }
+  void emitReadResults(Stream<Either<TFailure, TData>> results) {
+    assert(_readSub == null);
+    _readSub = results.listen((result) => result.fold(emitReadFailed, emitRead));
+  }
 }
 
 typedef Equalizer<T> = bool Function(T a, T b);
@@ -79,6 +101,23 @@ abstract class MultiDataCubit<TFailure, TData>
           allData: None(),
         ));
 
+  void emitUpdating() {
+    emit(state.copyWith(status: DataStatus.updating));
+  }
+
+  void emitUpdateFailed(TFailure failure) {
+    emit(state.copyWith(status: DataStatus.updateFailed, failure: Some(failure)));
+  }
+
+  void emitSingleUpdated(TData data) {
+    emit(state.copyWith(
+      status: DataStatus.updated,
+      allData: Some(state.allData
+          .rebuild((b) => b.updateAllValues((_, d) => _equalizer(d, data) ? data : d))),
+    ));
+  }
+
+  @visibleForTesting
   DC connectDelegator<DC extends ObjectDataCubit<TFailure, TData>>(DC dataCubit) {
     dataCubit.stream.listen((singleDataState) {
       if (state.notHasData) return;

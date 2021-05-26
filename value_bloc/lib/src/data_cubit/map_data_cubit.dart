@@ -28,11 +28,11 @@ abstract class MapDataCubitBase<TFailure, TData>
     emit(state.copyWith(status: DataStatus.reading));
   }
 
-  void emitReadFailed({required TFailure failure}) {
+  void emitReadFailed(TFailure failure) {
     emit(state.copyWith(status: DataStatus.readFailed, failure: Some(failure)));
   }
 
-  void emitRead({required BuiltList<TData> data, required PageOffset offset}) {
+  void emitRead(BuiltList<TData> data, {required PageOffset offset}) {
     emit(state.copyWith(status: DataStatus.read, allData: Some(data.asMap().build())));
   }
 
@@ -41,9 +41,9 @@ abstract class MapDataCubitBase<TFailure, TData>
     required Either<TFailure, BuiltList<TData>> result,
   }) {
     result.fold((failure) {
-      emitReadFailed(failure: failure);
+      emitReadFailed(failure);
     }, (data) {
-      emitRead(data: data, offset: offset);
+      emitRead(data, offset: offset);
     });
     return result;
   }

@@ -10,11 +10,37 @@ class DataCubitListener<
   DataCubitListener({
     TDataCubit? dataCubit,
     BlocWidgetListener<DataState<TFailure, TData>>? onIdle,
+    BlocWidgetListener<DataState<TFailure, TData>>? onWaiting,
+    BlocWidgetListener<DataState<TFailure, TData>>? onCreating,
+    BlocWidgetListener<DataState<TFailure, TData>>? onCreateFailed,
+    BlocWidgetListener<DataState<TFailure, TData>>? onCreated,
+    BlocWidgetListener<DataState<TFailure, TData>>? onReading,
+    BlocWidgetListener<DataState<TFailure, TData>>? onReadFailed,
+    BlocWidgetListener<DataState<TFailure, TData>>? onRead,
+    BlocWidgetListener<DataState<TFailure, TData>>? onUpdating,
+    BlocWidgetListener<DataState<TFailure, TData>>? onUpdateFailed,
+    BlocWidgetListener<DataState<TFailure, TData>>? onUpdated,
+    BlocWidgetListener<DataState<TFailure, TData>>? onDeleting,
+    BlocWidgetListener<DataState<TFailure, TData>>? onDeleteFailed,
+    BlocWidgetListener<DataState<TFailure, TData>>? onDeleted,
     BlocWidgetListener<DataState<TFailure, TData>>? listener,
     Widget? child,
   }) : super(
           dataCubit: dataCubit,
           onIdle: onIdle,
+          onWaiting: onWaiting,
+          onCreating: onCreating,
+          onCreateFailed: onCreateFailed,
+          onCreated: onCreated,
+          onReading: onReading,
+          onReadFailed: onReadFailed,
+          onRead: onRead,
+          onUpdating: onUpdating,
+          onUpdateFailed: onUpdateFailed,
+          onUpdated: onUpdated,
+          onDeleting: onDeleting,
+          onDeleteFailed: onDeleteFailed,
+          onDeleted: onDeleted,
           listener: listener,
           child: child,
         );
@@ -29,11 +55,37 @@ class MultiDataCubitListener<
   MultiDataCubitListener({
     TDataCubit? dataCubit,
     BlocWidgetListener<MultiDataState<TFailure, TData>>? onIdle,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onWaiting,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onCreating,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onCreateFailed,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onCreated,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onReading,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onReadFailed,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onRead,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onUpdating,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onUpdateFailed,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onUpdated,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onDeleting,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onDeleteFailed,
+    BlocWidgetListener<MultiDataState<TFailure, TData>>? onDeleted,
     BlocWidgetListener<MultiDataState<TFailure, TData>>? listener,
     Widget? child,
   }) : super(
           dataCubit: dataCubit,
           onIdle: onIdle,
+          onWaiting: onWaiting,
+          onCreating: onCreating,
+          onCreateFailed: onCreateFailed,
+          onCreated: onCreated,
+          onReading: onReading,
+          onReadFailed: onReadFailed,
+          onRead: onRead,
+          onUpdating: onUpdating,
+          onUpdateFailed: onUpdateFailed,
+          onUpdated: onUpdated,
+          onDeleting: onDeleting,
+          onDeleteFailed: onDeleteFailed,
+          onDeleted: onDeleted,
           listener: listener,
           child: child,
         );
@@ -48,6 +100,19 @@ class DataCubitListenerBase<
     Key? key,
     TDataCubit? dataCubit,
     BlocWidgetListener<TState>? onIdle,
+    BlocWidgetListener<TState>? onWaiting,
+    BlocWidgetListener<TState>? onCreating,
+    BlocWidgetListener<TState>? onCreateFailed,
+    BlocWidgetListener<TState>? onCreated,
+    BlocWidgetListener<TState>? onReading,
+    BlocWidgetListener<TState>? onReadFailed,
+    BlocWidgetListener<TState>? onRead,
+    BlocWidgetListener<TState>? onUpdating,
+    BlocWidgetListener<TState>? onUpdateFailed,
+    BlocWidgetListener<TState>? onUpdated,
+    BlocWidgetListener<TState>? onDeleting,
+    BlocWidgetListener<TState>? onDeleteFailed,
+    BlocWidgetListener<TState>? onDeleted,
     BlocWidgetListener<TState>? listener,
     Widget? child,
   }) : super(
@@ -59,43 +124,43 @@ class DataCubitListenerBase<
                 onIdle?.call(context, state);
                 break;
               case DataStatus.waiting:
-                // TODO: Handle this case.
+                onWaiting?.call(context, state);
                 break;
               case DataStatus.creating:
-                // TODO: Handle this case.
+                onCreating?.call(context, state);
                 break;
               case DataStatus.createFailed:
-                // TODO: Handle this case.
+                onCreateFailed?.call(context, state);
                 break;
               case DataStatus.created:
-                // TODO: Handle this case.
+                onCreated?.call(context, state);
                 break;
               case DataStatus.reading:
-                // TODO: Handle this case.
+                onReading?.call(context, state);
                 break;
               case DataStatus.readFailed:
-                // TODO: Handle this case.
+                onReadFailed?.call(context, state);
                 break;
               case DataStatus.read:
-                // TODO: Handle this case.
+                onRead?.call(context, state);
                 break;
               case DataStatus.updating:
-                // TODO: Handle this case.
+                onUpdating?.call(context, state);
                 break;
               case DataStatus.updateFailed:
-                // TODO: Handle this case.
+                onUpdateFailed?.call(context, state);
                 break;
               case DataStatus.updated:
-                // TODO: Handle this case.
+                onUpdated?.call(context, state);
                 break;
               case DataStatus.deleting:
-                // TODO: Handle this case.
+                onDeleting?.call(context, state);
                 break;
               case DataStatus.deleteFailed:
-                // TODO: Handle this case.
+                onDeleteFailed?.call(context, state);
                 break;
               case DataStatus.deleted:
-                // TODO: Handle this case.
+                onDeleted?.call(context, state);
                 break;
             }
             listener?.call(context, state);

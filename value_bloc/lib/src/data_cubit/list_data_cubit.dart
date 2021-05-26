@@ -37,36 +37,44 @@ abstract class ListDataCubitBase<TFailure, TData> extends MultiDataCubit<TFailur
     ));
   }
 
-  void emitUpdating() {
-    emit(state.copyWith(status: DataStatus.updating));
+  void emitCreating() {
+    emit(state.copyWith(status: DataStatus.creating));
   }
 
-  void emitUpdateFailed(TFailure failure) {
-    emit(state.copyWith(status: DataStatus.updateFailed, failure: Some(failure)));
+  void emitCreateFailed(TFailure failure) {
+    emit(state.copyWith(status: DataStatus.createFailed, failure: Some(failure)));
+  }
+
+  void emitCreated(BuiltList<TData> data) {
+    emit(state.copyWith(status: DataStatus.created, allData: Some(data.asMap().build())));
+  }
+
+  void emitSingleCreated(TData data) {
+    emit(state.copyWith(
+      status: DataStatus.created,
+      allData: Some(state.data.rebuild((b) => b.add(data)).asMap().build()),
+    ));
   }
 
   void emitUpdated(BuiltList<TData> data) {
     emit(state.copyWith(status: DataStatus.updated, allData: Some(data.asMap().build())));
   }
 
-  void emitAdded(TData data) {
-    emit(state.copyWith(
-      status: DataStatus.updated,
-      allData: Some(state.data.rebuild((b) => b.add(data)).asMap().build()),
-    ));
+  void emitDeleting() {
+    emit(state.copyWith(status: DataStatus.deleting));
   }
 
-  void emitReplaced(TData data) {
-    emit(state.copyWith(
-      status: DataStatus.updated,
-      allData: Some(state.allData
-          .rebuild((b) => b.updateAllValues((_, d) => _equalizer(d, data) ? data : d))),
-    ));
+  void emitDeleteFailed(TFailure failure) {
+    emit(state.copyWith(status: DataStatus.deleteFailed, failure: Some(failure)));
   }
 
-  void emitRemoved(TData data) {
+  void emitDeleted() {
+    emit(state.copyWith(status: DataStatus.deleted, allData: None()));
+  }
+
+  void emitSingleDelete(TData data) {
     emit(state.copyWith(
-      status: DataStatus.updated,
+      status: DataStatus.deleted,
       allData: Some(state.allData.rebuild((b) => b.removeWhere((_, d) => _equalizer(d, data)))),
     ));
   }
