@@ -1,7 +1,6 @@
 import 'package:example/entities/Person.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-import 'package:value_bloc/value_bloc.dart';
 
 class ListScreenCubit extends ModularCubit<int> with BlocCloser {
   final personsCubit = MultiCubit<Person, int, int>();

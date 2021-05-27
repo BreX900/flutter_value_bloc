@@ -1,6 +1,5 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:collection/collection.dart' show IterableExtension;
-import 'package:meta/meta.dart';
 import 'package:value_bloc/src/utils.dart';
 
 /// You can override how the [MultiCubit] handles the sections to be requested
@@ -8,7 +7,6 @@ import 'package:value_bloc/src/utils.dart';
 /// You can use:
 /// - [ContinuousListFetcherPlugin] Requires section only once per filter
 /// - [SpasmodicListFetcherPlugin] Request the section every time the current section changes
-@immutable
 abstract class ListFetcherPlugin {
   const ListFetcherPlugin();
 

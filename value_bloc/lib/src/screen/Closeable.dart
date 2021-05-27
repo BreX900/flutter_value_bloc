@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
 import 'package:value_bloc/src/load/LoadCubit.dart';
 import 'package:value_bloc/value_bloc.dart';
 
@@ -142,19 +141,15 @@ mixin LoadCubitModule<ExtraData, State> on ModularCubitMixin<State> {
     return _loadCubit ??= LoadCubit(loader: onLoading)..load();
   }
 
-  @protected
   void onLoading();
 
   /// See [LoadCubit.emitLoading]
-  @protected
   void emitLoading({required double progress}) => loadCubit.emitLoading(progress: progress);
 
   /// See [LoadCubit.emitLoadFailed]
-  @protected
   void emitLoadFailed({Object? failure}) => loadCubit.emitLoadFailed(failure: failure);
 
   /// See [LoadCubit.emitLoaded]
-  @protected
   void emitLoaded() => loadCubit.emitLoaded();
 
   @override

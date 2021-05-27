@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.0
+- Update dependencies
+- Added data cubits widgets
 
 ## 1.0.0
 - Migrated to null-safety
