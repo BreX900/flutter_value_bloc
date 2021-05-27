@@ -72,7 +72,7 @@ abstract class ListDataCubitBase<TFailure, TData> extends MultiDataCubit<TFailur
     emit(state.copyWith(status: DataStatus.deleted, allData: None()));
   }
 
-  void emitSingleDelete(TData data) {
+  void emitSingleDeleted(TData data) {
     emit(state.copyWith(
       status: DataStatus.deleted,
       allData: Some(state.allData.rebuild((b) => b.removeWhere((_, d) => _equalizer(d, data)))),

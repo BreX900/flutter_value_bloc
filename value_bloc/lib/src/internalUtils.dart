@@ -129,7 +129,7 @@ class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
   }
 
   @override
-  void addError(EventSink<T> sink, dynamic e, [st]) => sink.addError(e, st);
+  void addError(EventSink<T> sink, dynamic e, [StackTrace? st]) => sink.addError(e, st);
 
   @override
   void close(EventSink<T> sink) {

@@ -216,7 +216,7 @@ class SingleCubit<Value, Filter, ExtraData> extends ObjectCubit<Value, ExtraData
   void reset() async {
     await Future.delayed(const Duration());
 
-    _fetcherSubject.add(_fetcherSubject.value!);
+    _fetcherSubject.add(_fetcherSubject.value);
   }
 
   @override

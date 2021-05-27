@@ -113,7 +113,7 @@ abstract class DataState<TFailure, TData> with EquatableMixin {
   TFailure? get tryFailure => _failure.fold(() => null, (a) => a);
 
   bool get hasData => _data.isSome();
-  bool get notHasData => _failure.isNone();
+  bool get notHasData => _data.isNone();
   TData get data => tryData!;
   TData? get tryData => _data.fold(() => null, (a) => a);
 

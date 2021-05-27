@@ -336,7 +336,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   /// if you receive an error it will be [IterableCubitUpdateFailed]
   void fetch({required PageOffset section}) async {
     await Future.delayed(Duration());
-    final newSchemes = _fetcherPlugin.addTo(_selectionsSubject.value!, section);
+    final newSchemes = _fetcherPlugin.addTo(_selectionsSubject.value, section);
     _selectionsSubject.add(newSchemes);
   }
 
@@ -347,7 +347,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   @override
   void clear() async {
     await Future.delayed(Duration());
-    _fetcherSubject.add(_fetcherSubject.value!);
+    _fetcherSubject.add(_fetcherSubject.value);
   }
 
   // ==================================================
