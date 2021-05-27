@@ -40,7 +40,7 @@ class IterableFetchedEvent<V> implements MultiFetchEvent<V> {
 }
 
 /// It represent a request for retrieving a values determined by [startAt] and [length]
-class IterableSection {
+class PageOffset {
   /// it is a first position
   final int startAt;
 
@@ -51,49 +51,53 @@ class IterableSection {
   /// Todo: Fix it with match with last position
   int get endAt => startAt + length;
 
-  IterableSection(this.startAt, this.length) : assert(length > 0, 'length is "$length"');
+  PageOffset(this.startAt, this.length) : assert(length > 0, 'length is "$length"');
 
-  IterableSection.of(int startAt, int endAt) : this(startAt, endAt - startAt);
+  PageOffset.of(int startAt, int endAt) : this(startAt, endAt - startAt);
 
-  IterableSection.from(int sectionsCount, int length) : this(sectionsCount * length, length);
+  PageOffset.from(int sectionsCount, int length) : this(sectionsCount * length, length);
 
-  IterableSection.fromPagination(int offset, int length) : this((offset / length).floor(), length);
+  PageOffset.fromPagination(int offset, int length) : this((offset / length).floor(), length);
 
   /// it check if [other] scheme is in [this] scheme
-  bool contains(IterableSection other) => startAt <= other.startAt && endAt >= other.endAt;
+  bool contains(PageOffset other) => startAt <= other.startAt && endAt >= other.endAt;
 
   /// it check if [other] offset is in [this] scheme
   bool containsOffset(int other) => startAt <= other && endAt > other;
 
-  IterableSection copyWith({int? startAt, int? length}) {
-    return IterableSection(startAt ?? this.startAt, length ?? this.length);
+  PageOffset copyWith({int? startAt, int? length}) {
+    return PageOffset(startAt ?? this.startAt, length ?? this.length);
   }
 
-  IterableSection mergeWith({int? startAt, int? endAt}) {
+  PageOffset mergeWith({int? startAt, int? endAt}) {
     startAt ??= this.startAt;
     endAt ??= this.endAt;
 
     assert(startAt < endAt, 'Not possible apply "$startAt, $endAt" to "$this"');
 
-    return IterableSection.of(startAt, endAt);
+    return PageOffset.of(startAt, endAt);
   }
 
-  IterableSection applyEnd(int offset) {
+  PageOffset applyEnd(int offset) {
     assert(offset < endAt, 'Not possible apply "$offset" to "$this"');
-    return IterableSection(offset, endAt - offset);
+    return PageOffset(offset, endAt - offset);
   }
 
-  IterableSection? find(IterableSection other) {
+  PageOffset? find(PageOffset other) {
     if (!containsOffset(other.startAt)) return null;
-    return IterableSection(other.startAt, min(length, other.length));
+    return PageOffset(other.startAt, min(length, other.length));
   }
 
-  IterableSection moveOf(int length) => copyWith(startAt: startAt + length);
+  PageOffset restart() => copyWith(startAt: 0);
+
+  PageOffset move(int length) => copyWith(startAt: startAt + length);
+
+  PageOffset next() => copyWith(startAt: startAt + length);
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is IterableSection &&
+      other is PageOffset &&
           runtimeType == other.runtimeType &&
           startAt == other.startAt &&
           length == other.length;

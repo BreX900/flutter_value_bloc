@@ -200,7 +200,7 @@ class SetCubit<Value, ExtraData> extends CollectionCubit<Value, ExtraData> {
 }
 
 typedef ListFetcher<Value, Filter> = Stream<MultiFetchEvent<Iterable<Value>>> Function(
-  IterableSection section,
+  PageOffset section,
   Filter filter,
 );
 
@@ -212,7 +212,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   final ListFetcherPlugin _fetcherPlugin;
 
   final _fetcherSubject = BehaviorSubject<ListFetcher<Value, Filter?>>();
-  final _selectionsSubject = BehaviorSubject<BuiltSet<IterableSection>>();
+  final _selectionsSubject = BehaviorSubject<BuiltSet<PageOffset>>();
 
   late StreamSubscription _sub;
 
@@ -334,9 +334,9 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   /// Call the fetcher method and update the status with the new scum [section]
   /// The status will be set to [IterableCubitUpdated] once the data is scrapped but
   /// if you receive an error it will be [IterableCubitUpdateFailed]
-  void fetch({required IterableSection section}) async {
+  void fetch({required PageOffset section}) async {
     await Future.delayed(Duration());
-    final newSchemes = _fetcherPlugin.addTo(_selectionsSubject.value!, section);
+    final newSchemes = _fetcherPlugin.addTo(_selectionsSubject.value, section);
     _selectionsSubject.add(newSchemes);
   }
 
@@ -347,7 +347,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
   @override
   void clear() async {
     await Future.delayed(Duration());
-    _fetcherSubject.add(_fetcherSubject.value!);
+    _fetcherSubject.add(_fetcherSubject.value);
   }
 
   // ==================================================

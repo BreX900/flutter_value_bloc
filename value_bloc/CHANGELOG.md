@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.0
+- Update dependencies
+- Added DataCubits
 
 ## 1.0.0
 - Migrated to null-safety

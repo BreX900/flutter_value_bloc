@@ -1,10 +1,8 @@
 include: package:pedantic/analysis_options.yaml
 
 analyzer:
-  errors:
-    missing_required_param: warning
 
 linter:
   rules:
-    prefer_relative_imports: false
     always_use_package_imports: true
+    unnecessary_brace_in_string_interps: false

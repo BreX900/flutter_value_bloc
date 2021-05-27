@@ -1,9 +1,8 @@
 import 'package:example/entities/Person.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-import 'package:value_bloc/value_bloc.dart';
 
-class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, CloserCubitModule {
+class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, BlocCloser {
   final personsCubit = MultiCubit<Person, int, int>();
 
   TableScreenCubit() : super(0) {
@@ -19,7 +18,7 @@ class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, CloserCub
           yield IterableFetchedEvent(persons);
         }
       })
-      ..addToCloserCubit(this);
+      ..addToCloser(this);
   }
 
   @override

@@ -1,52 +1,117 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
-import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/load/LoadCubit.dart';
 import 'package:value_bloc/value_bloc.dart';
 
+abstract class CloserProvider {
+  Closer get _closer;
+}
+
+class Closer extends CloserEntry implements CloserProvider {
+  final _entries = <CloserEntry>[];
+
+  void addSubscription(StreamSubscription subscription) {
+    _entries.add(_SubscriptionCloserEntry(subscription));
+  }
+
+  void removeSubscription(StreamSubscription subscription, {bool canClose = true}) {
+    if (_entries.remove(_SubscriptionCloserEntry(subscription))) {
+      if (canClose) subscription.cancel();
+    }
+  }
+
+  void addBloc(BlocBase bloc) {
+    _entries.add(_BlocCloserEntry(bloc));
+  }
+
+  void removeBloc(BlocBase bloc, {bool canClose = true}) {
+    if (_entries.remove(_BlocCloserEntry(bloc))) {
+      if (canClose) bloc.close();
+    }
+  }
+
+  @override
+  void close() {
+    _entries.forEach((entry) => entry.close());
+  }
+
+  @override
+  Closer get _closer => this;
+}
+
+/// It allows you to automatic close [Cubit] with [CloseableBlocExtension]
 /// It allows you to automatic unsubscribe to a [StreamSubscription] with [CloseableStreamSubscriptionExtension]
-mixin CloserStreamSubscriptionModule<State> on Cubit<State> {
-  final _compositeStream = CompositeSubscription();
+mixin BlocCloser<State> on BlocBase<State> implements CloserProvider {
+  @override
+  final _closer = Closer();
 
   @override
   Future<void> close() {
-    _compositeStream.dispose();
+    _closer.close();
     return super.close();
   }
 }
 
 extension CloseableStreamSubscriptionExtension<T> on StreamSubscription<T> {
-  void addToCloserCubit(CloserStreamSubscriptionModule module) {
-    module._compositeStream.add(this);
+  void addToCloser(CloserProvider closer) {
+    closer._closer.addSubscription(this);
   }
 
-  void removeFromCloserCubit(CloserStreamSubscriptionModule module) {
-    module._compositeStream.remove(this);
+  void removeFromCloser(CloserProvider closer, {bool canClose = true}) {
+    closer._closer.removeSubscription(this, canClose: canClose);
   }
 }
 
-/// It allows you to automatic close [Cubit] with [CloseableCubitExtension]
-mixin CloserCubitModule<State> on Cubit<State> {
-  final _cubits = <Cubit>[];
+extension CloseableBlocExtension<State> on BlocBase<State> {
+  void addToCloser(CloserProvider closer) {
+    closer._closer.addBloc(this);
+  }
+
+  void removeFromCloser(CloserProvider closer, {bool canClose = true}) {
+    if (canClose) close();
+    closer._closer.removeBloc(this);
+  }
+}
+
+abstract class CloserEntry {
+  void close();
+}
+
+class _SubscriptionCloserEntry extends CloserEntry {
+  final StreamSubscription subscription;
+
+  _SubscriptionCloserEntry(this.subscription);
 
   @override
-  Future<void> close() {
-    _cubits.forEach((c) => c.close());
-    return super.close();
-  }
+  void close() => subscription.cancel();
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _SubscriptionCloserEntry &&
+          runtimeType == other.runtimeType &&
+          subscription == other.subscription;
+
+  @override
+  int get hashCode => subscription.hashCode;
 }
 
-extension CloseableCubitExtension<State> on Cubit<State> {
-  void addToCloserCubit(CloserCubitModule module) {
-    module._cubits.add(this);
-  }
+class _BlocCloserEntry extends CloserEntry {
+  final BlocBase bloc;
 
-  void removeFromCloserCubit(CloserCubitModule module) {
-    close();
-    module._cubits.remove(module);
-  }
+  _BlocCloserEntry(this.bloc);
+
+  @override
+  void close() => bloc.close();
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _BlocCloserEntry && runtimeType == other.runtimeType && bloc == other.bloc;
+
+  @override
+  int get hashCode => bloc.hashCode;
 }
 
 // ==================================================
@@ -76,19 +141,15 @@ mixin LoadCubitModule<ExtraData, State> on ModularCubitMixin<State> {
     return _loadCubit ??= LoadCubit(loader: onLoading)..load();
   }
 
-  @protected
   void onLoading();
 
   /// See [LoadCubit.emitLoading]
-  @protected
   void emitLoading({required double progress}) => loadCubit.emitLoading(progress: progress);
 
   /// See [LoadCubit.emitLoadFailed]
-  @protected
   void emitLoadFailed({Object? failure}) => loadCubit.emitLoadFailed(failure: failure);
 
   /// See [LoadCubit.emitLoaded]
-  @protected
   void emitLoaded() => loadCubit.emitLoaded();
 
   @override
