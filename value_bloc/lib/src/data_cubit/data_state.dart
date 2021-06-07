@@ -79,18 +79,11 @@ extension DataStatusExtensions on DataStatus {
   Option<D> resolveData<D>(Option<D> current, Option<D>? next) {
     if (next != null) return next;
     switch (this) {
-      case DataStatus.created:
-      case DataStatus.reading:
-      case DataStatus.readFailed:
-      case DataStatus.read:
-      case DataStatus.updating:
-      case DataStatus.updateFailed:
-      case DataStatus.updated:
-      case DataStatus.deleting:
-      case DataStatus.deleteFailed:
-        return current;
-      default:
+      case DataStatus.idle:
+      case DataStatus.waiting:
         return None();
+      default:
+        return current;
     }
   }
 }
@@ -121,9 +114,6 @@ abstract class DataState<TFailure, TData> with EquatableMixin {
     DataStatus? status,
     Option<TFailure>? failure,
   });
-
-  @override
-  late final List<Object?> props = [_failure, _data];
 }
 
 class SingleDataState<TFailure, TData> extends DataState<TFailure, TData> {
@@ -146,6 +136,9 @@ class SingleDataState<TFailure, TData> extends DataState<TFailure, TData> {
       data: nextStatus.resolveData(_data, data),
     );
   }
+
+  @override
+  late final List<Object?> props = [status, _failure, _data];
 }
 
 class MultiDataState<TFailure, TData> extends DataState<TFailure, BuiltList<TData>> {
@@ -190,4 +183,7 @@ class MultiDataState<TFailure, TData> extends DataState<TFailure, BuiltList<TDat
       allData: nextStatus.resolveData(_allData, allData),
     );
   }
+
+  @override
+  late final List<Object?> props = [status, _failure, _allData];
 }
