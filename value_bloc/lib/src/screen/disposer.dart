@@ -5,28 +5,28 @@ import 'package:value_bloc/src/load/LoadCubit.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 abstract class CloserProvider {
-  Closer get _closer;
+  Disposer get _disposer;
 }
 
-class Closer extends CloserEntry implements CloserProvider {
-  final _entries = <CloserEntry>[];
+class Disposer extends DisposableEntry implements CloserProvider {
+  final _entries = <DisposableEntry>[];
 
   void addSubscription(StreamSubscription subscription) {
-    _entries.add(_SubscriptionCloserEntry(subscription));
+    _entries.add(_DisposableSubscriptionEntry(subscription));
   }
 
   void removeSubscription(StreamSubscription subscription, {bool canClose = true}) {
-    if (_entries.remove(_SubscriptionCloserEntry(subscription))) {
+    if (_entries.remove(_DisposableSubscriptionEntry(subscription))) {
       if (canClose) subscription.cancel();
     }
   }
 
   void addBloc(BlocBase bloc) {
-    _entries.add(_BlocCloserEntry(bloc));
+    _entries.add(_DisposableBlocEntry(bloc));
   }
 
   void removeBloc(BlocBase bloc, {bool canClose = true}) {
-    if (_entries.remove(_BlocCloserEntry(bloc))) {
+    if (_entries.remove(_DisposableBlocEntry(bloc))) {
       if (canClose) bloc.close();
     }
   }
@@ -37,51 +37,51 @@ class Closer extends CloserEntry implements CloserProvider {
   }
 
   @override
-  Closer get _closer => this;
+  Disposer get _disposer => this;
 }
 
 /// It allows you to automatic close [Cubit] with [CloseableBlocExtension]
 /// It allows you to automatic unsubscribe to a [StreamSubscription] with [CloseableStreamSubscriptionExtension]
-mixin BlocCloser<State> on BlocBase<State> implements CloserProvider {
+mixin BlocDisposer<State> on BlocBase<State> implements CloserProvider {
   @override
-  final _closer = Closer();
+  final _disposer = Disposer();
 
   @override
   Future<void> close() {
-    _closer.close();
+    _disposer.close();
     return super.close();
   }
 }
 
 extension CloseableStreamSubscriptionExtension<T> on StreamSubscription<T> {
   void addToCloser(CloserProvider closer) {
-    closer._closer.addSubscription(this);
+    closer._disposer.addSubscription(this);
   }
 
   void removeFromCloser(CloserProvider closer, {bool canClose = true}) {
-    closer._closer.removeSubscription(this, canClose: canClose);
+    closer._disposer.removeSubscription(this, canClose: canClose);
   }
 }
 
 extension CloseableBlocExtension<State> on BlocBase<State> {
   void addToCloser(CloserProvider closer) {
-    closer._closer.addBloc(this);
+    closer._disposer.addBloc(this);
   }
 
   void removeFromCloser(CloserProvider closer, {bool canClose = true}) {
     if (canClose) close();
-    closer._closer.removeBloc(this);
+    closer._disposer.removeBloc(this);
   }
 }
 
-abstract class CloserEntry {
+abstract class DisposableEntry {
   void close();
 }
 
-class _SubscriptionCloserEntry extends CloserEntry {
+class _DisposableSubscriptionEntry extends DisposableEntry {
   final StreamSubscription subscription;
 
-  _SubscriptionCloserEntry(this.subscription);
+  _DisposableSubscriptionEntry(this.subscription);
 
   @override
   void close() => subscription.cancel();
@@ -89,7 +89,7 @@ class _SubscriptionCloserEntry extends CloserEntry {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _SubscriptionCloserEntry &&
+      other is _DisposableSubscriptionEntry &&
           runtimeType == other.runtimeType &&
           subscription == other.subscription;
 
@@ -97,10 +97,10 @@ class _SubscriptionCloserEntry extends CloserEntry {
   int get hashCode => subscription.hashCode;
 }
 
-class _BlocCloserEntry extends CloserEntry {
+class _DisposableBlocEntry extends DisposableEntry {
   final BlocBase bloc;
 
-  _BlocCloserEntry(this.bloc);
+  _DisposableBlocEntry(this.bloc);
 
   @override
   void close() => bloc.close();
@@ -108,7 +108,7 @@ class _BlocCloserEntry extends CloserEntry {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _BlocCloserEntry && runtimeType == other.runtimeType && bloc == other.bloc;
+      other is _DisposableBlocEntry && runtimeType == other.runtimeType && bloc == other.bloc;
 
   @override
   int get hashCode => bloc.hashCode;

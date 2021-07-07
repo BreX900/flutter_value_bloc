@@ -2,7 +2,7 @@ import 'package:example/entities/Person.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
-class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, BlocCloser {
+class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, BlocDisposer {
   final personsCubit = MultiCubit<Person, int, int>();
 
   TableScreenCubit() : super(0) {

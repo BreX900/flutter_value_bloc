@@ -83,7 +83,8 @@ typedef Equalizer<T> = bool Function(T a, T b);
 typedef Indexer<T> = int Function(T value);
 
 abstract class MultiDataCubit<TFailure, TData>
-    extends DataCubit<MultiDataState<TFailure, TData>, TFailure, BuiltList<TData>> with BlocCloser {
+    extends DataCubit<MultiDataState<TFailure, TData>, TFailure, BuiltList<TData>>
+    with BlocDisposer {
   final _delegators = <DelegateEntry>[];
 
   final Equalizer<TData> _equalizer;

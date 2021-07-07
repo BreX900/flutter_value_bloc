@@ -2,7 +2,7 @@ import 'package:example/entities/Person.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
-class SingleScreenCubit extends ModularCubit<int> with BlocCloser, LoadCubitModule {
+class SingleScreenCubit extends ModularCubit<int> with BlocDisposer, LoadCubitModule {
   final personCubit = SingleCubit<Person, int, int>();
 
   SingleScreenCubit() : super(0) {

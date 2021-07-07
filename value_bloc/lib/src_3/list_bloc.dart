@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:dartz/dartz.dart';
+import 'package:value_bloc/src/screen/disposer.dart';
 import 'package:value_bloc/src_3/list_event.dart';
 import 'package:value_bloc/src_3/multi_state.dart';
 import 'package:value_bloc/src_3/single_state.dart';
@@ -12,10 +13,15 @@ abstract class SingleDataBloc<TEvent, TFailure, TValue,
   SingleDataBloc(TState initialState) : super(initialState);
 
   void read();
+
+  void emitFailure(TFailure failure) => add(EmitFailureDataBloc(failure) as TEvent);
 }
 
-abstract class ValueBloc<TFailure, TValue> extends SingleDataBloc<DataBlocEvent<TFailure, TValue>,
-    TFailure, TValue, SingleState<TFailure, TValue>> with MapActionToEmission<TFailure, TValue> {
+abstract class ValueBloc<TFailure, TValue> extends SingleDataBloc<
+    DataBlocEvent<TFailure, TValue>,
+    TFailure,
+    TValue,
+    SingleState<TFailure, TValue>> with MapActionToEmission<TFailure, TValue>, BlocDisposer {
   ValueBloc({
     Option<TValue> value = const None(),
   }) : super(SingleState(
@@ -63,7 +69,7 @@ abstract class ListBloc<TFailure, TValue> extends SingleDataBloc<
     DataBlocEvent<TFailure, TValue>,
     TFailure,
     BuiltList<TValue>,
-    MultiState<TFailure, TValue>> with MapActionToEmission<TFailure, TValue> {
+    MultiState<TFailure, TValue>> with MapActionToEmission<TFailure, TValue>, BlocDisposer {
   ListBloc({
     Option<Iterable<TValue>> values = const None(),
   }) : super(MultiState(
@@ -71,6 +77,13 @@ abstract class ListBloc<TFailure, TValue> extends SingleDataBloc<
           failure: None(),
           values: values.map((a) => a.toBuiltList().asMap().build()),
         ));
+
+  void emitAdd(TValue value) => add(EmitAddDataBloc(value));
+
+  void emitReplace(TValue oldValue, TValue newValue) =>
+      add(EmitReplaceDataBloc(oldValue, newValue));
+
+  void emitRemove(TValue value) => add(EmitRemoveDataBloc(value));
 
   @override
   Stream<MultiState<TFailure, TValue>> mapEventToState(

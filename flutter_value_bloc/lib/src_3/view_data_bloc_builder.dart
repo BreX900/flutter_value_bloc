@@ -2,28 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc_3.dart';
 
-class ViewSingleDataBlocBuilder<
+class ViewDataBlocBuilder<
     TBloc extends SingleDataBloc<dynamic, TFailure, TValue, SingleState<TFailure, TValue>>,
     TFailure,
     TValue> extends StatefulWidget {
   final TBloc? singleDataBloc;
   final Widget Function(BuildContext context, TValue value) builder;
 
-  const ViewSingleDataBlocBuilder({
+  const ViewDataBlocBuilder({
     Key? key,
     this.singleDataBloc,
     required this.builder,
   }) : super(key: key);
 
   @override
-  _ViewSingleDataBlocBuilderState<TBloc, TFailure, TValue> createState() =>
-      _ViewSingleDataBlocBuilderState();
+  _ViewDataBlocBuilderState<TBloc, TFailure, TValue> createState() => _ViewDataBlocBuilderState();
 }
 
-class _ViewSingleDataBlocBuilderState<
+class _ViewDataBlocBuilderState<
     TBloc extends SingleDataBloc<dynamic, TFailure, TValue, SingleState<TFailure, TValue>>,
     TFailure,
-    TValue> extends State<ViewSingleDataBlocBuilder<TBloc, TFailure, TValue>> {
+    TValue> extends State<ViewDataBlocBuilder<TBloc, TFailure, TValue>> {
   late TBloc _bloc;
 
   @override

@@ -12,6 +12,6 @@ export 'src/iterable/IterableCubit.dart';
 export 'src/load/LoadCubit.dart';
 export 'src/navigation/NavigationCubit.dart';
 export 'src/object/ObjectCubit.dart';
-export 'src/screen/Closeable.dart';
 export 'src/screen/DynamicCubit.dart';
+export 'src/screen/disposer.dart';
 export 'src/utils.dart';
