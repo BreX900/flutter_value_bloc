@@ -7,11 +7,13 @@ class ViewDataBlocBuilder<
     TFailure,
     TValue> extends StatefulWidget {
   final TBloc? singleDataBloc;
+  final Widget Function(BuildContext context, TFailure failure)? failureBuilder;
   final Widget Function(BuildContext context, TValue value) builder;
 
   const ViewDataBlocBuilder({
     Key? key,
     this.singleDataBloc,
+    this.failureBuilder,
     required this.builder,
   }) : super(key: key);
 
@@ -44,12 +46,15 @@ class _ViewDataBlocBuilderState<
       listenWhen: (prev, curr) => prev.hasValueOrFailure != curr.hasValueOrFailure,
       listener: (context, state) => _readBloc(state),
       builder: (context, state) {
-        if (state.hasFailure) {
+        if (state.hasValue) {
+          return widget.builder(context, state.value);
+        } else if (state.hasFailure) {
+          if (widget.failureBuilder != null) {
+            return widget.failureBuilder!(context, state.failure);
+          }
           return Center(
             child: Text('${state.failure}'),
           );
-        } else if (state.hasValue) {
-          return widget.builder(context, state.value);
         } else {
           return Center(
             child: CircularProgressIndicator(),
