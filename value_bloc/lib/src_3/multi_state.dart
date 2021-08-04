@@ -23,10 +23,12 @@ class MultiState<TFailure, TValue> extends Equatable
   @override
   BuiltList<TValue> get value => values.values.toBuiltList();
 
-  @override
-  bool get hasValueOrFailure => hasFailure || hasValue;
-
   BuiltMap<int, TValue> get values => _values.getOrElse(() => throw 'Not has value! $this');
+
+  @override
+  bool get canInitialize => (!isEmitting) && !(hasFailure || hasValue);
+  @override
+  bool get isInitialized => isEmitting || (hasFailure || hasValue);
 
   MultiState({
     required this.isEmitting,

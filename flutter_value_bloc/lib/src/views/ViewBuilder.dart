@@ -2,13 +2,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_value_bloc/src/views/ViewData.dart';
 import 'package:flutter_value_bloc/src/views/ViewProvider.dart';
 
-/// This is a view builder with default [ErrorViewBuilder],
+/// This is a view builder with default [FailureViewBuilder],
 /// [LoadingViewBuilder], [EmptyViewBuilder]
 class ViewBuilder extends StatelessWidget {
   final double? progress;
   final bool isEmpty;
   final Object? error;
-  final ErrorViewBuilder? errorBuilder;
+  final FailureViewBuilder? errorBuilder;
   final LoadingViewBuilder? loadingBuilder;
   final EmptyViewBuilder? emptyBuilder;
   final WidgetBuilder builder;

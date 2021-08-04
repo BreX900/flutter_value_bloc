@@ -18,12 +18,20 @@ class ViewsProvider<TFailure> extends Provider<Views<TFailure>> {
   }) : super.value(value: value, builder: builder, child: child);
 
   static Views<TFailure> of<TFailure>(BuildContext context) {
-    return context.watch<Views<TFailure>>();
+    return context.read<Views<TFailure>>();
+  }
+
+  static Views<TFailure> from<TFailure>(BuildContext context) {
+    try {
+      return context.read<Views<TFailure>>();
+    } on ProviderNotFoundException {
+      return Views();
+    }
   }
 
   static Views<TFailure>? maybeOf<TFailure>(BuildContext context) {
     try {
-      return context.watch<Views<TFailure>>();
+      return context.read<Views<TFailure>>();
     } on ProviderNotFoundException {
       return null;
     }

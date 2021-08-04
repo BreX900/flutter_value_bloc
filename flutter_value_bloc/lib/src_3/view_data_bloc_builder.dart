@@ -31,34 +31,48 @@ class _ViewDataBlocBuilderState<
   void initState() {
     super.initState();
     _bloc = widget.singleDataBloc ?? BlocProvider.of(context);
-    _readBloc(_bloc.state);
+    _initializeBloc(context, _bloc.state);
   }
 
-  void _readBloc(SingleState<TFailure, TValue> state) {
-    if (_bloc.state.hasValueOrFailure) return;
-    _bloc.read();
+  void _initializeBloc(BuildContext context, SingleState<TFailure, TValue> state) {
+    if (state.canInitialize) {
+      _bloc.read();
+    }
+    if (state.hasValue && state.hasFailure) {
+      final views = ViewsProvider.maybeOf<TFailure>(context) ?? const Views();
+      views.failureListener(context, state.failure);
+    }
+  }
+
+  void _listenFailure(BuildContext context, SingleState<TFailure, TValue> state) {
+    if (!(state.hasValue && state.hasFailure)) return;
+    ViewsProvider.from<TFailure>(context).failureListener(context, state.failure);
+  }
+
+  Widget _buildView(BuildContext context, SingleState<TFailure, TValue> state) {
+    if (state.hasValue) {
+      return widget.builder(context, state.value);
+    } else if (state.hasFailure) {
+      if (widget.failureBuilder != null) {
+        return widget.failureBuilder!(context, state.failure);
+      }
+      return ViewsProvider.from<TFailure>(context).failureBuilder(context, state.failure);
+    } else {
+      return ViewsProvider.from<TFailure>(context).loadingBuilder(context, null);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<TBloc, SingleState<TFailure, TValue>>(
-      bloc: _bloc,
-      listenWhen: (prev, curr) => prev.hasValueOrFailure != curr.hasValueOrFailure,
-      listener: (context, state) => _readBloc(state),
-      builder: (context, state) {
-        if (state.hasValue) {
-          return widget.builder(context, state.value);
-        } else if (state.hasFailure) {
-          if (widget.failureBuilder != null) {
-            return widget.failureBuilder!(context, state.failure);
-          }
-          final views = ViewsProvider.maybeOf<TFailure>(context) ?? const Views();
-          return views.failureBuilder(context, state.failure);
-        } else {
-          final views = ViewsProvider.maybeOf<TFailure>(context) ?? const Views();
-          return views.loadingBuilder(context, null);
-        }
-      },
+    return BlocListener<TBloc, SingleState<TFailure, TValue>>(
+      listenWhen: (prev, curr) => prev.hasFailure,
+      listener: _listenFailure,
+      child: BlocConsumer<TBloc, SingleState<TFailure, TValue>>(
+        bloc: _bloc,
+        listenWhen: (prev, curr) => prev.canInitialize != curr.canInitialize,
+        listener: _initializeBloc,
+        builder: _buildView,
+      ),
     );
   }
 }

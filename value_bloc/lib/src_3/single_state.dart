@@ -14,7 +14,8 @@ class SingleState<TFailure, TValue> extends Equatable {
   bool get isEmpty => value == null;
   TValue get value => _value.getOrElse(() => throw 'Not has value! $this');
 
-  bool get hasValueOrFailure => hasFailure || hasValue;
+  bool get canInitialize => (!isEmitting) && !(hasFailure || hasValue);
+  bool get isInitialized => isEmitting || (hasFailure || hasValue);
 
   SingleState({
     required this.isEmitting,

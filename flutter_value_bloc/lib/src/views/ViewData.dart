@@ -1,36 +1,43 @@
 import 'package:flutter/material.dart';
 
+typedef FailureViewListener<TFailure> = void Function(BuildContext context, TFailure failure);
+
 /// It build a widget for showing a progress
 /// Ex. Center(child: CircularProgressIndicator(value: progress))
 typedef LoadingViewBuilder = Widget Function(BuildContext context, double? progress);
 
 /// It build a widget for showing a error
 /// Ex. Center(child: Text('$error'))
-typedef ErrorViewBuilder<TFailure> = Widget Function(BuildContext context, TFailure failure);
+typedef FailureViewBuilder<TFailure> = Widget Function(BuildContext context, TFailure failure);
 
 /// It build a widget for showing a empty list or empty screen
 /// Center(child: Text('Empty'))
 typedef EmptyViewBuilder = Widget Function(BuildContext context);
 
-/// It defines default [ErrorViewBuilder], [LoadingViewBuilder], [EmptyViewBuilder]
+/// It defines default [FailureViewBuilder], [LoadingViewBuilder], [EmptyViewBuilder]
 class Views<TFailure> {
-  final ErrorViewBuilder<TFailure> failureBuilder;
+  final FailureViewListener<TFailure> failureListener;
+  final FailureViewBuilder<TFailure> failureBuilder;
   final LoadingViewBuilder loadingBuilder;
   final EmptyViewBuilder emptyBuilder;
 
   const Views({
-    this.failureBuilder = _buildError,
+    this.failureListener = _listenFailure,
+    this.failureBuilder = _buildFailure,
     this.loadingBuilder = _buildLoading,
     this.emptyBuilder = _buildEmpty,
   });
 
   const Views.raw({
+    required this.failureListener,
     required this.failureBuilder,
     required this.loadingBuilder,
     required this.emptyBuilder,
   });
 
-  static Widget _buildError(BuildContext context, Object? error) {
+  static void _listenFailure(BuildContext context, Object? error) {}
+
+  static Widget _buildFailure(BuildContext context, Object? error) {
     return Center(child: Text('$error'));
   }
 
@@ -45,11 +52,13 @@ class Views<TFailure> {
   }
 
   Views<TFailure> copyWith({
+    FailureViewListener<TFailure>? failureListener,
     LoadingViewBuilder? loadingBuilder,
-    ErrorViewBuilder? failureBuilder,
+    FailureViewBuilder<TFailure>? failureBuilder,
     EmptyViewBuilder? emptyBuilder,
   }) {
     return Views.raw(
+      failureListener: failureListener ?? this.failureListener,
       loadingBuilder: loadingBuilder ?? this.loadingBuilder,
       failureBuilder: failureBuilder ?? this.failureBuilder,
       emptyBuilder: emptyBuilder ?? this.emptyBuilder,
