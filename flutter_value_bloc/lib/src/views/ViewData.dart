@@ -6,28 +6,28 @@ typedef LoadingViewBuilder = Widget Function(BuildContext context, double? progr
 
 /// It build a widget for showing a error
 /// Ex. Center(child: Text('$error'))
-typedef ErrorViewBuilder = Widget Function(BuildContext context, Object? error);
+typedef ErrorViewBuilder<TFailure> = Widget Function(BuildContext context, TFailure failure);
 
 /// It build a widget for showing a empty list or empty screen
 /// Center(child: Text('Empty'))
 typedef EmptyViewBuilder = Widget Function(BuildContext context);
 
 /// It defines default [ErrorViewBuilder], [LoadingViewBuilder], [EmptyViewBuilder]
-class Views {
-  final ErrorViewBuilder? errorBuilder;
-  final LoadingViewBuilder? loadingBuilder;
-  final EmptyViewBuilder? emptyBuilder;
+class Views<TFailure> {
+  final ErrorViewBuilder<TFailure> failureBuilder;
+  final LoadingViewBuilder loadingBuilder;
+  final EmptyViewBuilder emptyBuilder;
 
   const Views({
-    this.errorBuilder = _buildError,
+    this.failureBuilder = _buildError,
     this.loadingBuilder = _buildLoading,
     this.emptyBuilder = _buildEmpty,
   });
 
   const Views.raw({
-    this.errorBuilder,
-    this.loadingBuilder,
-    this.emptyBuilder,
+    required this.failureBuilder,
+    required this.loadingBuilder,
+    required this.emptyBuilder,
   });
 
   static Widget _buildError(BuildContext context, Object? error) {
@@ -44,14 +44,14 @@ class Views {
     return Center(child: Text('Empty'));
   }
 
-  Views copyWith({
+  Views<TFailure> copyWith({
     LoadingViewBuilder? loadingBuilder,
-    ErrorViewBuilder? errorBuilder,
+    ErrorViewBuilder? failureBuilder,
     EmptyViewBuilder? emptyBuilder,
   }) {
     return Views.raw(
       loadingBuilder: loadingBuilder ?? this.loadingBuilder,
-      errorBuilder: errorBuilder ?? this.errorBuilder,
+      failureBuilder: failureBuilder ?? this.failureBuilder,
       emptyBuilder: emptyBuilder ?? this.emptyBuilder,
     );
   }

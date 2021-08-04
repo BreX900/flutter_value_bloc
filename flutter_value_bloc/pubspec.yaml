@@ -22,11 +22,11 @@ dependencies:
 
 #  value_bloc: ^1.2.0-dev
   value_bloc:
-#    path: ../value_bloc
-    git:
-      url: https://github.com/BreX900/flutter_value_bloc
-      path: value_bloc
-      ref: feature/manager
+    path: ../value_bloc
+#    git:
+#      url: https://github.com/BreX900/flutter_value_bloc
+#      path: value_bloc
+#      ref: feature/manager
 
   provider: ^5.0.0
   pull_to_refresh: ^2.0.0

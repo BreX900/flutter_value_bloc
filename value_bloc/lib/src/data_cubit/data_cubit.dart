@@ -151,7 +151,7 @@ abstract class MultiDataCubit<TFailure, TData>
       }
     }, onDone: () {
       _delegators;
-    }).addToCloser(this);
+    }).addToDisposer(this);
     return dataCubit;
   }
 }

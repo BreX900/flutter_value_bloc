@@ -18,7 +18,7 @@ class ListScreenCubit extends ModularCubit<int> with BlocDisposer {
           yield IterableFetchedEvent(persons);
         }
       })
-      ..addToCloser(this);
+      ..addToDisposer(this);
   }
 }
 

@@ -25,15 +25,15 @@ class ViewBuilder extends StatelessWidget {
   }) : super(key: key);
 
   static Widget buildError(BuildContext context, Object? error) {
-    return ViewsProvider.of(context).errorBuilder!(context, error);
+    return ViewsProvider.of(context).failureBuilder(context, error);
   }
 
   static Widget buildLoading(BuildContext context, double? progress) {
-    return ViewsProvider.of(context).loadingBuilder!(context, progress);
+    return ViewsProvider.of(context).loadingBuilder(context, progress);
   }
 
   static Widget buildEmpty(BuildContext context) {
-    return ViewsProvider.of(context).emptyBuilder!(context);
+    return ViewsProvider.of(context).emptyBuilder(context);
   }
 
   @override

@@ -3,7 +3,7 @@ import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:value_bloc/value_bloc_3.dart';
 
 class ViewDataBlocBuilder<
-    TBloc extends SingleDataBloc<dynamic, TFailure, TValue, SingleState<TFailure, TValue>>,
+    TBloc extends SingleDataBloc<TFailure, dynamic, TValue, SingleState<TFailure, TValue>>,
     TFailure,
     TValue> extends StatefulWidget {
   final TBloc? singleDataBloc;
@@ -22,7 +22,7 @@ class ViewDataBlocBuilder<
 }
 
 class _ViewDataBlocBuilderState<
-    TBloc extends SingleDataBloc<dynamic, TFailure, TValue, SingleState<TFailure, TValue>>,
+    TBloc extends SingleDataBloc<TFailure, dynamic, TValue, SingleState<TFailure, TValue>>,
     TFailure,
     TValue> extends State<ViewDataBlocBuilder<TBloc, TFailure, TValue>> {
   late TBloc _bloc;
@@ -52,13 +52,11 @@ class _ViewDataBlocBuilderState<
           if (widget.failureBuilder != null) {
             return widget.failureBuilder!(context, state.failure);
           }
-          return Center(
-            child: Text('${state.failure}'),
-          );
+          final views = ViewsProvider.maybeOf<TFailure>(context) ?? const Views();
+          return views.failureBuilder(context, state.failure);
         } else {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
+          final views = ViewsProvider.maybeOf<TFailure>(context) ?? const Views();
+          return views.loadingBuilder(context, null);
         }
       },
     );

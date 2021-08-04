@@ -56,22 +56,22 @@ class CubitViews {
 
   static Widget buildLoaderView(BuildContext context, Cubit<Object> cubit, Object state) {
     final viewData = ViewsProvider.of(context);
-    return viewData.loadingBuilder!(context, 0.0);
+    return viewData.loadingBuilder(context, 0.0);
   }
 
   static Widget buildErrorView(BuildContext context, Cubit<Object> cubit, Object state) {
     final viewData = ViewsProvider.of(context);
     if (state is ObjectCubitUpdateFailed<Object, Object>) {
-      return viewData.errorBuilder!(context, state.failure);
+      return viewData.failureBuilder(context, state.failure);
     } else if (state is IterableCubitUpdateFailed<Object, Object>) {
-      return viewData.errorBuilder!(context, state.failure);
+      return viewData.failureBuilder(context, state.failure);
     } else {
-      return viewData.errorBuilder!(context, null);
+      return viewData.failureBuilder(context, null);
     }
   }
 
   static Widget buildEmptyView(BuildContext context, Cubit<Object> cubit, Object state) {
     final viewData = ViewsProvider.of(context);
-    return viewData.emptyBuilder!(context);
+    return viewData.emptyBuilder(context);
   }
 }

@@ -18,7 +18,7 @@ class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, BlocDispo
           yield IterableFetchedEvent(persons);
         }
       })
-      ..addToCloser(this);
+      ..addToDisposer(this);
   }
 
   @override

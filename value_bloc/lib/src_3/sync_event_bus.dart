@@ -8,6 +8,13 @@ abstract class SyncEvent<T> extends Equatable {
   SyncEvent(this.sender);
 }
 
+class InvalidateSyncEvent<T> extends SyncEvent<T> {
+  InvalidateSyncEvent(Object sender) : super(sender);
+
+  @override
+  List<Object?> get props => [sender];
+}
+
 class CreateSyncEvent<T> extends SyncEvent<T> {
   final T value;
 
@@ -67,9 +74,26 @@ class SyncEventBus<T> {
 
   Stream<SyncEvent<T>> get stream => _subject.stream;
 
-  /// Filters the events by [receiver]
+  /// Filters the events by [receiver] or receivers with Iterable<Object>
   Stream<SyncEvent<T>> othersStream(Object receiver) {
+    return stream.where((event) {
+      if (receiver is Iterable<Object>) {
+        return !receiver.contains(event.sender);
+      }
+      return event.sender != receiver;
+    });
+  }
+
+  Stream<SyncEvent<T>> get onEvent => _subject.stream;
+
+  /// Filters the events by [receiver]
+  Stream<SyncEvent<T>> onOthersEvent(Object receiver) {
     return stream.where((event) => event.sender != receiver);
+  }
+
+  /// Filters the events by [receivers]
+  Stream<SyncEvent<T>> onOthersEventList(Iterable<Object> receivers) {
+    return stream.where((event) => !receivers.contains(event.sender));
   }
 
   /// It emits a successful creation event

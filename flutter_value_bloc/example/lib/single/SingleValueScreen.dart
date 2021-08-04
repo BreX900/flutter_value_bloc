@@ -11,7 +11,7 @@ class SingleScreenCubit extends ModularCubit<int> with BlocDisposer, LoadCubitMo
         await Future.delayed(Duration(seconds: 2));
         yield ObjectFetchedEvent(personList[0]);
       })
-      ..addToCloser(this);
+      ..addToDisposer(this);
   }
 
   @override

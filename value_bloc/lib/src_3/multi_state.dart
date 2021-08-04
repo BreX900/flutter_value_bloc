@@ -1,8 +1,11 @@
 import 'package:built_collection/built_collection.dart';
+import 'package:built_value/built_value.dart';
 import 'package:dartz/dartz.dart';
+import 'package:equatable/equatable.dart';
 import 'package:value_bloc/src_3/single_state.dart';
 
-class MultiState<TFailure, TValue> implements SingleState<TFailure, BuiltList<TValue>> {
+class MultiState<TFailure, TValue> extends Equatable
+    implements SingleState<TFailure, BuiltList<TValue>> {
   @override
   final bool isEmitting;
   final Option<TFailure> _failure;
@@ -42,5 +45,17 @@ class MultiState<TFailure, TValue> implements SingleState<TFailure, BuiltList<TV
       failure: failure ?? _failure,
       values: values ?? _values,
     );
+  }
+
+  @override
+  List<Object?> get props => [isEmitting, _failure, _values];
+
+  @override
+  String toString() {
+    return (newBuiltValueToStringHelper('$runtimeType')
+          ..add('isEmitting', isEmitting)
+          ..add('failure', hasFailure ? '$failure' : null)
+          ..add('values', hasValue ? '$value' : null))
+        .toString();
   }
 }

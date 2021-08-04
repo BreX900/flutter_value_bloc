@@ -4,11 +4,11 @@ import 'package:bloc/bloc.dart';
 import 'package:value_bloc/src/load/LoadCubit.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-abstract class CloserProvider {
+abstract class DisposerProvider {
   Disposer get _disposer;
 }
 
-class Disposer extends DisposableEntry implements CloserProvider {
+class Disposer extends DisposableEntry implements DisposerProvider {
   final _entries = <DisposableEntry>[];
 
   void addSubscription(StreamSubscription subscription) {
@@ -42,7 +42,7 @@ class Disposer extends DisposableEntry implements CloserProvider {
 
 /// It allows you to automatic close [Cubit] with [CloseableBlocExtension]
 /// It allows you to automatic unsubscribe to a [StreamSubscription] with [CloseableStreamSubscriptionExtension]
-mixin BlocDisposer<State> on BlocBase<State> implements CloserProvider {
+mixin BlocDisposer<State> on BlocBase<State> implements DisposerProvider {
   @override
   final _disposer = Disposer();
 
@@ -54,21 +54,21 @@ mixin BlocDisposer<State> on BlocBase<State> implements CloserProvider {
 }
 
 extension CloseableStreamSubscriptionExtension<T> on StreamSubscription<T> {
-  void addToCloser(CloserProvider closer) {
+  void addToDisposer(DisposerProvider closer) {
     closer._disposer.addSubscription(this);
   }
 
-  void removeFromCloser(CloserProvider closer, {bool canClose = true}) {
+  void removeFromDisposer(DisposerProvider closer, {bool canClose = true}) {
     closer._disposer.removeSubscription(this, canClose: canClose);
   }
 }
 
 extension CloseableBlocExtension<State> on BlocBase<State> {
-  void addToCloser(CloserProvider closer) {
+  void addToDisposer(DisposerProvider closer) {
     closer._disposer.addBloc(this);
   }
 
-  void removeFromCloser(CloserProvider closer, {bool canClose = true}) {
+  void removeFromDisposer(DisposerProvider closer, {bool canClose = true}) {
     if (canClose) close();
     closer._disposer.removeBloc(this);
   }

@@ -4,26 +4,26 @@ import 'package:provider/provider.dart';
 
 /// It provider in [ViewBuilder], [SingleViewValueCubitBuilder] or
 /// [ListViewValueCubitBuilder] the defaults builders
-class ViewsProvider extends Provider<Views> {
+class ViewsProvider<TFailure> extends Provider<Views<TFailure>> {
   ViewsProvider({
-    required Create<Views> create,
+    required Create<Views<TFailure>> create,
     TransitionBuilder? builder,
     Widget? child,
   }) : super(create: create, builder: builder, child: child);
 
   ViewsProvider.value({
-    required Views value,
+    required Views<TFailure> value,
     TransitionBuilder? builder,
     Widget? child,
   }) : super.value(value: value, builder: builder, child: child);
 
-  static Views of(BuildContext context) {
-    return context.watch<Views>();
+  static Views<TFailure> of<TFailure>(BuildContext context) {
+    return context.watch<Views<TFailure>>();
   }
 
-  static Views? tryOf(BuildContext context) {
+  static Views<TFailure>? maybeOf<TFailure>(BuildContext context) {
     try {
-      return context.watch<Views>();
+      return context.watch<Views<TFailure>>();
     } on ProviderNotFoundException {
       return null;
     }
@@ -33,5 +33,5 @@ class ViewsProvider extends Provider<Views> {
 extension ViewsProviderOnBuildContext on BuildContext {
   Views views() => ViewsProvider.of(this);
 
-  Views? tryViews() => ViewsProvider.tryOf(this);
+  Views? maybeViews() => ViewsProvider.maybeOf(this);
 }
