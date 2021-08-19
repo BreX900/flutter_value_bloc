@@ -8,36 +8,45 @@ abstract class SyncEvent<T> extends Equatable {
   SyncEvent(this.sender);
 }
 
-class InvalidateSyncEvent<T> extends SyncEvent<T> {
-  InvalidateSyncEvent(Object sender) : super(sender);
+class InvalidSyncEvent<T> extends SyncEvent<T> {
+  InvalidSyncEvent(Object sender) : super(sender);
 
   @override
   List<Object?> get props => [sender];
 }
 
-class CreateSyncEvent<T> extends SyncEvent<T> {
+class CreatedSyncEvent<T> extends SyncEvent<T> {
   final T value;
 
-  CreateSyncEvent(Object sender, this.value) : super(sender);
+  CreatedSyncEvent(Object sender, this.value) : super(sender);
 
   @override
   List<Object?> get props => [sender, value];
 }
 
-class UpdateSyncEvent<T> extends SyncEvent<T> {
+class UpdatedSyncEvent<T> extends SyncEvent<T> {
+  final T value;
+
+  UpdatedSyncEvent(Object sender, this.value) : super(sender);
+
+  @override
+  List<Object?> get props => [sender, value];
+}
+
+class ReplacedSyncEvent<T> extends SyncEvent<T> {
   final T previousValue;
   final T currentValue;
 
-  UpdateSyncEvent(Object sender, this.previousValue, this.currentValue) : super(sender);
+  ReplacedSyncEvent(Object sender, this.previousValue, this.currentValue) : super(sender);
 
   @override
   List<Object?> get props => [sender, previousValue, currentValue];
 }
 
-class DeleteSyncEvent<T> extends SyncEvent<T> {
+class DeletedSyncEvent<T> extends SyncEvent<T> {
   final T value;
 
-  DeleteSyncEvent(Object sender, this.value) : super(sender);
+  DeletedSyncEvent(Object sender, this.value) : super(sender);
 
   @override
   List<Object?> get props => [sender, value];
@@ -96,18 +105,28 @@ class SyncEventBus<T> {
     return stream.where((event) => !receivers.contains(event.sender));
   }
 
+  /// It emits a successful invalid event
+  void emitInvalidate(Object source) {
+    _subject.add(InvalidSyncEvent(source));
+  }
+
   /// It emits a successful creation event
   void emitCreate(Object source, T value) {
-    _subject.add(CreateSyncEvent(source, value));
+    _subject.add(CreatedSyncEvent(source, value));
   }
 
   /// It emits an event of successful update
-  void emitUpdate(Object source, T previousValue, T currentValue) {
-    _subject.add(UpdateSyncEvent(source, previousValue, currentValue));
+  void emitUpdate(Object source, T value) {
+    _subject.add(UpdatedSyncEvent(source, value));
+  }
+
+  /// It emits an event of successful replace
+  void emitReplace(Object source, T previousValue, T currentValue) {
+    _subject.add(ReplacedSyncEvent(source, previousValue, currentValue));
   }
 
   /// It emits an event of successful delete
   void emitDelete(Object source, T value) {
-    _subject.add(DeleteSyncEvent(source, value));
+    _subject.add(DeletedSyncEvent(source, value));
   }
 }
