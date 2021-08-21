@@ -27,7 +27,7 @@ class ActionDataBlocBuilder<
     return BlocBuilder<TBloc, DataBlocState<TFailure, TData>>(
       bloc: dataBloc,
       buildWhen: (prev, curr) {
-        return _canPerform(prev, isDataAction) != _canPerform(prev, isDataAction);
+        return _canPerform(prev, isDataAction) != _canPerform(curr, isDataAction);
       },
       builder: (context, state) => builder(context, state, _canPerform(state, isDataAction)),
     );

@@ -8,7 +8,6 @@ import 'package:equatable/equatable.dart';
 import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/screen/disposer.dart';
-import 'package:value_bloc/src_3/sync_event_bus.dart';
 
 part 'data_events.dart';
 part 'data_states.dart';
@@ -58,7 +57,7 @@ abstract class DataBloc<TFailure, TValueEvent, TValueState,
     } else if (event is DataBlocAction<TFailure, TValueEvent>) {
       if (event is ReadDataBloc<TFailure, TValueEvent>) {
         // If event is equal to previous and not force reload block read event
-        if (_previousReadEvent == event && !event.canForce) return;
+        if (state.hasValidData && _previousReadEvent == event && !event.canForce) return;
         final canAsync = _previousReadEvent != null && event.isAsync;
 
         // If event is async manage event in async stream
@@ -102,7 +101,7 @@ abstract class DataBloc<TFailure, TValueEvent, TValueState,
 }
 
 abstract class ValueBloc<TFailure, TValue>
-    extends DataBloc<TFailure, TValue, TValue, SingleDataBlocState<TFailure, TValue>> {
+    extends DataBloc<TFailure, TValue, TValue?, SingleDataBlocState<TFailure, TValue?>> {
   ValueBloc({
     Option<TValue> value = const None(),
   }) : super(SingleDataBlocState(
@@ -113,7 +112,7 @@ abstract class ValueBloc<TFailure, TValue>
         ));
 
   @override
-  SingleDataBlocState<TFailure, TValue>? onMapEmissionToState(
+  SingleDataBlocState<TFailure, TValue?>? onMapEmissionToState(
     DataBlocEmission<TFailure, TValue> event,
   ) {
     if (event is EmitValueDataBloc<TFailure, TValue>) {
@@ -127,7 +126,7 @@ abstract class ValueBloc<TFailure, TValue>
     if (event is UpdateValueDataBloc<TFailure, TValue>) {
       if (!state.hasData || state.data != event.value) return null;
       return state.copyWith(
-        isEmitting: event.canEmitAgain,
+        isEmitting: event.canEmitAgain ? null : false,
         value: Some(event.value),
         failure: event.canEmitAgain ? null : None(),
       );
@@ -135,19 +134,11 @@ abstract class ValueBloc<TFailure, TValue>
     if (event is ReplaceValueDataBloc<TFailure, TValue>) {
       if (!state.hasData || state.data != event.currentValue) return null;
       return state.copyWith(
-        isEmitting: event.canEmitAgain,
+        isEmitting: event.canEmitAgain ? null : false,
         value: Some(event.nextValue),
         failure: event.canEmitAgain ? null : None(),
       );
     }
-    // if (event is RemoveValueDataBloc<TFailure, TValue>) {
-    //   if (!state.hasData || state.data != event.value) return null;
-    //   return state.copyWith(
-    //     isEmitting: event.canEmitAgain,
-    //     value: Some(null),
-    //     failure: event.canEmitAgain ? null : None(),
-    //   );
-    // }
     return super.onMapEmissionToState(event);
   }
 }
@@ -189,7 +180,7 @@ abstract class ListBloc<TFailure, TValue>
     if (event is AddValueDataBloc<TFailure, TValue>) {
       if (!state.hasData) return null;
       return state.copyWithList(
-        isEmitting: event.canEmitAgain,
+        isEmitting: event.canEmitAgain ? null : false,
         values: Some(state.data.rebuild((b) => b.add(event.value))),
         failure: event.canEmitAgain ? null : None(),
       );
@@ -197,7 +188,7 @@ abstract class ListBloc<TFailure, TValue>
     if (event is UpdateValueDataBloc<TFailure, TValue>) {
       if (!state.hasData) return null;
       return state.copyWithList(
-        isEmitting: event.canEmitAgain,
+        isEmitting: event.canEmitAgain ? null : false,
         values: Some(state.data.rebuild((b) => b
           ..remove(event.value)
           ..add(event.value))),
@@ -207,7 +198,7 @@ abstract class ListBloc<TFailure, TValue>
     if (event is ReplaceValueDataBloc<TFailure, TValue>) {
       if (!state.hasData) return null;
       return state.copyWithList(
-        isEmitting: event.canEmitAgain,
+        isEmitting: event.canEmitAgain ? null : false,
         values: Some(state.data.rebuild((b) => b
           ..remove(event.currentValue)
           ..add(event.nextValue))),
@@ -217,7 +208,7 @@ abstract class ListBloc<TFailure, TValue>
     if (event is RemoveValueDataBloc<TFailure, TValue>) {
       if (!state.hasData) return null;
       return state.copyWithList(
-        isEmitting: event.canEmitAgain,
+        isEmitting: event.canEmitAgain ? null : false,
         values: Some(state.data.rebuild((b) => b.remove(event.value))),
         failure: event.canEmitAgain ? null : None(),
       );
@@ -238,29 +229,29 @@ mixin MapActionToEmission<TFailure, TValue> {
   );
 }
 
-mixin MapSyncEventToEmission<TFailure, TValue> {
-  Stream<DataBlocEmission<TFailure, TValue>> mapSyncEventToEmission(
-    SyncEvent<TValue> event,
-  ) async* {
-    yield onMapSyncEventToEmission(event);
-  }
-
-  DataBlocEmission<TFailure, TValue> onMapSyncEventToEmission(SyncEvent<TValue> event) {
-    if (event is InvalidSyncEvent<TValue>) {
-      return InvalidateDataBloc();
-    }
-    if (event is CreatedSyncEvent<TValue>) {
-      return AddValueDataBloc(event.value, canEmitAgain: true);
-    }
-    if (event is UpdatedSyncEvent<TValue>) {
-      return UpdateValueDataBloc(event.value, canEmitAgain: true);
-    }
-    if (event is ReplacedSyncEvent<TValue>) {
-      return ReplaceValueDataBloc(event.previousValue, event.currentValue, canEmitAgain: true);
-    }
-    if (event is DeletedSyncEvent<TValue>) {
-      return RemoveValueDataBloc(event.value, canEmitAgain: true);
-    }
-    throw 'Not support $event';
-  }
-}
+// mixin MapSyncEventToEmission<TFailure, TValue> {
+//   Stream<DataBlocEmission<TFailure, TValue>> mapSyncEventToEmission(
+//     SyncEvent<TValue> event,
+//   ) async* {
+//     yield onMapSyncEventToEmission(event);
+//   }
+//
+//   DataBlocEmission<TFailure, TValue> onMapSyncEventToEmission(SyncEvent<TValue> event) {
+//     if (event is InvalidSyncEvent<TValue>) {
+//       return InvalidateDataBloc();
+//     }
+//     if (event is CreatedSyncEvent<TValue>) {
+//       return AddValueDataBloc(event.value, canEmitAgain: true);
+//     }
+//     if (event is UpdatedSyncEvent<TValue>) {
+//       return UpdateValueDataBloc(event.value, canEmitAgain: true);
+//     }
+//     if (event is ReplacedSyncEvent<TValue>) {
+//       return ReplaceValueDataBloc(event.previousValue, event.currentValue, canEmitAgain: true);
+//     }
+//     if (event is DeletedSyncEvent<TValue>) {
+//       return RemoveValueDataBloc(event.value, canEmitAgain: true);
+//     }
+//     throw 'Not support $event';
+//   }
+// }

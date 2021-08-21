@@ -19,12 +19,12 @@ dependencies:
   equatable: ^2.0.2
   quiver: ^3.0.1
   collection: ^1.15.0
-  built_value: ^8.0.6
-  built_collection: ^5.0.0
+  built_value: ^8.1.0
+  built_collection: ^5.1.0
 
-  dartz: ^0.10.0-nullsafety.2
+  dartz: ^0.10.0
 
-  bloc: ^7.0.0
+  bloc: ^7.1.0
 
 dev_dependencies:
   # flutter packages pub run build_runner build --delete-conflicting-outputs

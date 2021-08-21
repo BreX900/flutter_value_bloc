@@ -14,6 +14,15 @@ class Person {
     required this.surname,
   });
 
+  static int _personCount = 100;
+
+  factory Person.next() {
+    return Person(
+      name: 'New Person ${_personCount++}',
+      surname: 'New Person ${_personCount++}',
+    );
+  }
+
   @override
   String toString() {
     return 'Person{name: $name, surname: $surname}';

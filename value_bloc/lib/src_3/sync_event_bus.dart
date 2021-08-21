@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:rxdart/rxdart.dart';
 
 abstract class SyncEvent<T> extends Equatable {
   final Object sender;
@@ -78,55 +79,73 @@ class DeletedSyncEvent<T> extends SyncEvent<T> {
 /// 3. Bus Events ([SyncEventBus])
 ///   When a bloc update the value notify it in to Synchronizer.
 ///   The main bloc, if it is listening to the stream can update itself accordingly to the change
-class SyncEventBus<T> {
-  final _subject = StreamController<SyncEvent<T>>.broadcast(sync: true);
+abstract class SyncEventBus<T> {
+  SyncEventBus._();
 
-  Stream<SyncEvent<T>> get stream => _subject.stream;
+  factory SyncEventBus() = _SingleSyncEventBus<T>;
 
-  /// Filters the events by [receiver] or receivers with Iterable<Object>
-  Stream<SyncEvent<T>> othersStream(Object receiver) {
-    return stream.where((event) {
-      if (receiver is Iterable<Object>) {
-        return !receiver.contains(event.sender);
-      }
-      return event.sender != receiver;
-    });
+  factory SyncEventBus.from(List<SyncEventBus<T>> list) = _MultiSyncEventBus<T>;
+
+  Stream<SyncEvent<T>> get stream;
+
+  /// Only emits events from these [senders]
+  Stream<SyncEvent<T>> streamFromThese(List<Object> senders) {
+    return stream.where((event) => senders.contains(event.sender));
   }
 
-  Stream<SyncEvent<T>> get onEvent => _subject.stream;
-
-  /// Filters the events by [receiver]
-  Stream<SyncEvent<T>> onOthersEvent(Object receiver) {
-    return stream.where((event) => event.sender != receiver);
-  }
-
-  /// Filters the events by [receivers]
-  Stream<SyncEvent<T>> onOthersEventList(Iterable<Object> receivers) {
-    return stream.where((event) => !receivers.contains(event.sender));
+  /// Ignore the events of these [senders]
+  Stream<SyncEvent<T>> streamFromOther(List<Object> senders) {
+    return stream.where((event) => !senders.contains(event.sender));
   }
 
   /// It emits a successful invalid event
   void emitInvalidate(Object source) {
-    _subject.add(InvalidSyncEvent(source));
+    add(InvalidSyncEvent(source));
   }
 
   /// It emits a successful creation event
   void emitCreate(Object source, T value) {
-    _subject.add(CreatedSyncEvent(source, value));
+    add(CreatedSyncEvent(source, value));
   }
 
   /// It emits an event of successful update
   void emitUpdate(Object source, T value) {
-    _subject.add(UpdatedSyncEvent(source, value));
+    add(UpdatedSyncEvent(source, value));
   }
 
   /// It emits an event of successful replace
   void emitReplace(Object source, T previousValue, T currentValue) {
-    _subject.add(ReplacedSyncEvent(source, previousValue, currentValue));
+    add(ReplacedSyncEvent(source, previousValue, currentValue));
   }
 
   /// It emits an event of successful delete
   void emitDelete(Object source, T value) {
-    _subject.add(DeletedSyncEvent(source, value));
+    add(DeletedSyncEvent(source, value));
   }
+
+  void add(SyncEvent<T> event);
+}
+
+class _SingleSyncEventBus<T> extends SyncEventBus<T> {
+  final _subject = StreamController<SyncEvent<T>>.broadcast(sync: true);
+
+  _SingleSyncEventBus() : super._();
+
+  @override
+  void add(SyncEvent<T> event) => _subject.add(event);
+
+  @override
+  Stream<SyncEvent<T>> get stream => _subject.stream;
+}
+
+class _MultiSyncEventBus<T> extends SyncEventBus<T> {
+  final List<SyncEventBus<T>> _list;
+
+  _MultiSyncEventBus(this._list) : super._();
+
+  @override
+  void add(SyncEvent<T> event) => _list.forEach((syncBus) => syncBus.add(event));
+
+  @override
+  Stream<SyncEvent<T>> get stream => Rx.merge(_list.map((syncBus) => syncBus.stream));
 }

@@ -1,24 +1,37 @@
 import 'package:example/entities/Person.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+import 'package:flutter_value_bloc/flutter_value_bloc_3.dart';
 
-class ListScreenCubit extends ModularCubit<int> with BlocDisposer {
-  final personsCubit = MultiCubit<Person, int, int>();
+class CreatePersonDataBloc extends CreateDataBloc<String, Person> {}
 
-  ListScreenCubit() : super(0) {
-    personsCubit
-      ..updateFetcher(fetcher: (section, filter) async* {
-        // Fetch values on database
-        print('Fetching... ${section}');
-        await Future.delayed(Duration(seconds: 1));
-        if (section.startAt > 55) {
-          yield EmptyFetchEvent();
-        } else {
-          final persons = personList.skip(section.startAt).take(section.length);
-          yield IterableFetchedEvent(persons);
-        }
-      })
-      ..addToDisposer(this);
+class PersonsBloc extends ListBloc<String, Person> {
+  final syncBus = SyncEventBus<Person>();
+
+  PersonsBloc() : super() {
+    syncBus
+        .streamFromOther([this])
+        .transform(ListBlocSyncer<String, Person>())
+        .listen(add)
+        .addToDisposer(this);
+  }
+
+  void create() => add(CreatePersonDataBloc());
+
+  @override
+  Stream<DataBlocEmission<String, Person>> mapActionToEmission(
+    DataBlocAction<String, Person> event,
+  ) async* {
+    if (event is CreatePersonDataBloc) {
+      await Future.delayed(Duration(seconds: 3));
+      yield event.toAddValue(Person.next());
+      return;
+    }
+    if (event is ReadDataBloc<String, Person>) {
+      await Future.delayed(Duration(seconds: 1));
+      yield event.toEmitList(personList.take(10).toBuiltList());
+      return;
+    }
   }
 }
 
@@ -27,25 +40,60 @@ class ListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<ListScreenCubit>(
-      create: (context) => ListScreenCubit(),
+    return BlocProvider<PersonsBloc>(
+      create: (context) => PersonsBloc(),
       child: Scaffold(
         appBar: AppBar(
           title: Text('List with ListValueCubit'),
-        ),
-        body: ModularViewCubitBuilder<ListScreenCubit, int>(
-          builder: (context, state) {
-            final screenCubit = BlocProvider.of<ListScreenCubit>(context);
-
-            return ListViewCubitBuilder<Person>(
-              iterableCubit: screenCubit.personsCubit,
-              valuesPerScroll: 20,
-              isEnabledPullUp: true,
-              builder: (context, person) {
-                return ListTile(
-                  title: Text('${person.name} ${person.surname}'),
+          actions: [
+            ActionDataBlocBuilder<PersonsBloc, String, BuiltList<Person>>(
+              builder: (context, state, canPerform) {
+                return PopupMenuButton(
+                  itemBuilder: (context) {
+                    return [
+                      PopupMenuItem(
+                        child: ListTile(
+                          enabled: canPerform,
+                          onTap: () =>
+                              context.read<PersonsBloc>().syncBus.emitCreate(this, Person.next()),
+                          title: Text('Sync Create'),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        child: ListTile(
+                          enabled: canPerform,
+                          onTap: () => context.read<PersonsBloc>().syncBus.emitInvalidate(this),
+                          title: Text('Sync invalidate'),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        child: ListTile(
+                          enabled: canPerform,
+                          onTap: () => context.read<PersonsBloc>().create(),
+                          title: Text('Create'),
+                        ),
+                      ),
+                    ];
+                  },
                 );
               },
+            ),
+          ],
+        ),
+        body: ViewDataBlocBuilder<PersonsBloc, String, BuiltList<Person>>(
+          builder: (context, persons) {
+            return RefreshGroupDataBlocBuilder(
+              dataBlocs: [context.read<PersonsBloc>()],
+              child: ListView.builder(
+                itemCount: persons.length,
+                itemBuilder: (context, index) {
+                  final person = persons[index];
+
+                  return ListTile(
+                    title: Text('${person.name} ${person.surname}'),
+                  );
+                },
+              ),
             );
           },
         ),

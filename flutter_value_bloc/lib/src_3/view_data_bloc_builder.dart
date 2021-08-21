@@ -39,13 +39,16 @@ class _ViewDataBlocBuilderState<
     _initializeBloc(context, _bloc.state);
   }
 
+  bool _checkBlocIsInitialized(
+    DataBlocState<TFailure, TValue> prev,
+    DataBlocState<TFailure, TValue> curr,
+  ) {
+    return prev.canInitialize != curr.canInitialize;
+  }
+
   void _initializeBloc(BuildContext context, DataBlocState<TFailure, TValue> state) {
     if (state.canInitialize) {
       _bloc.read();
-    }
-    if (state.hasData && state.hasFailure) {
-      final views = ViewsProvider.maybeOf<TFailure>(context) ?? const Views();
-      views.failureListener(context, state.failure);
     }
   }
 
@@ -66,7 +69,7 @@ class _ViewDataBlocBuilderState<
   Widget build(BuildContext context) {
     Widget current = BlocConsumer<TBloc, DataBlocState<TFailure, TValue>>(
       bloc: _bloc,
-      listenWhen: (prev, curr) => prev.canInitialize != curr.canInitialize,
+      listenWhen: _checkBlocIsInitialized,
       listener: _initializeBloc,
       builder: _buildView,
     );

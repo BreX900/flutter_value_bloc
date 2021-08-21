@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
 void main() {
+  Bloc.observer = _BlocObserver();
   runApp(MyApp());
 }
 
@@ -60,5 +61,25 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _BlocObserver extends BlocObserver {
+  @override
+  void onChange(BlocBase bloc, Change change) {
+    super.onChange(bloc, change);
+    if (bloc is Bloc) return;
+    debugPrint('Bloc#Change#${bloc.runtimeType}:\n'
+        ' currentState: ${change.currentState}\n'
+        ' nextState: ${change.nextState}\n');
+  }
+
+  @override
+  void onTransition(Bloc bloc, Transition transition) {
+    super.onTransition(bloc, transition);
+    debugPrint('Bloc#Transation#${bloc.runtimeType}:\n'
+        ' currentState${transition.currentState}\n'
+        ' event: ${transition.event}\n'
+        ' nextState: ${transition.nextState}\n');
   }
 }

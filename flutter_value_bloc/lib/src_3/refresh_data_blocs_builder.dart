@@ -109,11 +109,9 @@ class _RefreshGroupDataBlocBuilderState<TFailure>
 
   @override
   Widget build(BuildContext context) {
-    print(
-        '${widget.dataBlocs}CanRefresh $_canRefresh ee${_controller.headerStatus == RefreshStatus.refreshing}');
     return SmartRefresher(
       controller: _controller,
-      // enablePullDown: (_controller.headerStatus == RefreshStatus.refreshing) || _canRefresh,
+      enablePullDown: (_controller.headerStatus == RefreshStatus.refreshing) || _canRefresh,
       onRefresh: refresh,
       child: widget.child,
     );

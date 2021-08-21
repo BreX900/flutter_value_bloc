@@ -57,7 +57,7 @@ class EmitFailureDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, T
 }
 
 class EmitValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
-  final TValue value;
+  final TValue? value;
 
   EmitValueDataBloc(this.value);
 
@@ -135,13 +135,12 @@ abstract class CreateDataBloc<TFailure, TValue> extends DataBlocAction<TFailure,
 
 class ReadDataBloc<TFailure, TValue> extends DataBlocAction<TFailure, TValue> {
   final bool canForce;
-  bool _isAsync;
-  bool get isAsync => _isAsync;
+  final bool isAsync;
 
   ReadDataBloc({
     this.canForce = false,
-    bool isAsync = false,
-  }) : _isAsync = isAsync;
+    this.isAsync = false,
+  });
 
   @override
   List<Object?> get props => [canForce, isAsync, onProps];

@@ -1,3 +1,6 @@
+library flutter_value_bloc;
+
+export 'package:flutter_bloc/flutter_bloc.dart';
 export 'package:value_bloc/value_bloc_3.dart';
 
 export 'src_3/action_data_bloc_builder.dart';

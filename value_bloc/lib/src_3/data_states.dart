@@ -14,8 +14,18 @@ abstract class DataBlocState<TFailure, TValue> extends Equatable {
   bool get hasData => _data.isSome();
   TValue get data => _data.getOrElse(() => throw 'Not has value! $this');
 
-  bool get canInitialize => (!isEmitting) && !(hasFailure || hasData);
-  bool get isInitialized => isEmitting || (hasFailure || hasData);
+  /// You can call read and create
+  bool get canInitialize {
+    if (isEmitting) return false;
+    if (hasFailure) return false;
+    return !(hasData && hasValidData);
+  }
+
+  bool get isInitialized {
+    if (isEmitting) return true;
+    if (hasFailure) return true;
+    return hasData && hasValidData;
+  }
 
   bool get canPerformAction => !isEmitting;
 
