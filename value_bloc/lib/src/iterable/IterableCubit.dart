@@ -256,7 +256,7 @@ class MultiCubit<Value, Filter, ExtraData> extends IterableCubit<Value, ExtraDat
 
       return _selectionsSubject.distinct().pairwise().map((vls) {
         // final oldSchemes = vls.first.without(vls.last);
-        return vls.last.without(vls.first);
+        return vls.last.whereNotContains(vls.first);
       }).expand((newSections) {
         return newSections;
       }).makeUnique((section) {
