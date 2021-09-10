@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:rxdart/rxdart.dart';
+// ignore:, implementation_imports
 import 'package:rxdart/src/utils/forwarding_sink.dart';
+// ignore: implementation_imports
 import 'package:rxdart/src/utils/forwarding_stream.dart';
-import 'package:value_bloc/src/object/ObjectCubit.dart';
+import 'package:value_bloc/src/object/object_cubit.dart';
 
 class Optional<TValue> {
   final bool hasValue;
@@ -92,7 +94,7 @@ class Utils {
   }
 }
 
-class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
+class _MakeUniqueStreamSink<S, T> extends ForwardingSink<S, T> {
   final MapEntry<Object, Stream<T>> Function(S value) _mapper;
   final List<StreamSubscription<T>> _subscriptions = <StreamSubscription<T>>[];
   final keys = <Object>{};
@@ -101,7 +103,7 @@ class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
   _MakeUniqueStreamSink(this._mapper);
 
   @override
-  void add(EventSink<T> sink, S data) {
+  void onData(S data) {
     final entityStream = _mapper(data);
     final keyStream = entityStream.key;
     final mappedStream = entityStream.value;
@@ -129,10 +131,16 @@ class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
   }
 
   @override
-  void addError(EventSink<T> sink, dynamic e, [StackTrace? st]) => sink.addError(e, st);
+  void onError(dynamic e, [StackTrace? st]) => sink.addError(e, st);
 
   @override
-  void close(EventSink<T> sink) {
+  void onDone() {}
+
+  @override
+  FutureOr onListen() => Future.wait<dynamic>(_subscriptions.map((s) => s.cancel()));
+
+  @override
+  void onCancel() {
     _inputClosed = true;
 
     if (keys.isEmpty) {
@@ -141,18 +149,18 @@ class _MakeUniqueStreamSink<S, T> implements ForwardingSink<S, T> {
   }
 
   @override
-  FutureOr onCancel(EventSink<T> sink) =>
-      Future.wait<dynamic>(_subscriptions.map((s) => s.cancel()));
+  void onPause() {
+    for (var s in _subscriptions) {
+      s.pause();
+    }
+  }
 
   @override
-  void onListen(EventSink<T> sink) {}
-
-  @override
-  void onPause(EventSink<T> sink, [Future? resumeSignal]) =>
-      _subscriptions.forEach((s) => s.pause(resumeSignal));
-
-  @override
-  void onResume(EventSink<T> sink) => _subscriptions.forEach((s) => s.resume());
+  void onResume() {
+    for (var s in _subscriptions) {
+      s.resume();
+    }
+  }
 }
 
 class MakeUniqueStreamTransformer<S, T> extends StreamTransformerBase<S, T> {
@@ -161,7 +169,7 @@ class MakeUniqueStreamTransformer<S, T> extends StreamTransformerBase<S, T> {
   MakeUniqueStreamTransformer(this.mapper);
 
   @override
-  Stream<T> bind(Stream<S> stream) => forwardStream(stream, _MakeUniqueStreamSink(mapper));
+  Stream<T> bind(Stream<S> stream) => forwardStream(stream, () => _MakeUniqueStreamSink(mapper));
 }
 
 extension MakeUniqueStreamExtension<S> on Stream<S> {

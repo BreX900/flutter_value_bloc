@@ -48,7 +48,7 @@ class Views<TFailure> {
   }
 
   static Widget _buildEmpty(BuildContext context) {
-    return Center(child: Text('Empty'));
+    return const Center(child: Text('Empty'));
   }
 
   Views<TFailure> copyWith({

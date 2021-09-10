@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:value_bloc/src/load/LoadCubit.dart';
+import 'package:value_bloc/src/load/load_cubit.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 abstract class DisposerProvider {
@@ -33,7 +33,9 @@ class Disposer extends DisposableEntry implements DisposerProvider {
 
   @override
   void close() {
-    _entries.forEach((entry) => entry.close());
+    for (final entry in _entries) {
+      entry.close();
+    }
   }
 
   @override

@@ -1,4 +1,4 @@
-part of 'IterableCubit.dart';
+part of 'iterable_cubit.dart';
 
 extension FirstValuesBuiltListExtension<Value> on BuiltMap<int, Value> {
   BuiltList<Value> get firstValues {

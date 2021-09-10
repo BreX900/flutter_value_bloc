@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/cubit_views/CubitViews.dart';
-import 'package:flutter_value_bloc/src/cubit_views/CubitViewsProvider.dart';
+import 'package:flutter_value_bloc/src/cubit_views/cubit_views.dart';
+import 'package:flutter_value_bloc/src/cubit_views/cubit_views_provider.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 abstract class CubitViewBuilder<C extends Cubit<S>, S extends Object> extends StatelessWidget {

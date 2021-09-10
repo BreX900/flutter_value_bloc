@@ -1,12 +1,15 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_value_bloc/src/cubit_views/CubitViews.dart';
-import 'package:flutter_value_bloc/src/cubit_views/ValueViewBuilder.dart';
-import 'package:flutter_value_bloc/src/iterable/ScrollViewCubitBuilder.dart';
+import 'package:flutter_value_bloc/src/cubit_views/cubit_views.dart';
+import 'package:flutter_value_bloc/src/cubit_views/value_view_builder.dart';
+import 'package:flutter_value_bloc/src/iterable/scroll_view_cubit_builder.dart';
 import 'package:flutter_value_bloc/src/utils.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ListViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilderBase<Value> {
+class GridViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilderBase<Value> {
+  /// [GridView.gridDelegate]
+  final SliverGridDelegate? gridDelegate;
+
   /// [ScrollView.scrollDirection]
   final Axis scrollDirection;
 
@@ -28,13 +31,10 @@ class ListViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilderB
   /// [BoxScrollView.padding]
   final EdgeInsetsGeometry? padding;
 
-  /// [ListView.separatorBuilder]
-  final IndexedWidgetBuilder? separatorBuilder;
-
   /// [ListView.itemBuilder]
   final CubitValueWidgetBuilder<Value> builder;
 
-  const ListViewCubitBuilder({
+  const GridViewCubitBuilder({
     Key? key,
     required MultiCubit<Value, Object, Object> iterableCubit,
     bool useOldValues = true,
@@ -50,13 +50,13 @@ class ListViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilderB
     this.physics,
     this.shrinkWrap = false,
     this.padding,
+    this.gridDelegate,
     LoadingCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         loadingBuilder = CubitViewBuilder.buildLoading,
     ErrorCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         errorBuilder = CubitViewBuilder.buildError,
     EmptyCubitViewBuilder<IterableCubit<Value, Object>, IterableCubitState<Value, Object>>
         emptyBuilder = CubitViewBuilder.buildEmpty,
-    this.separatorBuilder,
     required this.builder,
   }) : super(
           key: key,
@@ -78,32 +78,21 @@ class ListViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilderB
     IterableCubitState<Value, Object> state,
     BuiltList<Value> values,
   ) {
-    Widget itemBuilder(BuildContext context, int index) {
-      return builder(context, values[index]);
-    }
-
-    if (separatorBuilder != null) {
-      return ListView.separated(
-        scrollDirection: scrollDirection,
-        reverse: reverse,
-        controller: controller,
-        primary: primary,
-        physics: physics,
-        shrinkWrap: shrinkWrap,
-        itemCount: values.length,
-        separatorBuilder: separatorBuilder!,
-        itemBuilder: itemBuilder,
-      );
-    }
-    return ListView.builder(
+    return GridView.custom(
       scrollDirection: scrollDirection,
       reverse: reverse,
       controller: controller,
       primary: primary,
       physics: physics,
       shrinkWrap: shrinkWrap,
-      itemCount: values.length,
-      itemBuilder: itemBuilder,
+      padding: padding,
+      gridDelegate: gridDelegate!,
+      childrenDelegate: SliverChildBuilderDelegate(
+        (context, index) {
+          return builder(context, values[index]);
+        },
+        childCount: values.length,
+      ),
     );
   }
 }

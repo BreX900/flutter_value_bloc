@@ -1,21 +1,23 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_value_bloc/src/cubit_views/CubitViews.dart';
+import 'package:flutter_value_bloc/src/cubit_views/cubit_views.dart';
 import 'package:provider/provider.dart';
 
 /// It provider in [SingleViewValueCubitBuilder] or
 /// [ListViewValueCubitBuilder] the defaults builders
 class CubitViewsProvider extends Provider<CubitViews> {
   CubitViewsProvider({
+    Key? key,
     required Create<CubitViews> create,
     TransitionBuilder? builder,
     Widget? child,
-  }) : super(create: create, builder: builder, child: child);
+  }) : super(key: key, create: create, builder: builder, child: child);
 
   CubitViewsProvider.value({
+    Key? key,
     required CubitViews value,
     TransitionBuilder? builder,
     Widget? child,
-  }) : super.value(value: value, builder: builder, child: child);
+  }) : super.value(key: key, value: value, builder: builder, child: child);
 
   static CubitViews of(BuildContext context) => context.watch<CubitViews>();
 

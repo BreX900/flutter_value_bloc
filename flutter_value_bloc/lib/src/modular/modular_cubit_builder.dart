@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/load/LoadViewCubitBuilder.dart';
+import 'package:flutter_value_bloc/src/load/load_view_cubit_builder.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 typedef _LoadModuleBuilder = Widget Function(BuildContext context, LoadCubit cubit);

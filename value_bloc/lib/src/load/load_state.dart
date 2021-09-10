@@ -1,4 +1,4 @@
-part of 'LoadCubit.dart';
+part of 'load_cubit.dart';
 
 typedef Loader = void Function();
 

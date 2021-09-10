@@ -18,7 +18,7 @@ abstract class SmartRefresherCubitBuilder extends StatefulWidget {
     required this.child,
   }) : super(key: key);
 
-  factory SmartRefresherCubitBuilder.single({
+  const factory SmartRefresherCubitBuilder.single({
     Key? key,
     required SingleCubit<Object, Object, Object> singleCubit,
     bool isEnabledPullDown,
@@ -123,7 +123,7 @@ class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
     bool isEnabledPullDown = true,
     bool isEnabledPullUp = false,
     required Widget child,
-  })   : valuesPerScroll = valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll,
+  })  : valuesPerScroll = valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll,
         super._(
           key: key,
           isEnabledPullDown: isEnabledPullDown,

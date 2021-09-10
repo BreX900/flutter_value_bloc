@@ -2,11 +2,11 @@ import 'dart:math';
 
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_value_bloc/src/cubit_views/CubitViews.dart';
-import 'package:flutter_value_bloc/src/cubit_views/ValueViewBuilder.dart';
-import 'package:flutter_value_bloc/src/internalUtils.dart';
-import 'package:flutter_value_bloc/src/iterable/IterableCubitBuilder.dart';
-import 'package:flutter_value_bloc/src/widgets/SmartRefresherCubitBuilder.dart';
+import 'package:flutter_value_bloc/src/_utils.dart';
+import 'package:flutter_value_bloc/src/cubit_views/cubit_views.dart';
+import 'package:flutter_value_bloc/src/cubit_views/value_view_builder.dart';
+import 'package:flutter_value_bloc/src/iterable/iterable_cubit_builder.dart';
+import 'package:flutter_value_bloc/src/widgets/smart_refresher_cubit_builder.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 class ScrollViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilderBase<Value> {
@@ -16,7 +16,7 @@ class ScrollViewCubitBuilder<Value extends Object> extends ScrollViewCubitBuilde
     BuiltList<Value> values,
   ) builder;
 
-  ScrollViewCubitBuilder({
+  const ScrollViewCubitBuilder({
     Key? key,
     required MultiCubit<Value, Object, Object> iterableCubit,
     bool useOldValues = true,

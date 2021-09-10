@@ -1,4 +1,4 @@
-part of 'ObjectCubit.dart';
+part of 'object_cubit.dart';
 
 abstract class ObjectCubitState<Value, ExtraData> extends Equatable {
   /// If the current state contains the value it returns true otherwise false

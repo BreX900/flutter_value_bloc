@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/views/ViewProvider.dart';
+import 'package:flutter_value_bloc/src/views/view_provider.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 /// It build a widget for showing a progress
@@ -11,12 +11,12 @@ typedef LoadingCubitViewBuilder<C extends Cubit, S> = Widget Function(
 /// It build a widget for showing a error
 /// Ex. Center(child: Text('$error'))
 typedef ErrorCubitViewBuilder<C extends Cubit, S> = Widget Function(
-    BuildContext context, C cubit, S State);
+    BuildContext context, C cubit, S state);
 
 /// It build a widget for showing a empty list or empty screen
 /// Center(child: Text('Empty'))
 typedef EmptyCubitViewBuilder<C extends Cubit, S> = Widget Function(
-    BuildContext context, C cubit, S State);
+    BuildContext context, C cubit, S state);
 
 /// It defines default [ErrorViewBuilder], [LoaderViewBuilder], [EmptyViewBuilder]
 class CubitViews {

@@ -1,13 +1,13 @@
-import 'package:example/list/ListScreen.dart';
-import 'package:example/list/TableScreen.dart';
-import 'package:example/single/SingleValueScreen.dart';
+import 'package:example/list/list_screen.dart';
+import 'package:example/list/table_screen.dart';
+import 'package:example/single/single_value_screen.dart';
 import 'package:example/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
 void main() {
   Bloc.observer = _BlocObserver();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -16,10 +16,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ViewsProvider.value(
-      value: Views(),
+      value: const Views(),
       child: CubitViewsProvider.value(
-        value: CubitViews(),
-        child: MaterialApp(
+        value: const CubitViews(),
+        child: const MaterialApp(
           home: HomeScreen(),
         ),
       ),
@@ -41,21 +41,21 @@ class HomeScreen extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => SingleScreen(),
+                builder: (context) => const SingleScreen(),
               )),
-              child: Text('SingleValueCubit'),
+              child: const Text('SingleValueCubit'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => ListScreen(),
+                builder: (context) => const ListScreen(),
               )),
-              child: Text('ListValueCubit in List'),
+              child: const Text('ListValueCubit in List'),
             ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => TableScreen(),
+                builder: (context) => const TableScreen(),
               )),
-              child: Text('ListValueCubit in Table'),
+              child: const Text('ListValueCubit in Table'),
             ),
           ],
         ),

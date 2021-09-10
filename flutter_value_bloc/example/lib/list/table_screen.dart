@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:example/entities/Person.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
@@ -10,7 +12,7 @@ class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, BlocDispo
       ..updateFetcher(fetcher: (section, filter) async* {
         // Fetch values on database
         print('Fetching... ${section}');
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
         if (section.startAt > 35) {
           yield EmptyFetchEvent();
         } else {
@@ -23,7 +25,7 @@ class TableScreenCubit extends ModularCubit<int> with LoadCubitModule, BlocDispo
 
   @override
   void onLoading() async {
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
     // initialize ScreenCubit
     emitLoaded();
   }
@@ -38,7 +40,7 @@ class TableScreen extends StatelessWidget {
       create: (context) => TableScreenCubit(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Table with ListValueCubit'),
+          title: const Text('Table with ListValueCubit'),
         ),
         body: ModularViewCubitBuilder<TableScreenCubit, int>(
           builder: (context, state) {
@@ -47,14 +49,14 @@ class TableScreen extends StatelessWidget {
             return SingleChildScrollView(
               child: PaginatedDataTableCubitBuilder<Person>(
                 iterableCubit: screenCubit.personsCubit,
-                header: Text('Names'),
+                header: const Text('Names'),
                 actions: [
                   IconButton(
                     onPressed: () => screenCubit.personsCubit.clear(),
                     icon: const Icon(Icons.refresh),
                   ),
                 ],
-                columns: [
+                columns: const [
                   DataColumn(label: Text('Name')),
                   DataColumn(label: Text('Surname')),
                 ],

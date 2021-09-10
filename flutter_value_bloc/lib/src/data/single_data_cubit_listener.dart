@@ -8,6 +8,7 @@ class DataCubitListener<
     TFailure,
     TData> extends DataCubitListenerBase<TDataCubit, DataState<TFailure, TData>, TFailure, TData> {
   DataCubitListener({
+    Key? key,
     TDataCubit? dataCubit,
     BlocWidgetListener<DataState<TFailure, TData>>? onIdle,
     BlocWidgetListener<DataState<TFailure, TData>>? onWaiting,
@@ -26,6 +27,7 @@ class DataCubitListener<
     BlocWidgetListener<DataState<TFailure, TData>>? listener,
     Widget? child,
   }) : super(
+          key: key,
           dataCubit: dataCubit,
           onIdle: onIdle,
           onWaiting: onWaiting,
@@ -53,6 +55,7 @@ class MultiDataCubitListener<
     extends DataCubitListenerBase<TDataCubit, MultiDataState<TFailure, TData>, TFailure,
         BuiltList<TData>> {
   MultiDataCubitListener({
+    Key? key,
     TDataCubit? dataCubit,
     BlocWidgetListener<MultiDataState<TFailure, TData>>? onIdle,
     BlocWidgetListener<MultiDataState<TFailure, TData>>? onWaiting,
@@ -71,6 +74,7 @@ class MultiDataCubitListener<
     BlocWidgetListener<MultiDataState<TFailure, TData>>? listener,
     Widget? child,
   }) : super(
+          key: key,
           dataCubit: dataCubit,
           onIdle: onIdle,
           onWaiting: onWaiting,

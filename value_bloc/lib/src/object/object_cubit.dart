@@ -3,11 +3,11 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:value_bloc/src/internalUtils.dart';
-import 'package:value_bloc/src/screen/DynamicCubit.dart';
+import 'package:value_bloc/src/_utils.dart';
+import 'package:value_bloc/src/screen/dynamic_cubit.dart';
 import 'package:value_bloc/src/utils.dart';
 
-part 'ObjectState.dart';
+part 'object_state.dart';
 
 abstract class ObjectCubit<Value, ExtraData> extends Cubit<ObjectCubitState<Value, ExtraData>>
     implements DynamicCubit<ObjectCubitState<Value, ExtraData>> {

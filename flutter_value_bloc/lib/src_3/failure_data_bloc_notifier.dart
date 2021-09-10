@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/src/views/ViewProvider.dart';
+import 'package:flutter_value_bloc/src/views/view_provider.dart';
 import 'package:flutter_value_bloc/src_3/widgets.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:value_bloc/value_bloc_3.dart';

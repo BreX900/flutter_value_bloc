@@ -1,4 +1,4 @@
-// import 'package:example/entities/Person.dart';
+// import 'package:example/entities/person.dart';
 // import 'package:value_bloc/value_bloc.dart';
 //
 // class ListPersonCubit extends ListValueCubit<Person, Object> {

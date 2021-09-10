@@ -7,12 +7,12 @@ import 'package:built_collection/built_collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:value_bloc/src/_utils.dart';
 import 'package:value_bloc/src/fetchers.dart';
-import 'package:value_bloc/src/internalUtils.dart';
-import 'package:value_bloc/src/screen/DynamicCubit.dart';
+import 'package:value_bloc/src/screen/dynamic_cubit.dart';
 import 'package:value_bloc/src/utils.dart';
 
-part 'IterableState.dart';
+part 'iterable_state.dart';
 
 abstract class IterableCubit<Value, ExtraData> extends Cubit<IterableCubitState<Value, ExtraData>>
     implements DynamicCubit<IterableCubitState<Value, ExtraData>> {

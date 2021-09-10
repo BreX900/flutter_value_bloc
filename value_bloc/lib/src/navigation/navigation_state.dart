@@ -1,4 +1,4 @@
-part of 'NavigationCubit.dart';
+part of 'navigation_cubit.dart';
 
 class NavigationCubitState<T> extends Equatable {
   final BuiltList<T> pages;
@@ -9,7 +9,7 @@ class NavigationCubitState<T> extends Equatable {
   NavigationCubitState({
     required this.pages,
     required this.currentIndexPage,
-  })   : assert(pages.isNotEmpty),
+  })  : assert(pages.isNotEmpty),
         assert(currentIndexPage < pages.length);
 
   NavigationCubitState<T> copyWith({

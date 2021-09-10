@@ -10,7 +10,7 @@ import 'package:value_bloc/src/utils.dart';
 abstract class ListFetcherPlugin {
   const ListFetcherPlugin();
 
-  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset newSection);
+  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset newPage);
 }
 
 /// It caches all the sections that have been requested by the UI
@@ -46,18 +46,18 @@ class ContinuousListFetcherPlugin extends ListFetcherPlugin {
   }
 
   @override
-  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset scheme) {
-    PageOffset? tmpScheme = scheme;
+  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset newPage) {
+    PageOffset? tmpScheme = newPage;
     do {
-      final newStartAt = findFirstNotExistOffset(queue, scheme);
+      final newStartAt = findFirstNotExistOffset(queue, newPage);
       if (newStartAt == null) return queue;
-      final startScheme = scheme.mergeWith(startAt: newStartAt);
+      final startScheme = newPage.mergeWith(startAt: newStartAt);
       final newEndAt = findFirstExistOffset(queue, startScheme);
       final newScheme = newEndAt == null ? startScheme : startScheme.mergeWith(endAt: newEndAt);
 
       queue = queue.rebuild((b) => b.add(newScheme));
       tmpScheme =
-          newScheme.endAt >= scheme.endAt ? null : scheme.mergeWith(startAt: newScheme.endAt);
+          newScheme.endAt >= newPage.endAt ? null : newPage.mergeWith(startAt: newScheme.endAt);
     } while (tmpScheme != null);
 
     return queue;
@@ -70,8 +70,8 @@ class SpasmodicListFetcherPlugin extends ListFetcherPlugin {
   const SpasmodicListFetcherPlugin();
 
   @override
-  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset newScheme) {
-    return BuiltSet.of([newScheme]);
+  BuiltSet<PageOffset> addTo(BuiltSet<PageOffset> queue, PageOffset newPage) {
+    return BuiltSet.of([newPage]);
   }
 }
 

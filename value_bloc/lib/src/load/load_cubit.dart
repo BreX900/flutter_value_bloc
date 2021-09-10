@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
-part 'LoadState.dart';
+part 'load_state.dart';
 
 class LoadCubit<ExtraData> extends Cubit<LoadCubitState<ExtraData?>> {
   late Loader _loader;

@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_value_bloc/src/views/ViewData.dart';
-import 'package:flutter_value_bloc/src/views/ViewProvider.dart';
+import 'package:flutter_value_bloc/src/views/view_data.dart';
+import 'package:flutter_value_bloc/src/views/view_provider.dart';
 
 /// This is a view builder with default [FailureViewBuilder],
 /// [LoadingViewBuilder], [EmptyViewBuilder]

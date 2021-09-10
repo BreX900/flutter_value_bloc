@@ -144,7 +144,11 @@ class _MultiSyncEventBus<T> extends SyncEventBus<T> {
   _MultiSyncEventBus(this._list) : super._();
 
   @override
-  void add(SyncEvent<T> event) => _list.forEach((syncBus) => syncBus.add(event));
+  void add(SyncEvent<T> event) {
+    for (final syncBus in _list) {
+      syncBus.add(event);
+    }
+  }
 
   @override
   Stream<SyncEvent<T>> get stream => Rx.merge(_list.map((syncBus) => syncBus.stream));

@@ -1,7 +1,7 @@
 import 'package:built_collection/built_collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-import 'package:flutter_value_bloc/src/cubit_views/CubitViews.dart';
+import 'package:flutter_value_bloc/src/cubit_views/cubit_views.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 abstract class IterableCubitBuilderBase<Value> extends StatelessWidget {

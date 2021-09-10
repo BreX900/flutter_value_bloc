@@ -11,7 +11,7 @@ class PersonsBloc extends ListBloc<String, Person> {
   PersonsBloc() : super() {
     syncBus
         .streamFromOther([this])
-        .transform(ListBlocSyncer<String, Person>())
+        .transform(const ListBlocSyncer<String, Person>())
         .listen(add)
         .addToDisposer(this);
   }
@@ -23,12 +23,12 @@ class PersonsBloc extends ListBloc<String, Person> {
     DataBlocAction<String, Person> event,
   ) async* {
     if (event is CreatePersonDataBloc) {
-      await Future.delayed(Duration(seconds: 3));
+      await Future.delayed(const Duration(seconds: 3));
       yield event.toAddValue(Person.next());
       return;
     }
     if (event is ReadDataBloc<String, Person>) {
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       yield event.toEmitList(personList.take(10).toBuiltList());
       return;
     }
@@ -44,7 +44,7 @@ class ListScreen extends StatelessWidget {
       create: (context) => PersonsBloc(),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('List with ListValueCubit'),
+          title: const Text('List with ListValueCubit'),
           actions: [
             ActionDataBlocBuilder<PersonsBloc, String, BuiltList<Person>>(
               builder: (context, state, canPerform) {
@@ -56,21 +56,21 @@ class ListScreen extends StatelessWidget {
                           enabled: canPerform,
                           onTap: () =>
                               context.read<PersonsBloc>().syncBus.emitCreate(this, Person.next()),
-                          title: Text('Sync Create'),
+                          title: const Text('Sync Create'),
                         ),
                       ),
                       PopupMenuItem(
                         child: ListTile(
                           enabled: canPerform,
                           onTap: () => context.read<PersonsBloc>().syncBus.emitInvalidate(this),
-                          title: Text('Sync invalidate'),
+                          title: const Text('Sync invalidate'),
                         ),
                       ),
                       PopupMenuItem(
                         child: ListTile(
                           enabled: canPerform,
                           onTap: () => context.read<PersonsBloc>().create(),
-                          title: Text('Create'),
+                          title: const Text('Create'),
                         ),
                       ),
                     ];

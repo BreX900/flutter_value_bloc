@@ -10,7 +10,7 @@ class LinearProgressDataBlocBuilder<
   const LinearProgressDataBlocBuilder({Key? key, this.dataBloc}) : super(key: key);
 
   @override
-  Size get preferredSize => Size.fromHeight(8.0);
+  Size get preferredSize => const Size.fromHeight(8.0);
 
   @override
   Widget build(BuildContext context) {

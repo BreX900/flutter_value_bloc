@@ -1,7 +1,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_bloc/flutter_bloc.dart';
 //
-// import 'package:flutter_value_bloc/src/views/ViewProvider.dart';
+// import 'package:flutter_value_bloc/src/views/view_provider.dart';
 // import 'package:value_bloc/value_bloc.dart';
 //
 // class ViewCubitBuilder<S> extends StatefulWidget {

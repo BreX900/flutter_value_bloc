@@ -28,7 +28,7 @@ class ViewDataCubitTheme<TFailure> {
     DataCubit<DataState<dynamic, dynamic>, dynamic, dynamic> dataCubit,
     DataState<dynamic, dynamic> state,
   ) {
-    return Center(child: CircularProgressIndicator());
+    return const Center(child: CircularProgressIndicator());
   }
 
   static Widget buildFailure(
