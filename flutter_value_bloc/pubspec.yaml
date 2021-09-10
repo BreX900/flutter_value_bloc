@@ -1,6 +1,6 @@
 name: flutter_value_bloc
 description: Flutter Widgets that make it easy to implement the ValueBloc for list, table and more.
-version: 1.2.0-dev
+version: 1.3.0-dev
 repository: https://github.com/BreX900/flutter_value_bloc/tree/master/flutter_value_bloc
 issue_tracker: https://github.com/BreX900/flutter_value_bloc/issues
 homepage: https://github.com/BreX900/flutter_value_bloc/tree/master/flutter_value_bloc
@@ -16,15 +16,15 @@ dependencies:
     sdk: flutter
 
   # wait null safety
-  built_collection: ^5.0.0
+  built_collection: ^5.1.0
 
-  flutter_bloc: ^7.0.0
+  flutter_bloc: ^7.2.0
 
-  value_bloc: ^1.2.0-dev
+  value_bloc: ^1.3.0-dev
 #  value_bloc:
 #    path: ../value_bloc
 
-  provider: ^5.0.0
+  provider: ^6.0.0
   pull_to_refresh: ^2.0.0
 
 dev_dependencies:
