@@ -54,7 +54,7 @@ class _RefreshGroupDataBlocBuilderState<TFailure>
     super.dispose();
   }
 
-  bool _checkCanRefresh(Iterable<DataBlocState<dynamic, dynamic>> states) {
+  bool _checkCanRefresh(Iterable<DataBlocState<TFailure, dynamic>> states) {
     return states.every((state) {
       if (state.isEmitting) return false;
       return state.hasFailure || state.hasData;
@@ -63,7 +63,8 @@ class _RefreshGroupDataBlocBuilderState<TFailure>
 
   void _initCanRefreshListener() {
     _canRefreshSub = Rx.combineLatestList(widget.dataBlocs.map((bloc) {
-      return bloc.stream;
+      // Cast is required
+      return bloc.stream.cast<DataBlocState<TFailure, dynamic>>().startWith(bloc.state);
     })).listen((states) {
       final canRefresh = _checkCanRefresh(states);
       if (_canRefresh == canRefresh) return;
