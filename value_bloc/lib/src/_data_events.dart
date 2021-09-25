@@ -1,44 +1,43 @@
 part of 'data_blocs.dart';
 
-abstract class DataBlocEvent<TFailure, TValue> with EquatableMixin {
+abstract class DataBlocEvent with EquatableMixin {
   const DataBlocEvent();
 
-  DataBlocEmission<TFailure, TValue> toEmitting() => EmitEmittingDataBloc();
+  DataBlocEmission toEmitting() => EmitEmittingDataBloc();
 
-  DataBlocEmission<TFailure, TValue> toEmitFailure(TFailure failure) =>
+  EmitFailureDataBloc<TFailure> toEmitFailure<TFailure>(TFailure failure) =>
       EmitFailureDataBloc(failure);
 
-  DataBlocEmission<TFailure, TValue> toEmitValue(TValue value) => EmitValueDataBloc(value);
+  EmitValueDataBloc<TValue> toEmitValue<TValue>(TValue value) => EmitValueDataBloc(value);
 
-  DataBlocEmission<TFailure, TValue> toEmitList(BuiltList<TValue> values) =>
-      EmitListDataBloc(values);
+  EmitListDataBloc<TValue> toEmitList<TValue>(BuiltList<TValue> values) => EmitListDataBloc(values);
 
-  DataBlocEmission<TFailure, TValue> toAddValue(TValue value) => AddValueDataBloc(value);
+  AddValueDataBloc<TValue> toAddValue<TValue>(TValue value) => AddValueDataBloc(value);
 
-  DataBlocEmission<TFailure, TValue> toReplaceValue(TValue oldValue, TValue newValue) =>
+  ReplaceValueDataBloc<TValue> toReplaceValue<TValue>(TValue oldValue, TValue newValue) =>
       ReplaceValueDataBloc(oldValue, newValue);
 
-  DataBlocEmission<TFailure, TValue> toRemoveValue(TValue value) => RemoveValueDataBloc(value);
+  RemoveValueDataBloc<TValue> toRemoveValue<TValue>(TValue value) => RemoveValueDataBloc(value);
 
   @override
   bool? get stringify => true;
 }
 
-class ExternalDataBlocEmission<TFailure, TValue> extends DataBlocEvent<TFailure, TValue> {
-  final Bloc<DataBlocEvent<TFailure, TValue>, dynamic> bloc;
-  final DataBlocEmission<TFailure, TValue> event;
-
-  ExternalDataBlocEmission(this.bloc, this.event);
-
-  @override
-  List<Object?> get props => [bloc, event];
-}
+// class ExternalDataBlocEmission<TFailure, TValue> extends DataBlocEvent<TFailure, TValue> {
+//   final Bloc<DataBlocEvent<TFailure, TValue>, dynamic> bloc;
+//   final DataBlocEmission<TFailure, TValue> event;
+//
+//   ExternalDataBlocEmission(this.bloc, this.event);
+//
+//   @override
+//   List<Object?> get props => [bloc, event];
+// }
 
 // ==================== EMISSIONS ====================
 
-abstract class DataBlocEmission<TFailure, TValue> extends DataBlocEvent<TFailure, TValue> {}
+abstract class DataBlocEmission extends DataBlocEvent {}
 
-class EmitEmittingDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class EmitEmittingDataBloc extends DataBlocEmission {
   final bool value;
 
   EmitEmittingDataBloc([this.value = true]);
@@ -47,7 +46,7 @@ class EmitEmittingDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, 
   List<Object?> get props => [value];
 }
 
-class EmitFailureDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class EmitFailureDataBloc<TFailure> extends DataBlocEmission {
   final TFailure failure;
 
   EmitFailureDataBloc(this.failure);
@@ -56,7 +55,7 @@ class EmitFailureDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, T
   List<Object?> get props => [failure];
 }
 
-class EmitValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class EmitValueDataBloc<TValue> extends DataBlocEmission {
   final TValue? value;
 
   EmitValueDataBloc(this.value);
@@ -65,7 +64,7 @@ class EmitValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TVa
   List<Object?> get props => [value];
 }
 
-class EmitListDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class EmitListDataBloc<TValue> extends DataBlocEmission {
   final Iterable<TValue> values;
 
   EmitListDataBloc(this.values);
@@ -74,12 +73,12 @@ class EmitListDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TVal
   List<Object?> get props => [values];
 }
 
-class InvalidateDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class InvalidateDataBloc extends DataBlocEmission {
   @override
   List<Object?> get props => [];
 }
 
-class AddValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class AddValueDataBloc<TValue> extends DataBlocEmission {
   final TValue value;
   final bool canEmitAgain;
 
@@ -89,7 +88,7 @@ class AddValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TVal
   List<Object?> get props => [value];
 }
 
-class UpdateValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class UpdateValueDataBloc<TValue> extends DataBlocEmission {
   final TValue value;
   final bool canEmitAgain;
 
@@ -99,7 +98,7 @@ class UpdateValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, T
   List<Object?> get props => [value];
 }
 
-class ReplaceValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class ReplaceValueDataBloc<TValue> extends DataBlocEmission {
   final TValue currentValue;
   final TValue nextValue;
   final bool canEmitAgain;
@@ -110,7 +109,7 @@ class ReplaceValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, 
   List<Object?> get props => [currentValue, nextValue];
 }
 
-class RemoveValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, TValue> {
+class RemoveValueDataBloc<TValue> extends DataBlocEmission {
   final TValue value;
   final bool canEmitAgain;
 
@@ -122,7 +121,7 @@ class RemoveValueDataBloc<TFailure, TValue> extends DataBlocEmission<TFailure, T
 
 // ==================== ACTIONS ====================
 
-abstract class DataBlocAction<TFailure, TValue> extends DataBlocEvent<TFailure, TValue> {
+abstract class DataBlocAction extends DataBlocEvent {
   const DataBlocAction();
 
   @override
@@ -131,9 +130,9 @@ abstract class DataBlocAction<TFailure, TValue> extends DataBlocEvent<TFailure, 
   List<Object?> get onProps => const [];
 }
 
-abstract class CreateDataBloc<TFailure, TValue> extends DataBlocAction<TFailure, TValue> {}
+abstract class CreateDataBloc extends DataBlocAction {}
 
-class ReadDataBloc<TFailure, TValue> extends DataBlocAction<TFailure, TValue> {
+class ReadDataBloc extends DataBlocAction {
   final bool canForce;
   final bool isAsync;
 
@@ -146,9 +145,9 @@ class ReadDataBloc<TFailure, TValue> extends DataBlocAction<TFailure, TValue> {
   List<Object?> get props => [canForce, isAsync, onProps];
 }
 
-abstract class UpdateDataBloc<TFailure, TValue> extends DataBlocAction<TFailure, TValue> {}
+abstract class UpdateDataBloc extends DataBlocAction {}
 
-abstract class DeleteDataBloc<TFailure, TValue> extends DataBlocAction<TFailure, TValue> {
+abstract class DeleteDataBloc<TValue> extends DataBlocAction {
   final TValue value;
 
   DeleteDataBloc(this.value);

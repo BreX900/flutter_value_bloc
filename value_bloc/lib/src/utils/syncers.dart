@@ -33,10 +33,9 @@ class DataBlocSyncerActions {
 }
 
 extension DataBlocSyncerActionExt on DataBlocSyncerAction? {
-  Stream<DataBlocEmission<TFailure, TValue>>
-      bind<TEvent extends SyncEvent<TValue>, TFailure, TValue>(
+  Stream<DataBlocEmission> bind<TEvent extends SyncEvent>(
     TEvent event,
-    Stream<DataBlocEmission<TFailure, TValue>> Function(TEvent event) mapper,
+    Stream<DataBlocEmission> Function(TEvent event) mapper,
   ) async* {
     switch (this) {
       case DataBlocSyncerAction.invalidate:
@@ -51,8 +50,7 @@ extension DataBlocSyncerActionExt on DataBlocSyncerAction? {
   }
 }
 
-abstract class DataBlocSyncer<TFailure, TValue>
-    extends Syncer<TValue, DataBlocEmission<TFailure, TValue>> {
+abstract class DataBlocSyncer<TFailure, TValue> extends Syncer<TValue, DataBlocEmission> {
   final DataBlocSyncerActions actions;
 
   const DataBlocSyncer({
@@ -60,44 +58,41 @@ abstract class DataBlocSyncer<TFailure, TValue>
   });
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> mapInvalidEvent(
-      InvalidSyncEvent<TValue> event) async* {
+  Stream<DataBlocEmission> mapInvalidEvent(InvalidSyncEvent<TValue> event) async* {
     yield InvalidateDataBloc();
   }
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> mapCreatedEvent(CreatedSyncEvent<TValue> event) {
+  Stream<DataBlocEmission> mapCreatedEvent(CreatedSyncEvent<TValue> event) {
     return actions.created.bind(event, onMapCreatedEvent);
   }
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> mapUpdatedEvent(UpdatedSyncEvent<TValue> event) {
+  Stream<DataBlocEmission> mapUpdatedEvent(UpdatedSyncEvent<TValue> event) {
     return actions.updated.bind(event, onMapUpdatedEvent);
   }
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> mapReplacedEvent(ReplacedSyncEvent<TValue> event) {
+  Stream<DataBlocEmission> mapReplacedEvent(ReplacedSyncEvent<TValue> event) {
     return actions.replaced.bind(event, onMapReplacedEvent);
   }
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> mapDeletedEvent(DeletedSyncEvent<TValue> event) {
+  Stream<DataBlocEmission> mapDeletedEvent(DeletedSyncEvent<TValue> event) {
     return actions.deleted.bind(event, onMapDeletedEvent);
   }
 
-  Stream<DataBlocEmission<TFailure, TValue>> onMapCreatedEvent(CreatedSyncEvent<TValue> event);
+  Stream<DataBlocEmission> onMapCreatedEvent(CreatedSyncEvent<TValue> event);
 
-  Stream<DataBlocEmission<TFailure, TValue>> onMapUpdatedEvent(
-      UpdatedSyncEvent<TValue> event) async* {
+  Stream<DataBlocEmission> onMapUpdatedEvent(UpdatedSyncEvent<TValue> event) async* {
     yield UpdateValueDataBloc(event.value, canEmitAgain: true);
   }
 
-  Stream<DataBlocEmission<TFailure, TValue>> onMapReplacedEvent(
-      ReplacedSyncEvent<TValue> event) async* {
+  Stream<DataBlocEmission> onMapReplacedEvent(ReplacedSyncEvent<TValue> event) async* {
     yield ReplaceValueDataBloc(event.previousValue, event.currentValue, canEmitAgain: true);
   }
 
-  Stream<DataBlocEmission<TFailure, TValue>> onMapDeletedEvent(DeletedSyncEvent<TValue> event);
+  Stream<DataBlocEmission> onMapDeletedEvent(DeletedSyncEvent<TValue> event);
 }
 
 class SingleValueBlocSyncer<TFailure, TValue> extends DataBlocSyncer<TFailure, TValue> {
@@ -106,14 +101,12 @@ class SingleValueBlocSyncer<TFailure, TValue> extends DataBlocSyncer<TFailure, T
   }) : super(actions: actions);
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> onMapCreatedEvent(
-      CreatedSyncEvent<TValue> event) async* {
+  Stream<DataBlocEmission> onMapCreatedEvent(CreatedSyncEvent<TValue> event) async* {
     yield EmitValueDataBloc(event.value);
   }
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> onMapDeletedEvent(
-      DeletedSyncEvent<TValue> event) async* {
+  Stream<DataBlocEmission> onMapDeletedEvent(DeletedSyncEvent<TValue> event) async* {
     yield EmitValueDataBloc(null);
   }
 }
@@ -124,12 +117,10 @@ class MultiValueBlocSyncer<TFailure, TValue> extends DataBlocSyncer<TFailure, TV
   }) : super(actions: actions);
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> onMapCreatedEvent(
-      CreatedSyncEvent<TValue> event) async* {}
+  Stream<DataBlocEmission> onMapCreatedEvent(CreatedSyncEvent<TValue> event) async* {}
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> onMapDeletedEvent(
-      DeletedSyncEvent<TValue> event) async* {}
+  Stream<DataBlocEmission> onMapDeletedEvent(DeletedSyncEvent<TValue> event) async* {}
 }
 
 class ListBlocSyncer<TFailure, TValue> extends DataBlocSyncer<TFailure, TValue> {
@@ -138,14 +129,12 @@ class ListBlocSyncer<TFailure, TValue> extends DataBlocSyncer<TFailure, TValue> 
   }) : super(actions: actions);
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> onMapCreatedEvent(
-      CreatedSyncEvent<TValue> event) async* {
+  Stream<DataBlocEmission> onMapCreatedEvent(CreatedSyncEvent<TValue> event) async* {
     yield AddValueDataBloc(event.value, canEmitAgain: true);
   }
 
   @override
-  Stream<DataBlocEmission<TFailure, TValue>> onMapDeletedEvent(
-      DeletedSyncEvent<TValue> event) async* {
+  Stream<DataBlocEmission> onMapDeletedEvent(DeletedSyncEvent<TValue> event) async* {
     yield RemoveValueDataBloc(event.value, canEmitAgain: true);
   }
 }

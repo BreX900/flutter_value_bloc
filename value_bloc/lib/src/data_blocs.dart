@@ -12,20 +12,18 @@ import 'package:value_bloc/src/utils/disposer.dart';
 part '_data_events.dart';
 part '_data_states.dart';
 
-abstract class DataBloc<TFailure, TValueEvent, TValueState,
-        TState extends DataBlocState<TFailure, TValueState>>
-    extends Bloc<DataBlocEvent<TFailure, TValueEvent>, TState>
-    with MapActionToEmission<TFailure, TValueEvent>, BlocDisposer {
+abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure, TValue>>
+    extends Bloc<DataBlocEvent, TState> with MapActionToEmission, BlocDisposer {
   //
   static Duration readDebounceTime = const Duration();
 
-  final _readAsyncEventSubject = StreamController<ReadDataBloc<TFailure, TValueEvent>>(sync: true);
+  final _readAsyncEventSubject = StreamController<ReadDataBloc>(sync: true);
 
   DataBloc(TState initialState) : super(initialState) {
     _readAsyncEventSubject.stream
-        .cast<ReadDataBloc<TFailure, TValueEvent>?>()
+        .cast<ReadDataBloc?>()
         .startWith(null)
-        .listenValueChanges<DataBlocEmission<TFailure, TValueEvent>>(
+        .listenValueChanges<DataBlocEmission>(
           debounceTime: DataBloc.readDebounceTime,
           onStart: (_, curr) async {
             if (curr == null) return;
@@ -46,16 +44,16 @@ abstract class DataBloc<TFailure, TValueEvent, TValueState,
   }
 
   void read({bool canForce = false, bool isAsync = false}) =>
-      add(ReadDataBloc<TFailure, TValueEvent>(canForce: canForce, isAsync: isAsync));
+      add(ReadDataBloc(canForce: canForce, isAsync: isAsync));
 
-  ReadDataBloc<TFailure, TValueEvent>? _previousReadEvent;
+  ReadDataBloc? _previousReadEvent;
 
   @override
-  Stream<TState> mapEventToState(DataBlocEvent<TFailure, TValueEvent> event) async* {
-    if (event is DataBlocEmission<TFailure, TValueEvent>) {
+  Stream<TState> mapEventToState(DataBlocEvent event) async* {
+    if (event is DataBlocEmission) {
       yield* mapEmissionToState(event);
-    } else if (event is DataBlocAction<TFailure, TValueEvent>) {
-      if (event is ReadDataBloc<TFailure, TValueEvent>) {
+    } else if (event is DataBlocAction) {
+      if (event is ReadDataBloc) {
         // If event is equal to previous and not force reload block read event
         if (state.hasValidData && _previousReadEvent == event && !event.canForce) return;
         final canAsync = _previousReadEvent != null && event.isAsync;
@@ -72,36 +70,36 @@ abstract class DataBloc<TFailure, TValueEvent, TValueState,
     }
   }
 
-  Stream<TState> mapEmissionToState(DataBlocEmission<TFailure, TValueEvent> event) async* {
+  Stream<TState> mapEmissionToState(DataBlocEmission event) async* {
     final state = onMapEmissionToState(event);
     if (state == null) return;
     yield state;
   }
 
-  TState? onMapEmissionToState(DataBlocEmission<TFailure, TValueEvent> event) {
-    if (event is InvalidateDataBloc<TFailure, TValueEvent>) {
+  TState? onMapEmissionToState(DataBlocEmission event) {
+    if (event is InvalidateDataBloc) {
       if (!state.hasData) return null;
       return state.copyWith(
         hasValidData: false,
       ) as TState;
     }
-    if (event is EmitEmittingDataBloc<TFailure, TValueEvent>) {
+    if (event is EmitEmittingDataBloc) {
       return state.copyWith(
         isEmitting: event.value,
       ) as TState;
     }
-    if (event is EmitFailureDataBloc<TFailure, TValueEvent>) {
+    if (event is EmitFailureDataBloc<TFailure>) {
       return state.copyWith(
         isEmitting: false,
         failure: Some(event.failure),
       ) as TState;
     }
-    throw 'Not support $DataBlocEmission<$TFailure, $TValueEvent>\n$event';
+    throw 'Not support $DataBlocEmission<$TFailure, $TValue>\n$event';
   }
 }
 
 abstract class ValueBloc<TFailure, TValue>
-    extends DataBloc<TFailure, TValue, TValue?, SingleDataBlocState<TFailure, TValue?>> {
+    extends DataBloc<TFailure, TValue?, SingleDataBlocState<TFailure, TValue?>> {
   ValueBloc({
     Option<TValue> value = const None(),
   }) : super(SingleDataBlocState(
@@ -112,10 +110,8 @@ abstract class ValueBloc<TFailure, TValue>
         ));
 
   @override
-  SingleDataBlocState<TFailure, TValue?>? onMapEmissionToState(
-    DataBlocEmission<TFailure, TValue> event,
-  ) {
-    if (event is EmitValueDataBloc<TFailure, TValue>) {
+  SingleDataBlocState<TFailure, TValue?>? onMapEmissionToState(DataBlocEmission event) {
+    if (event is EmitValueDataBloc) {
       return state.copyWith(
         hasValidData: true,
         isEmitting: false,
@@ -123,7 +119,7 @@ abstract class ValueBloc<TFailure, TValue>
         failure: None(),
       );
     }
-    if (event is UpdateValueDataBloc<TFailure, TValue>) {
+    if (event is UpdateValueDataBloc<TValue>) {
       if (!state.hasData || state.data != event.value) return null;
       return state.copyWith(
         isEmitting: event.canEmitAgain ? null : false,
@@ -131,7 +127,7 @@ abstract class ValueBloc<TFailure, TValue>
         failure: event.canEmitAgain ? null : None(),
       );
     }
-    if (event is ReplaceValueDataBloc<TFailure, TValue>) {
+    if (event is ReplaceValueDataBloc<TValue>) {
       if (!state.hasData || state.data != event.currentValue) return null;
       return state.copyWith(
         isEmitting: event.canEmitAgain ? null : false,
@@ -144,7 +140,7 @@ abstract class ValueBloc<TFailure, TValue>
 }
 
 abstract class ListBloc<TFailure, TValue>
-    extends DataBloc<TFailure, TValue, BuiltList<TValue>, MultiDataBlocState<TFailure, TValue>> {
+    extends DataBloc<TFailure, BuiltList<TValue>, MultiDataBlocState<TFailure, TValue>> {
   ListBloc({
     Option<Iterable<TValue>> values = const None(),
   }) : super(MultiDataBlocState(
@@ -167,9 +163,9 @@ abstract class ListBloc<TFailure, TValue>
 
   @override
   MultiDataBlocState<TFailure, TValue>? onMapEmissionToState(
-    DataBlocEmission<TFailure, TValue> event,
+    DataBlocEmission event,
   ) {
-    if (event is EmitListDataBloc<TFailure, TValue>) {
+    if (event is EmitListDataBloc<TValue>) {
       return state.copyWithList(
         isValid: true,
         isEmitting: false,
@@ -177,7 +173,7 @@ abstract class ListBloc<TFailure, TValue>
         failure: None(),
       );
     }
-    if (event is AddValueDataBloc<TFailure, TValue>) {
+    if (event is AddValueDataBloc<TValue>) {
       if (!state.hasData) return null;
       return state.copyWithList(
         isEmitting: event.canEmitAgain ? null : false,
@@ -185,7 +181,7 @@ abstract class ListBloc<TFailure, TValue>
         failure: event.canEmitAgain ? null : None(),
       );
     }
-    if (event is UpdateValueDataBloc<TFailure, TValue>) {
+    if (event is UpdateValueDataBloc<TValue>) {
       if (!state.hasData) return null;
       return state.copyWithList(
         isEmitting: event.canEmitAgain ? null : false,
@@ -195,7 +191,7 @@ abstract class ListBloc<TFailure, TValue>
         failure: event.canEmitAgain ? null : None(),
       );
     }
-    if (event is ReplaceValueDataBloc<TFailure, TValue>) {
+    if (event is ReplaceValueDataBloc<TValue>) {
       if (!state.hasData) return null;
       return state.copyWithList(
         isEmitting: event.canEmitAgain ? null : false,
@@ -205,7 +201,7 @@ abstract class ListBloc<TFailure, TValue>
         failure: event.canEmitAgain ? null : None(),
       );
     }
-    if (event is RemoveValueDataBloc<TFailure, TValue>) {
+    if (event is RemoveValueDataBloc<TValue>) {
       if (!state.hasData) return null;
       return state.copyWithList(
         isEmitting: event.canEmitAgain ? null : false,
@@ -223,10 +219,8 @@ abstract class ListBloc<TFailure, TValue>
   }
 }
 
-mixin MapActionToEmission<TFailure, TValue> {
-  Stream<DataBlocEmission<TFailure, TValue>> mapActionToEmission(
-    DataBlocAction<TFailure, TValue> event,
-  );
+mixin MapActionToEmission {
+  Stream<DataBlocEmission> mapActionToEmission(DataBlocAction event);
 }
 
 // mixin MapSyncEventToEmission<TFailure, TValue> {
