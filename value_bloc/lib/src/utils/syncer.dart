@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:value_bloc/src_3/sync_event_bus.dart';
+import 'package:value_bloc/src/utils/sync_event_bus.dart';
 
 abstract class Syncer<T, R> extends StreamTransformerBase<SyncEvent<T>, R> {
   const Syncer();

@@ -7,10 +7,10 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:value_bloc/src/screen/disposer.dart';
+import 'package:value_bloc/src/utils/disposer.dart';
 
-part 'data_events.dart';
-part 'data_states.dart';
+part '_data_events.dart';
+part '_data_states.dart';
 
 abstract class DataBloc<TFailure, TValueEvent, TValueState,
         TState extends DataBlocState<TFailure, TValueState>>
@@ -41,8 +41,8 @@ abstract class DataBloc<TFailure, TValueEvent, TValueState,
             add(emission);
           },
         )
-          ..onError(addError)
-          ..addToDisposer(this);
+      ..onError(addError)
+      ..asDisposable().addTo(this);
   }
 
   void read({bool canForce = false, bool isAsync = false}) =>

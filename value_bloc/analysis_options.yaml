@@ -1,9 +1,20 @@
 include: package:lints/recommended.yaml
 
-analyzer:
+# Uncomment the following section to specify additional rules.
 
-linter:
-  rules:
-    always_use_package_imports: true
-    unnecessary_brace_in_string_interps: false
-    avoid_single_cascade_in_expression_statements: false
+# linter:
+#   rules:
+#     - camel_case_types
+#  always_use_package_imports: true
+#  unnecessary_brace_in_string_interps: false
+#  avoid_single_cascade_in_expression_statements: false
+
+# analyzer:
+#   exclude:
+#     - path/to/excluded/files/**
+
+# For more information about the core and recommended set of lints, see
+# https://dart.dev/go/core-lints
+
+# For additional information about configuring this file, see
+# https://dart.dev/guides/language/analysis-options

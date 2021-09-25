@@ -1,6 +1,6 @@
-import 'package:value_bloc/src_3/data_blocs.dart';
-import 'package:value_bloc/src_3/sync_event_bus.dart';
-import 'package:value_bloc/src_3/syncer.dart';
+import 'package:value_bloc/src/data_blocs.dart';
+import 'package:value_bloc/src/utils/sync_event_bus.dart';
+import 'package:value_bloc/src/utils/syncer.dart';
 
 enum DataBlocSyncerAction { invalidate, none }
 
