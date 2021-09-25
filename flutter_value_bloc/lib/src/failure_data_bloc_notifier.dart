@@ -1,12 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_value_bloc/src/views/view_provider.dart';
-import 'package:flutter_value_bloc/src_3/widgets.dart';
+import 'package:flutter_value_bloc/src/widgets.dart';
 import 'package:provider/single_child_widget.dart';
-import 'package:value_bloc/value_bloc_3.dart';
+import 'package:value_bloc/value_bloc.dart';
 
 class FailureDataBlocNotifier<
-    TBloc extends DataBloc<TFailure, dynamic, dynamic, DataBlocState<TFailure, dynamic>>,
+    TBloc extends DataBloc<TFailure, dynamic, DataBlocState<TFailure, dynamic>>,
     TFailure> extends SingleChildStatelessWidget with _ListenFailure<TFailure> {
   final TBloc? dataBloc;
   @override
@@ -32,7 +32,7 @@ class FailureDataBlocNotifier<
 
 class FailureGroupDataBlocNotifier<TFailure> extends SingleChildStatelessWidget
     with _ListenFailure<TFailure> {
-  final List<DataBloc<TFailure, dynamic, dynamic, DataBlocState<TFailure, dynamic>>> blocs;
+  final List<DataBloc<TFailure, dynamic, DataBlocState<TFailure, dynamic>>> blocs;
   @override
   final void Function(BuildContext context, TFailure failure)? listener;
 

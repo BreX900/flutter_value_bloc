@@ -1,82 +1,118 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:pure_extensions/pure_extensions.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:value_bloc/src/utils/disposer.dart';
+import 'package:value_bloc/src/utils/emitter.dart';
 
 part '_data_events.dart';
 part '_data_states.dart';
 
+// extension EmitDataBlocState<TFailure, TValue> on Emitter<DataBlocState<TFailure, TValue>> {
+//   void emitting(DataBlocState<TFailure, TValue> state) => this(state.copyWith(isEmitting: true));
+//
+//   void failure(DataBlocState<TFailure, TValue> state) => this(state);
+// }
+
+Stream<DataBlocEvent> dio(Stream<DataBlocEvent> _events, EventMapper<DataBlocEvent> mapper) {
+  final events = _events.cast<ReadDataBloc>();
+
+  final asyncController = StreamController<ReadDataBloc?>();
+  final syncController = StreamController<DataBlocEvent>();
+  final resultController = StreamController<DataBlocEvent>();
+
+  events.listen((event) {
+    if (event.isAsync) {
+      asyncController.add(event);
+    } else {
+      asyncController.add(null);
+      syncController.add(event);
+    }
+  });
+
+  asyncController.stream.switchMap<DataBlocEvent>((event) {
+    if (event == null) return Stream.empty();
+    return mapper(event);
+  }).listen(syncController.add);
+
+  syncController.stream.asyncExpand((event) {
+    if (event is ReadDataBloc) {
+      if (event.isAsync) throw 'Illegal argument ReadDataBloc.isAsync';
+      return mapper(event);
+    } else {
+      return Stream.value(event);
+    }
+  }).listen(resultController.add);
+
+  return resultController.stream;
+}
+
+typedef ActionHandler<T extends DataBlocAction> = FutureOr<void> Function(
+    T event, Emitter<DataBlocEmission> emit);
+
 abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure, TValue>>
-    extends Bloc<DataBlocEvent, TState> with MapActionToEmission, BlocDisposer {
+    extends Bloc<DataBlocEvent, TState> with BlocDisposer {
   //
   static Duration readDebounceTime = const Duration();
 
-  final _readAsyncEventSubject = StreamController<ReadDataBloc>(sync: true);
-
   DataBloc(TState initialState) : super(initialState) {
-    _readAsyncEventSubject.stream
-        .cast<ReadDataBloc?>()
-        .startWith(null)
-        .listenValueChanges<DataBlocEmission>(
-          debounceTime: DataBloc.readDebounceTime,
-          onStart: (_, curr) async {
-            if (curr == null) return;
-            await Future.delayed(const Duration());
-            add(EmitEmittingDataBloc(false));
-          },
-          onData: (_, curr) async* {
-            if (curr == null) return;
-            add(EmitEmittingDataBloc());
-            yield* mapActionToEmission(curr);
-          },
-          onFinish: (_, curr, emission) {
-            add(emission);
-          },
-        )
-      ..onError(addError)
-      ..asDisposable().addTo(this);
+    on<DataBlocEmission>((event, emit) {
+      final state = mapEmissionToState(event);
+      if (state != null) emit(state);
+    });
+    on((event, emit) {
+      print('->$event');
+    });
   }
 
   void read({bool canForce = false, bool isAsync = false}) =>
       add(ReadDataBloc(canForce: canForce, isAsync: isAsync));
 
+  void onRead<T extends ReadDataBloc>(ActionHandler<T> handler) {
+    on<T>((event, emit) => _onRead<T>(event, emit, handler), transformer: dio);
+  }
+
+  void onAction<T extends DataBlocAction>(ActionHandler<T> handler) {
+    on<T>((event, emit) => _onAction<T>(event, emit, handler), transformer: sequential());
+  }
+
   ReadDataBloc? _previousReadEvent;
+  Future<void> _onRead<T extends ReadDataBloc>(
+    T event,
+    Emitter<TState> emit,
+    ActionHandler<T> handler,
+  ) async {
+    // If event is equal to previous and not force reload block read event
+    if (state.hasValidData && _previousReadEvent == event && !event.canForce) return;
 
-  @override
-  Stream<TState> mapEventToState(DataBlocEvent event) async* {
-    if (event is DataBlocEmission) {
-      yield* mapEmissionToState(event);
-    } else if (event is DataBlocAction) {
-      if (event is ReadDataBloc) {
-        // If event is equal to previous and not force reload block read event
-        if (state.hasValidData && _previousReadEvent == event && !event.canForce) return;
-        final canAsync = _previousReadEvent != null && event.isAsync;
-
-        // If event is async manage event in async stream
-        if (canAsync) {
-          _readAsyncEventSubject.add(event);
-          return;
-        }
-        _previousReadEvent = event;
-      }
-      yield state.copyWith(isEmitting: true) as TState;
-      yield* mapActionToEmission(event).asyncExpand(mapEmissionToState);
+    if (event.isAsync) {
+      await Future.delayed(DataBloc.readDebounceTime);
+      if (emit.isDone) return;
     }
+
+    emit(state.copyWith(isEmitting: true) as TState);
+    await handler(event, EventEmitter(emit, mapEmissionToState));
+    _previousReadEvent = event;
   }
 
-  Stream<TState> mapEmissionToState(DataBlocEmission event) async* {
-    final state = onMapEmissionToState(event);
-    if (state == null) return;
-    yield state;
+  Future<void> _onAction<T extends DataBlocAction>(
+    T event,
+    Emitter<TState> emit,
+    ActionHandler<T> handler,
+  ) async {
+    if (!state.hasData || !state.hasValidData) return;
+
+    emit(state.copyWith(isEmitting: true) as TState);
+
+    await handler(event, EventEmitter(emit, mapEmissionToState));
   }
 
-  TState? onMapEmissionToState(DataBlocEmission event) {
+  TState? mapEmissionToState(DataBlocEmission event) {
     if (event is InvalidateDataBloc) {
       if (!state.hasData) return null;
       return state.copyWith(
@@ -110,7 +146,7 @@ abstract class ValueBloc<TFailure, TValue>
         ));
 
   @override
-  SingleDataBlocState<TFailure, TValue?>? onMapEmissionToState(DataBlocEmission event) {
+  SingleDataBlocState<TFailure, TValue?>? mapEmissionToState(DataBlocEmission event) {
     if (event is EmitValueDataBloc) {
       return state.copyWith(
         hasValidData: true,
@@ -135,7 +171,7 @@ abstract class ValueBloc<TFailure, TValue>
         failure: event.canEmitAgain ? null : None(),
       );
     }
-    return super.onMapEmissionToState(event);
+    return super.mapEmissionToState(event);
   }
 }
 
@@ -162,9 +198,7 @@ abstract class ListBloc<TFailure, TValue>
   void removeValue(TValue value) => add(RemoveValueDataBloc(value));
 
   @override
-  MultiDataBlocState<TFailure, TValue>? onMapEmissionToState(
-    DataBlocEmission event,
-  ) {
+  MultiDataBlocState<TFailure, TValue>? mapEmissionToState(DataBlocEmission event) {
     if (event is EmitListDataBloc<TValue>) {
       return state.copyWithList(
         isValid: true,
@@ -209,43 +243,6 @@ abstract class ListBloc<TFailure, TValue>
         failure: event.canEmitAgain ? null : None(),
       );
     }
-    return super.onMapEmissionToState(event);
-  }
-
-  @override
-  Future<void> close() {
-    _readAsyncEventSubject.close();
-    return super.close();
+    return super.mapEmissionToState(event);
   }
 }
-
-mixin MapActionToEmission {
-  Stream<DataBlocEmission> mapActionToEmission(DataBlocAction event);
-}
-
-// mixin MapSyncEventToEmission<TFailure, TValue> {
-//   Stream<DataBlocEmission<TFailure, TValue>> mapSyncEventToEmission(
-//     SyncEvent<TValue> event,
-//   ) async* {
-//     yield onMapSyncEventToEmission(event);
-//   }
-//
-//   DataBlocEmission<TFailure, TValue> onMapSyncEventToEmission(SyncEvent<TValue> event) {
-//     if (event is InvalidSyncEvent<TValue>) {
-//       return InvalidateDataBloc();
-//     }
-//     if (event is CreatedSyncEvent<TValue>) {
-//       return AddValueDataBloc(event.value, canEmitAgain: true);
-//     }
-//     if (event is UpdatedSyncEvent<TValue>) {
-//       return UpdateValueDataBloc(event.value, canEmitAgain: true);
-//     }
-//     if (event is ReplacedSyncEvent<TValue>) {
-//       return ReplaceValueDataBloc(event.previousValue, event.currentValue, canEmitAgain: true);
-//     }
-//     if (event is DeletedSyncEvent<TValue>) {
-//       return RemoveValueDataBloc(event.value, canEmitAgain: true);
-//     }
-//     throw 'Not support $event';
-//   }
-// }

@@ -8,7 +8,8 @@ abstract class DataBlocState<TFailure, TValue> extends Equatable {
   final Option<TValue> _data;
 
   bool get hasFailure => _failure.isSome();
-  TFailure get failure => _failure.getOrElse(() => throw 'Not has failure! $this');
+  TFailure get failure =>
+      _failure.getOrElse(() => throw 'Not has failure! $this');
   TFailure? get failureOrNull => _failure.fold(() => null, (a) => a);
 
   bool get hasData => _data.isSome();
@@ -62,13 +63,18 @@ abstract class DataBlocState<TFailure, TValue> extends Equatable {
   List<Object?> get props => [hasValidData, isEmitting, _failure, _data];
 }
 
-class SingleDataBlocState<TFailure, TValue> extends DataBlocState<TFailure, TValue> {
+class SingleDataBlocState<TFailure, TValue>
+    extends DataBlocState<TFailure, TValue> {
   SingleDataBlocState({
     required bool hasValidData,
     required bool isEmitting,
     required Option<TFailure> failure,
     required Option<TValue> value,
-  }) : super(hasValidData: hasValidData, isEmitting: isEmitting, failure: failure, data: value);
+  }) : super(
+            hasValidData: hasValidData,
+            isEmitting: isEmitting,
+            failure: failure,
+            data: value);
 
   @override
   SingleDataBlocState<TFailure, TValue> copyWith({
@@ -86,7 +92,8 @@ class SingleDataBlocState<TFailure, TValue> extends DataBlocState<TFailure, TVal
   }
 }
 
-class MultiDataBlocState<TFailure, TValue> extends DataBlocState<TFailure, BuiltList<TValue>> {
+class MultiDataBlocState<TFailure, TValue>
+    extends DataBlocState<TFailure, BuiltList<TValue>> {
   final Option<BuiltMap<int, TValue>> _allData;
 
   MultiDataBlocState({

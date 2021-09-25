@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../flutter_value_bloc/flutter_value_bloc.iml" filepath="$PROJECT_DIR$/../flutter_value_bloc/flutter_value_bloc.iml" />
       <module fileurl="file://$PROJECT_DIR$/value_bloc.iml" filepath="$PROJECT_DIR$/value_bloc.iml" />
     </modules>
   </component>

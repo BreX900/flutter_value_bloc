@@ -16,17 +16,17 @@ dependencies:
     sdk: flutter
 
   # wait null safety
-  built_collection: ^5.1.0
+  built_collection: ^5.1.1
 
-  flutter_bloc: ^7.1.0
+  flutter_bloc: ^7.3.0
 
 #  value_bloc: ^1.2.0-dev
   value_bloc:
-    git:
-      url: https://github.com/BreX900/flutter_value_bloc
-      path: value_bloc
-      ref: feature/manager
-#    path: ../value_bloc
+#    git:
+#      url: https://github.com/BreX900/flutter_value_bloc
+#      path: value_bloc
+#      ref: feature/manager
+    path: ../value_bloc
 
   provider: ^6.0.0
   pull_to_refresh: ^2.0.0
@@ -38,3 +38,12 @@ dev_dependencies:
   lints: ^1.0.1
 
 flutter:
+
+index_generator:
+  filters:
+    - black: .*/_.*\.dart$
+  indexes:
+    - path: lib
+      exports:
+        - flutter_bloc/flutter_bloc
+        - value_bloc/value_bloc

@@ -1,9 +1,8 @@
 import 'package:example/entities/Person.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc_3.dart';
 
-class CreatePersonDataBloc extends CreateDataBloc<String, Person> {}
+class CreatePersonDataBloc extends CreateDataBloc {}
 
 class PersonsBloc extends ListBloc<String, Person> {
   final syncBus = SyncEventBus<Person>();
@@ -13,25 +12,22 @@ class PersonsBloc extends ListBloc<String, Person> {
         .streamFromOther([this])
         .transform(const ListBlocSyncer<String, Person>())
         .listen(add)
-        .addToDisposer(this);
+        .asDisposable()
+        .addTo(this);
+    onRead(_onReading);
+    onAction<CreatePersonDataBloc>(_onCreating);
   }
 
   void create() => add(CreatePersonDataBloc());
 
-  @override
-  Stream<DataBlocEmission<String, Person>> mapActionToEmission(
-    DataBlocAction<String, Person> event,
-  ) async* {
-    if (event is CreatePersonDataBloc) {
-      await Future.delayed(const Duration(seconds: 3));
-      yield event.toAddValue(Person.next());
-      return;
-    }
-    if (event is ReadDataBloc<String, Person>) {
-      await Future.delayed(const Duration(seconds: 1));
-      yield event.toEmitList(personList.take(10).toBuiltList());
-      return;
-    }
+  Future<void> _onReading(ReadDataBloc event, Emitter<DataBlocEmission> emit) async {
+    await Future.delayed(const Duration(seconds: 1));
+    emit(event.toEmitList(personList.take(10).toBuiltList()));
+  }
+
+  Future<void> _onCreating(CreatePersonDataBloc event, Emitter<DataBlocEmission> emit) async {
+    await Future.delayed(const Duration(seconds: 3));
+    emit(event.toAddValue(Person.next()));
   }
 }
 
@@ -46,9 +42,11 @@ class ListScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('List with ListValueCubit'),
           actions: [
+            const RefreshIconButton<PersonsBloc>(),
             ActionDataBlocBuilder<PersonsBloc, String, BuiltList<Person>>(
               builder: (context, state, canPerform) {
                 return PopupMenuButton(
+                  enabled: canPerform,
                   itemBuilder: (context) {
                     return [
                       PopupMenuItem(

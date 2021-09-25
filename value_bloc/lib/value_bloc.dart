@@ -2,8 +2,12 @@
 
 library lib;
 
+export 'package:bloc/bloc.dart';
+export 'package:built_collection/built_collection.dart';
+
 export 'src/data_blocs.dart';
 export 'src/utils/disposer.dart';
+export 'src/utils/emitter.dart';
 export 'src/utils/sync_event_bus.dart';
 export 'src/utils/syncer.dart';
 export 'src/utils/syncers.dart';

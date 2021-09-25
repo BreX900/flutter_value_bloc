@@ -2,11 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:value_bloc/value_bloc.dart';
 
 class BlocGroupListener<TBloc extends Bloc<dynamic, TState>, TState>
     extends SingleChildStatelessWidget {

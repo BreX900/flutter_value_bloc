@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc_3.dart';
+import 'package:value_bloc/value_bloc.dart';
 
 class LinearProgressDataBlocBuilder<
-        TDataBloc extends DataBloc<dynamic, dynamic, dynamic, DataBlocState<dynamic, dynamic>>>
+        TDataBloc extends DataBloc<dynamic, dynamic, DataBlocState<dynamic, dynamic>>>
     extends StatelessWidget implements PreferredSizeWidget {
   final TDataBloc? dataBloc;
 

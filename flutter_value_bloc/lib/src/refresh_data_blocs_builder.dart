@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc_3.dart';
+import 'package:flutter_value_bloc/src/views/view_provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:value_bloc/value_bloc.dart';
 
 class RefreshGroupDataBlocBuilder<TFailure> extends StatefulWidget {
-  final List<DataBloc<TFailure, dynamic, dynamic, DataBlocState<TFailure, dynamic>>> dataBlocs;
+  final List<DataBloc<TFailure, dynamic, DataBlocState<TFailure, dynamic>>> dataBlocs;
   final VoidCallback? onRefresh;
   final Widget child;
 
@@ -110,6 +110,7 @@ class _RefreshGroupDataBlocBuilderState<TFailure>
 
   @override
   Widget build(BuildContext context) {
+    // TODO: Not use SmartRefresher on desktop platform
     return SmartRefresher(
       controller: _controller,
       enablePullDown: (_controller.headerStatus == RefreshStatus.refreshing) || _canRefresh,

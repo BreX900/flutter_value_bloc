@@ -1,6 +1,4 @@
 import 'package:example/list/list_screen.dart';
-import 'package:example/list/table_screen.dart';
-import 'package:example/single/single_value_screen.dart';
 import 'package:example/utility.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
@@ -17,11 +15,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewsProvider.value(
       value: const Views(),
-      child: CubitViewsProvider.value(
-        value: const CubitViews(),
-        child: const MaterialApp(
-          home: HomeScreen(),
-        ),
+      child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: HomeScreen(),
       ),
     );
   }
@@ -39,24 +35,24 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const SingleScreen(),
-              )),
-              child: const Text('SingleValueCubit'),
-            ),
+            // ElevatedButton(
+            //   onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+            //     builder: (context) => const SingleScreen(),
+            //   )),
+            //   child: const Text('SingleValueCubit'),
+            // ),
             ElevatedButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => const ListScreen(),
               )),
               child: const Text('ListValueCubit in List'),
             ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const TableScreen(),
-              )),
-              child: const Text('ListValueCubit in Table'),
-            ),
+            // ElevatedButton(
+            //   onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+            //     builder: (context) => const TableScreen(),
+            //   )),
+            //   child: const Text('ListValueCubit in Table'),
+            // ),
           ],
         ),
       ),

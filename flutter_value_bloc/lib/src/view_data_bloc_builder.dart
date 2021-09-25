@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_value_bloc/flutter_value_bloc.dart';
-import 'package:flutter_value_bloc/src_3/failure_data_bloc_notifier.dart';
-import 'package:value_bloc/value_bloc_3.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_value_bloc/src/failure_data_bloc_notifier.dart';
+import 'package:flutter_value_bloc/src/views/view_provider.dart';
+import 'package:value_bloc/value_bloc.dart';
 
-class ViewDataBlocBuilder<
-    TBloc extends DataBloc<TFailure, dynamic, TValue, DataBlocState<TFailure, TValue>>,
-    TFailure,
-    TValue> extends StatefulWidget {
+class ViewDataBlocBuilder<TBloc extends DataBloc<TFailure, TValue, DataBlocState<TFailure, TValue>>,
+    TFailure, TValue> extends StatefulWidget {
   final TBloc? singleDataBloc;
   final bool canNotifyFailure;
   final Widget Function(BuildContext context, TFailure failure)? failureListener;
@@ -27,7 +26,7 @@ class ViewDataBlocBuilder<
 }
 
 class _ViewDataBlocBuilderState<
-    TBloc extends DataBloc<TFailure, dynamic, TValue, DataBlocState<TFailure, TValue>>,
+    TBloc extends DataBloc<TFailure, TValue, DataBlocState<TFailure, TValue>>,
     TFailure,
     TValue> extends State<ViewDataBlocBuilder<TBloc, TFailure, TValue>> {
   late TBloc _bloc;

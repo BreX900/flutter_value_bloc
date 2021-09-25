@@ -21,6 +21,7 @@ dependencies:
   dartz: ^0.10.0
 
   bloc: ^7.2.0
+  bloc_concurrency: ^0.1.0
 
 dev_dependencies:
   lints: ^1.0.1
@@ -32,3 +33,6 @@ index_generator:
     - black: .*/_.*\.dart$
   indexes:
     - path: lib
+      exports:
+        - bloc/bloc
+        - built_collection/built_collection
