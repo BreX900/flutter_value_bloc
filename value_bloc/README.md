@@ -6,6 +6,12 @@
 | [flutter_value_bloc](https://github.com/BreX900/flutter_value_bloc/tree/master/flutter_value_bloc) | [flutter_value_bloc](https://pub.dev/packages/flutter_value_bloc) |
 
 
+## Features
+- [x] Fetch single value or list
+- [ ] Fetch a paginated values
+- [ ] Listen data changes, a data is update or created or deleted
+- [x] Sync data blocs
+- [ ] Not permit delete action when bloc is not initialized
 
 ## Getting Started
 You can find many cubits that are right for you.

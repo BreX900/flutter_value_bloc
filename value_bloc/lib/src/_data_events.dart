@@ -132,17 +132,19 @@ abstract class DataBlocAction extends DataBlocEvent {
 
 abstract class CreateDataBloc extends DataBlocAction {}
 
-class ReadDataBloc extends DataBlocAction {
+class ReadDataBloc<TFilter> extends DataBlocAction {
   final bool canForce;
   final bool isAsync;
+  final TFilter? filter;
 
   ReadDataBloc({
     this.canForce = false,
     this.isAsync = false,
+    this.filter,
   });
 
   @override
-  List<Object?> get props => [canForce, isAsync, onProps];
+  List<Object?> get props => [canForce, isAsync, filter, onProps];
 }
 
 abstract class UpdateDataBloc extends DataBlocAction {}

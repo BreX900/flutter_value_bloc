@@ -1,6 +1,9 @@
 part of 'data_blocs.dart';
 
 abstract class DataBlocState<TFailure, TValue> extends Equatable {
+  final bool isActionEmission;
+  final DataBlocEmission? emission;
+
   /// [data] is valid
   final bool hasValidData;
   final bool isEmitting;
@@ -8,8 +11,7 @@ abstract class DataBlocState<TFailure, TValue> extends Equatable {
   final Option<TValue> _data;
 
   bool get hasFailure => _failure.isSome();
-  TFailure get failure =>
-      _failure.getOrElse(() => throw 'Not has failure! $this');
+  TFailure get failure => _failure.getOrElse(() => throw 'Not has failure! $this');
   TFailure? get failureOrNull => _failure.fold(() => null, (a) => a);
 
   bool get hasData => _data.isSome();
@@ -36,6 +38,8 @@ abstract class DataBlocState<TFailure, TValue> extends Equatable {
   }
 
   DataBlocState({
+    required this.isActionEmission,
+    required this.emission,
     required this.hasValidData,
     required this.isEmitting,
     required Option<TFailure> failure,
@@ -44,6 +48,8 @@ abstract class DataBlocState<TFailure, TValue> extends Equatable {
         _data = data;
 
   DataBlocState<TFailure, TValue> copyWith({
+    bool? isActionEmission,
+    DataBlocEmission? emission,
     bool? hasValidData,
     bool? isEmitting,
     Option<TFailure>? failure,
@@ -60,30 +66,39 @@ abstract class DataBlocState<TFailure, TValue> extends Equatable {
   }
 
   @override
-  List<Object?> get props => [hasValidData, isEmitting, _failure, _data];
+  List<Object?> get props =>
+      [isActionEmission, emission, hasValidData, isEmitting, _failure, _data];
 }
 
-class SingleDataBlocState<TFailure, TValue>
-    extends DataBlocState<TFailure, TValue> {
+class SingleDataBlocState<TFailure, TValue> extends DataBlocState<TFailure, TValue> {
   SingleDataBlocState({
+    required bool isActionEmission,
+    required DataBlocEmission? emission,
     required bool hasValidData,
     required bool isEmitting,
     required Option<TFailure> failure,
     required Option<TValue> value,
   }) : super(
-            hasValidData: hasValidData,
-            isEmitting: isEmitting,
-            failure: failure,
-            data: value);
+          isActionEmission: isActionEmission,
+          emission: emission,
+          hasValidData: hasValidData,
+          isEmitting: isEmitting,
+          failure: failure,
+          data: value,
+        );
 
   @override
   SingleDataBlocState<TFailure, TValue> copyWith({
+    bool? isActionEmission,
+    DataBlocEmission? emission,
     bool? hasValidData,
     bool? isEmitting,
     Option<TFailure>? failure,
     Option<TValue>? value,
   }) {
     return SingleDataBlocState(
+      isActionEmission: isActionEmission ?? this.isActionEmission,
+      emission: emission ?? this.emission,
       hasValidData: hasValidData ?? this.hasValidData,
       isEmitting: isEmitting ?? this.isEmitting,
       failure: failure ?? _failure,
@@ -92,17 +107,20 @@ class SingleDataBlocState<TFailure, TValue>
   }
 }
 
-class MultiDataBlocState<TFailure, TValue>
-    extends DataBlocState<TFailure, BuiltList<TValue>> {
+class MultiDataBlocState<TFailure, TValue> extends DataBlocState<TFailure, BuiltList<TValue>> {
   final Option<BuiltMap<int, TValue>> _allData;
 
   MultiDataBlocState({
+    required bool isActionEmission,
+    required DataBlocEmission? emission,
     required bool isValid,
     required bool isEmitting,
     required Option<TFailure> failure,
     required Option<BuiltMap<int, TValue>> values,
   })  : _allData = values,
         super(
+          isActionEmission: isActionEmission,
+          emission: emission,
           hasValidData: isValid,
           isEmitting: isEmitting,
           failure: failure,
@@ -111,12 +129,16 @@ class MultiDataBlocState<TFailure, TValue>
 
   @override
   MultiDataBlocState<TFailure, TValue> copyWith({
+    bool? isActionEmission,
+    DataBlocEmission? emission,
     bool? hasValidData,
     bool? isEmitting,
     Option<TFailure>? failure,
     Option<BuiltMap<int, TValue>>? values,
   }) {
     return MultiDataBlocState(
+      isActionEmission: isActionEmission ?? this.isActionEmission,
+      emission: emission ?? this.emission,
       isValid: hasValidData ?? this.hasValidData,
       isEmitting: isEmitting ?? this.isEmitting,
       failure: failure ?? _failure,
@@ -125,12 +147,16 @@ class MultiDataBlocState<TFailure, TValue>
   }
 
   MultiDataBlocState<TFailure, TValue> copyWithList({
+    bool? isActionEmission,
+    DataBlocEmission? emission,
     bool? isValid,
     bool? isEmitting,
     Option<TFailure>? failure,
     Option<BuiltList<TValue>>? values,
   }) {
     return copyWith(
+      isActionEmission: isActionEmission,
+      emission: emission,
       hasValidData: isValid,
       isEmitting: isEmitting,
       failure: failure,

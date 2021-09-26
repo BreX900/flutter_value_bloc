@@ -14,7 +14,7 @@ class PersonsBloc extends ListBloc<String, Person> {
         .listen(add)
         .asDisposable()
         .addTo(this);
-    onRead(_onReading);
+    onReadAction(_onReading);
     onAction<CreatePersonDataBloc>(_onCreating);
   }
 
