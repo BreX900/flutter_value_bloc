@@ -6,79 +6,50 @@ import 'package:built_collection/built_collection.dart';
 import 'package:built_value/built_value.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:value_bloc/src/utils/_utils.dart';
 import 'package:value_bloc/src/utils/disposer.dart';
 import 'package:value_bloc/src/utils/emitter.dart';
+import 'package:value_bloc/value_bloc.dart';
 
 part '_data_events.dart';
 part '_data_states.dart';
 
-// extension EmitDataBlocState<TFailure, TValue> on Emitter<DataBlocState<TFailure, TValue>> {
-//   void emitting(DataBlocState<TFailure, TValue> state) => this(state.copyWith(isEmitting: true));
-//
-//   void failure(DataBlocState<TFailure, TValue> state) => this(state);
-// }
-
-Stream<DataBlocEvent> _dio(Stream<DataBlocEvent> _events, EventMapper<DataBlocEvent> mapper) {
-  final events = _events.cast<ReadDataBloc>();
-
-  final asyncController = StreamController<ReadDataBloc?>();
-  final syncController = StreamController<DataBlocEvent>();
-  final resultController = StreamController<DataBlocEvent>();
-
-  events.listen((event) {
-    if (event.isAsync) {
-      asyncController.add(event);
-    } else {
-      asyncController.add(null);
-      syncController.add(event);
-    }
-  });
-
-  asyncController.stream.switchMap<DataBlocEvent>((event) {
-    if (event == null) return Stream.empty();
-    return mapper(event);
-  }).listen(syncController.add);
-
-  syncController.stream.asyncExpand((event) {
-    if (event is ReadDataBloc) {
-      if (event.isAsync) throw 'Illegal argument ReadDataBloc.isAsync';
-      return mapper(event);
-    } else {
-      return Stream.value(event);
-    }
-  }).listen(resultController.add);
-
-  return resultController.stream;
-}
-
 typedef ActionHandler<T extends DataBlocAction> = FutureOr<void> Function(
     T event, Emitter<DataBlocEmission> emit);
 
+/// If BLoC is empty or has invalid data you can actuate create or read actions
+/// If BLoC has data and data is valid you can actuate create/read/update/delete actions
 abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure, TValue>>
     extends Bloc<DataBlocEvent, TState> with BlocDisposer {
   //
   static Duration readDebounceTime = const Duration();
+  final Duration _readDebounceTime;
 
-  DataBloc(TState initialState) : super(initialState) {
+  DataBloc({
+    required Duration? readDebounceTime,
+    required TState initialState,
+  })  : _readDebounceTime = readDebounceTime ?? DataBloc.readDebounceTime,
+        super(initialState) {
     on<DataBlocEmission>((event, emit) {
       final state = mapEmissionToState(event, false);
       if (state != null) emit(state);
     }, transformer: concurrent());
-    on((event, emit) {
-      print('->$event');
-    });
   }
 
-  void read<TFilter>({bool canForce = false, bool isAsync = false, TFilter? filter}) =>
-      add(ReadDataBloc<TFilter>(canForce: canForce, isAsync: isAsync, filter: filter));
+  void read({bool canForce = false, bool isAsync = false}) =>
+      add(ReadDataBloc(canForce: canForce, isAsync: isAsync, filter: null));
 
   void onCreateAction<T extends DataBlocAction>(ActionHandler<T> handler) {
     on<T>((event, emit) => _onAction<T>(event, emit, handler), transformer: sequential());
   }
 
   void onReadAction<T>(ActionHandler<ReadDataBloc<T>> handler) {
-    on<ReadDataBloc<T>>((event, emit) => _onReadAction<T>(event, emit, handler), transformer: _dio);
+    on<ReadDataBloc<T>>(
+      (event, emit) => _onReadAction<T>(event, emit, handler),
+      transformer: assign<DataBlocEvent, ReadDataBloc<T>>((event) {
+        return event.isAsync ? ConcurrencyType.restartable : ConcurrencyType.sequential;
+      }),
+    );
   }
 
   void onUpdateAction<T extends DataBlocAction>(ActionHandler<T> handler) {
@@ -97,23 +68,32 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     on<T>((event, emit) => _onAction<T>(event, emit, handler), transformer: sequential());
   }
 
-  ReadDataBloc? _previousReadEvent;
+  bool _previousIsAsync = false;
+  Object? _previousFilter = Object();
   Future<void> _onReadAction<T>(
     ReadDataBloc<T> event,
     Emitter<TState> emit,
     ActionHandler<ReadDataBloc<T>> handler,
   ) async {
-    // If event is equal to previous and not force reload block read event
-    if (state.hasValidData && _previousReadEvent == event && !event.canForce) return;
+    // Cancel operation if another action is already executing
+    // If the previous read action is blocked before completed, continues to perform this action
+    if (state.isEmitting && !_previousIsAsync) return;
 
+    // If filter is equal to previous and not force reload block read action
+    if (state.hasValidData && _previousFilter == event.filter && !event.canForce) return;
+
+    // Wait last read event
     if (event.isAsync) {
-      await Future.delayed(DataBloc.readDebounceTime);
+      await Future.delayed(_readDebounceTime);
       if (emit.isDone) return;
+      _previousIsAsync = true;
     }
 
     emit(state.copyWith(isEmitting: true) as TState);
     await handler(event, EventEmitter(emit, (event) => mapEmissionToState(event, true)));
-    _previousReadEvent = event;
+
+    _previousFilter = event.filter;
+    _previousIsAsync = false;
   }
 
   Future<void> _onAction<T extends DataBlocAction>(
@@ -122,9 +102,13 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     ActionHandler<T> handler, {
     bool isDataRequired = true,
   }) async {
+    // If action required data to work cancel it
     if (isDataRequired) {
       if (!state.hasData || !state.hasValidData) return;
     }
+
+    // If another action is already executing cancelt current action
+    if (state.isEmitting) return;
 
     emit(state.copyWith(isEmitting: true) as TState);
 
@@ -159,14 +143,17 @@ abstract class ValueBloc<TFailure, TValue>
     extends DataBloc<TFailure, TValue?, SingleDataBlocState<TFailure, TValue?>> {
   ValueBloc({
     Option<TValue> value = const None(),
-  }) : super(SingleDataBlocState(
-          isActionEmission: false,
-          emission: null,
-          hasValidData: true,
-          isEmitting: false,
-          failure: None(),
-          value: value,
-        ));
+    Duration? readDebounceTime,
+  }) : super(
+            readDebounceTime: readDebounceTime,
+            initialState: SingleDataBlocState(
+              isActionEmission: false,
+              emission: null,
+              hasValidData: true,
+              isEmitting: false,
+              failure: None(),
+              value: value,
+            ));
 
   @override
   SingleDataBlocState<TFailure, TValue?>? mapEmissionToState(
@@ -211,14 +198,17 @@ abstract class ListBloc<TFailure, TValue>
     extends DataBloc<TFailure, BuiltList<TValue>, MultiDataBlocState<TFailure, TValue>> {
   ListBloc({
     Option<Iterable<TValue>> values = const None(),
-  }) : super(MultiDataBlocState(
-          isActionEmission: false,
-          emission: null,
-          isValid: true,
-          isEmitting: false,
-          failure: None(),
-          values: values.map((a) => a.toBuiltList().asMap().build()),
-        ));
+    Duration? readDebounceTime,
+  }) : super(
+            readDebounceTime: readDebounceTime,
+            initialState: MultiDataBlocState(
+              isActionEmission: false,
+              emission: null,
+              isValid: true,
+              isEmitting: false,
+              failure: None(),
+              values: values.map((a) => a.toBuiltList().asMap().build()),
+            ));
 
   void emitFailure(TFailure failure) => add(EmitFailureDataBloc(failure));
 

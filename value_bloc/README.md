@@ -9,9 +9,12 @@
 ## Features
 - [x] Fetch single value or list
 - [ ] Fetch a paginated values
-- [ ] Listen data changes, a data is update or created or deleted
-- [x] Sync data blocs
-- [ ] Not permit delete action when bloc is not initialized
+- [x] Fetch with debounce time for text search
+- [x] Can listen bloc data changes for show a notification, for example show message when data is created/read/update/deleted
+- [ ] Block the execution of CRUD actions based on the data being processed (Now only one operation is performed at a time)
+- [x] Basic widget to communicate with blocs to perform a fetch and basic actions
+- [ ] Paginated scroll list and table
+- [x] Sync data between blocs
 
 ## Getting Started
 You can find many cubits that are right for you.
