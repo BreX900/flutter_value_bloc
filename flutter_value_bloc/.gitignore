@@ -73,5 +73,6 @@ build/
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 
-# Custom
-*.lock
+# Omit committing pubspec.lock for library packages; see
+# https://dart.dev/guides/libraries/private-files#pubspeclock.
+pubspec.lock

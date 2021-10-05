@@ -33,7 +33,7 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     on<DataBlocEmission>((event, emit) {
       final state = mapEmissionToState(event, false);
       if (state != null) emit(state);
-    }, transformer: concurrent());
+    }, transformer: sequential());
   }
 
   void read({bool canForce = false, bool isAsync = false}) =>
@@ -46,7 +46,7 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
   void onReadAction<T>(ActionHandler<ReadDataBloc<T>> handler) {
     on<ReadDataBloc<T>>(
       (event, emit) => _onReadAction<T>(event, emit, handler),
-      transformer: assign<DataBlocEvent, ReadDataBloc<T>>((event) {
+      transformer: assign<ReadDataBloc<T>>((event) {
         return event.isAsync ? ConcurrencyType.restartable : ConcurrencyType.sequential;
       }),
     );
@@ -55,17 +55,19 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
   void onUpdateAction<T extends DataBlocAction>(ActionHandler<T> handler) {
     on<T>((event, emit) {
       return _onAction<T>(event, emit, handler, isDataRequired: true);
-    }, transformer: sequential());
+    }, transformer: concurrent());
   }
 
   void onDeleteAction<T extends DataBlocAction>(ActionHandler<T> handler) {
     on<T>((event, emit) {
       return _onAction<T>(event, emit, handler, isDataRequired: true);
-    }, transformer: sequential());
+    }, transformer: concurrent());
   }
 
-  void onAction<T extends DataBlocAction>(ActionHandler<T> handler) {
-    on<T>((event, emit) => _onAction<T>(event, emit, handler), transformer: sequential());
+  void onAction<T extends DataBlocAction>(ActionHandler<T> handler, {bool isDataRequired = true}) {
+    on<T>((event, emit) {
+      return _onAction<T>(event, emit, handler, isDataRequired: isDataRequired);
+    }, transformer: concurrent());
   }
 
   bool _previousIsAsync = false;
@@ -107,7 +109,7 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
       if (!state.hasData || !state.hasValidData) return;
     }
 
-    // If another action is already executing cancelt current action
+    // If another action is already executing cancel current action
     if (state.isEmitting) return;
 
     emit(state.copyWith(isEmitting: true) as TState);

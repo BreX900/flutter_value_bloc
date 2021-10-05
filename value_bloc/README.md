@@ -5,17 +5,6 @@
 | [value_bloc](https://github.com/BreX900/flutter_value_bloc/tree/master/value_bloc) | [value_bloc](https://pub.dev/packages/value_bloc) |
 | [flutter_value_bloc](https://github.com/BreX900/flutter_value_bloc/tree/master/flutter_value_bloc) | [flutter_value_bloc](https://pub.dev/packages/flutter_value_bloc) |
 
-
-## Features
-- [x] Fetch single value or list
-- [ ] Fetch a paginated values
-- [x] Fetch with debounce time for text search
-- [x] Can listen bloc data changes for show a notification, for example show message when data is created/read/update/deleted
-- [ ] Block the execution of CRUD actions based on the data being processed (Now only one operation is performed at a time)
-- [x] Basic widget to communicate with blocs to perform a fetch and basic actions
-- [ ] Paginated scroll list and table
-- [x] Sync data between blocs
-
 ## Getting Started
 You can find many cubits that are right for you.
 
