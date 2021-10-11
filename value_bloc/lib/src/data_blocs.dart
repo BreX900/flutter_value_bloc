@@ -39,7 +39,7 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
   void read({bool canForce = false, bool isAsync = false}) =>
       add(ReadDataBloc(canForce: canForce, isAsync: isAsync, filter: null));
 
-  void onCreateAction<T extends DataBlocAction>(ActionHandler<T> handler) {
+  void onCreateAction<T extends CreateDataBloc>(ActionHandler<T> handler) {
     on<T>((event, emit) => _onAction<T>(event, emit, handler), transformer: sequential());
   }
 
@@ -52,13 +52,13 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     );
   }
 
-  void onUpdateAction<T extends DataBlocAction>(ActionHandler<T> handler) {
+  void onUpdateAction<T extends UpdateDataBloc<TValue>>(ActionHandler<T> handler) {
     on<T>((event, emit) {
       return _onAction<T>(event, emit, handler, isDataRequired: true);
     }, transformer: concurrent());
   }
 
-  void onDeleteAction<T extends DataBlocAction>(ActionHandler<T> handler) {
+  void onDeleteAction<T extends DeleteDataBloc<TValue>>(ActionHandler<T> handler) {
     on<T>((event, emit) {
       return _onAction<T>(event, emit, handler, isDataRequired: true);
     }, transformer: concurrent());

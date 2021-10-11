@@ -130,7 +130,14 @@ abstract class DataBlocAction extends DataBlocEvent {
   List<Object?> get onProps => const [];
 }
 
-abstract class CreateDataBloc extends DataBlocAction {}
+class CreateDataBloc<TValue> extends DataBlocAction {
+  final TValue value;
+
+  CreateDataBloc(this.value);
+
+  @override
+  List<Object?> get props => [value, onProps];
+}
 
 class ReadDataBloc<TFilter> extends DataBlocAction {
   final bool canForce;
@@ -147,7 +154,7 @@ class ReadDataBloc<TFilter> extends DataBlocAction {
   List<Object?> get props => [canForce, isAsync, filter, onProps];
 }
 
-abstract class UpdateDataBloc<TValue> extends DataBlocAction {
+class UpdateDataBloc<TValue> extends DataBlocAction {
   final TValue value;
 
   UpdateDataBloc(this.value);
@@ -156,7 +163,7 @@ abstract class UpdateDataBloc<TValue> extends DataBlocAction {
   List<Object?> get props => [value, onProps];
 }
 
-abstract class DeleteDataBloc<TValue> extends DataBlocAction {
+class DeleteDataBloc<TValue> extends DataBlocAction {
   final TValue value;
 
   DeleteDataBloc(this.value);
