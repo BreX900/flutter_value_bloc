@@ -29,10 +29,11 @@ dev_dependencies:
   test: ^1.18.2
 
 index_generator:
-  filters:
-    - black: .*/_.*\.dart$
+  exclude:
+    - '**.g.dart'
+    - '{_,**/_}*.dart'
   indexes:
     - path: lib
       exports:
-        - bloc/bloc
-        - built_collection/built_collection
+        - package: bloc/bloc
+        - package: built_collection/built_collection

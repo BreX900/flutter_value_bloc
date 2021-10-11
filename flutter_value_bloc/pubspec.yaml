@@ -40,10 +40,12 @@ dev_dependencies:
 flutter:
 
 index_generator:
-  filters:
-    - black: .*/_.*\.dart$
+  exclude:
+    - '**.g.dart'
+    - '{_,**/_}*.dart'
+    - '**/tmp/**'
   indexes:
     - path: lib
       exports:
-        - flutter_bloc/flutter_bloc
-        - value_bloc/value_bloc
+        - package: flutter_bloc/flutter_bloc
+        - package: value_bloc/value_bloc
