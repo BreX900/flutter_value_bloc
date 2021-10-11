@@ -5,7 +5,7 @@ import 'package:flutter_value_bloc/src/views/view_provider.dart';
 import 'package:value_bloc/value_bloc.dart';
 
 class ViewDataBlocBuilder<TBloc extends DataBloc<TFailure, TValue, DataBlocState<TFailure, TValue>>,
-    TFailure, TValue> extends StatefulWidget {
+    TFailure, TValue> extends StatelessWidget {
   final TBloc? singleDataBloc;
   final bool canNotifyFailure;
   final Widget Function(BuildContext context, TFailure failure)? failureListener;
@@ -21,42 +21,12 @@ class ViewDataBlocBuilder<TBloc extends DataBloc<TFailure, TValue, DataBlocState
     required this.builder,
   }) : super(key: key);
 
-  @override
-  _ViewDataBlocBuilderState<TBloc, TFailure, TValue> createState() => _ViewDataBlocBuilderState();
-}
-
-class _ViewDataBlocBuilderState<
-    TBloc extends DataBloc<TFailure, TValue, DataBlocState<TFailure, TValue>>,
-    TFailure,
-    TValue> extends State<ViewDataBlocBuilder<TBloc, TFailure, TValue>> {
-  late TBloc _bloc;
-
-  @override
-  void initState() {
-    super.initState();
-    _bloc = widget.singleDataBloc ?? BlocProvider.of(context);
-    _initializeBloc(context, _bloc.state);
-  }
-
-  bool _checkBlocIsInitialized(
-    DataBlocState<TFailure, TValue> prev,
-    DataBlocState<TFailure, TValue> curr,
-  ) {
-    return prev.canInitialize != curr.canInitialize;
-  }
-
-  void _initializeBloc(BuildContext context, DataBlocState<TFailure, TValue> state) {
-    if (state.canInitialize) {
-      _bloc.read();
-    }
-  }
-
   Widget _buildView(BuildContext context, DataBlocState<TFailure, TValue> state) {
     if (state.hasData) {
-      return widget.builder(context, state.data);
+      return builder(context, state.data);
     } else if (state.hasFailure) {
-      if (widget.failureBuilder != null) {
-        return widget.failureBuilder!(context, state.failure);
+      if (failureBuilder != null) {
+        return failureBuilder!(context, state.failure);
       }
       return ViewsProvider.from<TFailure>(context).failureBuilder(context, state.failure);
     } else {
@@ -66,19 +36,21 @@ class _ViewDataBlocBuilderState<
 
   @override
   Widget build(BuildContext context) {
-    Widget current = BlocConsumer<TBloc, DataBlocState<TFailure, TValue>>(
-      bloc: _bloc,
-      listenWhen: _checkBlocIsInitialized,
-      listener: _initializeBloc,
+    final bloc = singleDataBloc ?? BlocProvider.of<TBloc>(context);
+
+    Widget current = DataBlocBuilder<TBloc, TFailure, TValue>(
+      singleDataBloc: bloc,
       builder: _buildView,
     );
-    if (widget.canNotifyFailure) {
+
+    if (canNotifyFailure) {
       current = FailureDataBlocNotifier<TBloc, TFailure>(
-        dataBloc: _bloc,
-        listener: widget.failureListener,
+        dataBloc: bloc,
+        listener: failureListener,
         child: current,
       );
     }
+
     return current;
   }
 }
@@ -107,7 +79,7 @@ class _DataBlocBuilderState<
   @override
   void initState() {
     super.initState();
-    _bloc = widget.singleDataBloc ?? BlocProvider.of(context);
+    _bloc = widget.singleDataBloc ?? BlocProvider.of<TBloc>(context);
     _initializeBloc(context, _bloc.state);
   }
 
