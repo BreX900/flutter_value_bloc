@@ -70,43 +70,28 @@ EventTransformer<ExEvent> assign2<ExEvent, Event extends ExEvent>(
   };
 }
 
-EventTransformer<TEvent> assign<TEvent>(ConcurrencyType Function(TEvent event) concurrency) {
-  return (events, mapper) {
-    return Stream<TEvent>.multi((controller) {
-      bool canAdd = true;
-      late StreamSubscription sub;
-      StreamSubscription? restartableSub;
-      sub = events.listen((event) async {
-        restartableSub?.cancel();
-        switch (concurrency(event)) {
-          case ConcurrencyType.concurrent:
-            // TODO: Handle this case.
-            break;
-          case ConcurrencyType.restartable:
-            if (canAdd) {
-              restartableSub =
-                  mapper(event).listen(controller.addSync, onError: controller.addErrorSync);
-            }
-            break;
-          case ConcurrencyType.sequential:
-            canAdd = false;
-            sub.pause();
-            await controller.addStream(mapper(event));
-            canAdd = true;
-            sub.resume();
-            break;
-        }
-      }, onError: controller.addErrorSync, onDone: controller.closeSync);
+EventTransformer<TEvent> assign<TEvent>(
+  ConcurrencyType Function(TEvent event) concurrency,
+) {
+  return (_events, mapper) {
+    final events = _events.cast<TEvent>();
 
-      controller
-        // ignore: void_checks
-        ..onCancel = () {
-          final f1 = restartableSub?.cancel();
-          final f2 = sub.cancel();
-          return Future.wait<void>([if (f1 != null) f1, f2]);
-        }
-        ..onPause = sub.pause
-        ..onResume = sub.resume;
+    return events.switchMap<Mark<TEvent>>((event) {
+      switch (concurrency(event)) {
+        case ConcurrencyType.concurrent:
+          // TODO: Handle this case.
+          return Stream.empty();
+        case ConcurrencyType.restartable:
+          return mapper(event).map((event) => Mark(false, event));
+        case ConcurrencyType.sequential:
+          return Stream.value(Mark(true, event));
+      }
+    }).asyncExpand((event) {
+      if (event.isActive) {
+        return mapper(event.value);
+      } else {
+        return Stream.value(event.value);
+      }
     });
   };
 }
