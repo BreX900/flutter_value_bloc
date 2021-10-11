@@ -82,3 +82,55 @@ class _ViewDataBlocBuilderState<
     return current;
   }
 }
+
+class DataBlocBuilder<TBloc extends DataBloc<TFailure, TValue, DataBlocState<TFailure, TValue>>,
+    TFailure, TValue> extends StatefulWidget {
+  final TBloc? singleDataBloc;
+  final BlocWidgetBuilder<DataBlocState<TFailure, TValue>> builder;
+
+  const DataBlocBuilder({
+    Key? key,
+    this.singleDataBloc,
+    required this.builder,
+  }) : super(key: key);
+
+  @override
+  State<DataBlocBuilder<TBloc, TFailure, TValue>> createState() => _DataBlocBuilderState();
+}
+
+class _DataBlocBuilderState<
+    TBloc extends DataBloc<TFailure, TValue, DataBlocState<TFailure, TValue>>,
+    TFailure,
+    TValue> extends State<DataBlocBuilder<TBloc, TFailure, TValue>> {
+  late TBloc _bloc;
+
+  @override
+  void initState() {
+    super.initState();
+    _bloc = widget.singleDataBloc ?? BlocProvider.of(context);
+    _initializeBloc(context, _bloc.state);
+  }
+
+  bool _checkBlocIsInitialized(
+    DataBlocState<TFailure, TValue> prev,
+    DataBlocState<TFailure, TValue> curr,
+  ) {
+    return prev.canInitialize != curr.canInitialize;
+  }
+
+  void _initializeBloc(BuildContext context, DataBlocState<TFailure, TValue> state) {
+    if (state.canInitialize) {
+      _bloc.read();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<TBloc, DataBlocState<TFailure, TValue>>(
+      bloc: _bloc,
+      listenWhen: _checkBlocIsInitialized,
+      listener: _initializeBloc,
+      builder: widget.builder,
+    );
+  }
+}
