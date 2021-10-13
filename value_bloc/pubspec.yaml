@@ -8,10 +8,9 @@ environment:
 
 
 dependencies:
+  meta: ^1.0.0
+
   rxdart: ^0.27.2
-  pure_extensions: ^3.4.1
-  #  pure_extensions:
-  #    path: ../../dart_extensions/pure_extensions
 
   equatable: ^2.0.3
   quiver: ^3.0.1

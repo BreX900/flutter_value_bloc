@@ -95,3 +95,42 @@ EventTransformer<TEvent> assign<TEvent>(
     });
   };
 }
+
+class StateToString {
+  static int _indentingIndent = 0;
+  StringBuffer? _buffer = StringBuffer();
+
+  StateToString(String className) {
+    _buffer!
+      ..write(className)
+      ..write(' {\n');
+    _indentingIndent += 2;
+  }
+
+  void add(String field, Object? value) {
+    if (value != null) {
+      _buffer!
+        ..write(' ' * _indentingIndent)
+        ..write(field)
+        ..write('=')
+        ..write(value)
+        ..write(',\n');
+    }
+  }
+
+  void addIf(String field, bool condition, Object? Function() fn) {
+    if (!condition) return;
+    add(field, fn() ?? 'null');
+  }
+
+  @override
+  String toString() {
+    _indentingIndent -= 2;
+    _buffer!
+      ..write(' ' * _indentingIndent)
+      ..write('}');
+    var stringResult = _buffer.toString();
+    _buffer = null;
+    return stringResult;
+  }
+}

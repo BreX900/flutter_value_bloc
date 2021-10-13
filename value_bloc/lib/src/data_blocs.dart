@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:built_collection/built_collection.dart';
-import 'package:built_value/built_value.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
+import 'package:meta/meta.dart';
 import 'package:value_bloc/src/utils/_utils.dart';
 import 'package:value_bloc/src/utils/disposer.dart';
 import 'package:value_bloc/src/utils/emitter.dart';
@@ -36,13 +36,20 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     }, transformer: sequential());
   }
 
+  // ==================== PUBLIC METHODS ====================
+
   void read({bool canForce = false, bool isAsync = false}) =>
       add(ReadDataBloc(canForce: canForce, isAsync: isAsync, filter: null));
 
-  void onCreateAction<T extends CreateDataBloc>(ActionHandler<T> handler) {
-    on<T>((event, emit) => _onAction<T>(event, emit, handler), transformer: sequential());
+  // ==================== PROTECTED METHODS ====================
+
+  @protected
+  void onCreateAction<A extends CreateDataBloc>(ActionHandler<A> handler) {
+    assert('$A' != '$CreateDataBloc', 'Provide action with the type of the value');
+    on<A>((event, emit) => _onAction<A>(event, emit, handler), transformer: sequential());
   }
 
+  @protected
   void onReadAction<T>(ActionHandler<ReadDataBloc<T>> handler) {
     on<ReadDataBloc<T>>(
       (event, emit) => _onReadAction<T>(event, emit, handler),
@@ -52,26 +59,34 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     );
   }
 
-  void onUpdateAction<T extends UpdateDataBloc<TValue>>(ActionHandler<T> handler) {
-    on<T>((event, emit) {
-      return _onAction<T>(event, emit, handler, isDataRequired: true);
+  @protected
+  void onUpdateAction<A extends UpdateDataBloc>(ActionHandler<A> handler) {
+    assert('$A' != '$UpdateDataBloc', 'Provide action with the type of the value');
+    on<A>((event, emit) {
+      return _onAction<A>(event, emit, handler, isDataRequired: true);
     }, transformer: concurrent());
   }
 
-  void onDeleteAction<T extends DeleteDataBloc<TValue>>(ActionHandler<T> handler) {
-    on<T>((event, emit) {
-      return _onAction<T>(event, emit, handler, isDataRequired: true);
+  @protected
+  void onDeleteAction<A extends DeleteDataBloc>(ActionHandler<A> handler) {
+    assert('$A' != '$DeleteDataBloc', 'Provide action with the type of the value');
+    on<A>((event, emit) {
+      return _onAction<A>(event, emit, handler, isDataRequired: true);
     }, transformer: concurrent());
   }
 
-  void onAction<T extends DataBlocAction>(ActionHandler<T> handler, {bool isDataRequired = true}) {
-    on<T>((event, emit) {
-      return _onAction<T>(event, emit, handler, isDataRequired: isDataRequired);
+  @protected
+  void onAction<A extends DataBlocAction>(ActionHandler<A> handler, {bool isDataRequired = true}) {
+    assert('$A' != '$DataBlocAction');
+    on<A>((event, emit) {
+      return _onAction<A>(event, emit, handler, isDataRequired: isDataRequired);
     }, transformer: concurrent());
   }
+
+  // ==================== PRIVATE METHODS ====================
 
   bool _previousIsAsync = false;
-  Object? _previousFilter = Object();
+  dynamic _previousFilter = Object();
   Future<void> _onReadAction<T>(
     ReadDataBloc<T> event,
     Emitter<TState> emit,
@@ -117,6 +132,7 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     await handler(event, EventEmitter(emit, (event) => mapEmissionToState(event, true)));
   }
 
+  @protected
   TState? mapEmissionToState(DataBlocEmission event, bool isActionEmission) {
     if (event is InvalidateDataBloc) {
       if (!state.hasData) return null;
@@ -141,8 +157,20 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
   }
 }
 
+abstract class DataBlocBase<TEventValue, TFailure, TValue,
+    TState extends DataBlocState<TFailure, TValue>> extends DataBloc<TFailure, TValue, TState> {
+  DataBlocBase({
+    required Duration? readDebounceTime,
+    required TState initialState,
+  }) : super(readDebounceTime: readDebounceTime, initialState: initialState) {}
+
+  // ==================== PUBLIC METHODS ====================
+
+  void delete(TEventValue value) => add(DeleteDataBloc<TEventValue>(value));
+}
+
 abstract class ValueBloc<TFailure, TValue>
-    extends DataBloc<TFailure, TValue?, SingleDataBlocState<TFailure, TValue?>> {
+    extends DataBlocBase<TValue, TFailure, TValue?, SingleDataBlocState<TFailure, TValue?>> {
   ValueBloc({
     Option<TValue> value = const None(),
     Duration? readDebounceTime,
@@ -157,6 +185,7 @@ abstract class ValueBloc<TFailure, TValue>
               value: value,
             ));
 
+  @protected
   @override
   SingleDataBlocState<TFailure, TValue?>? mapEmissionToState(
     DataBlocEmission event,
@@ -196,8 +225,8 @@ abstract class ValueBloc<TFailure, TValue>
   }
 }
 
-abstract class ListBloc<TFailure, TValue>
-    extends DataBloc<TFailure, BuiltList<TValue>, MultiDataBlocState<TFailure, TValue>> {
+abstract class ListBloc<TFailure, TValue> extends DataBlocBase<TValue, TFailure, BuiltList<TValue>,
+    MultiDataBlocState<TFailure, TValue>> {
   ListBloc({
     Option<Iterable<TValue>> values = const None(),
     Duration? readDebounceTime,
@@ -212,16 +241,9 @@ abstract class ListBloc<TFailure, TValue>
               values: values.map((a) => a.toBuiltList().asMap().build()),
             ));
 
-  void emitFailure(TFailure failure) => add(EmitFailureDataBloc(failure));
+  // ==================== PUBLIC METHODS ====================
 
-  void emitValues(BuiltList<TValue> values) => add(EmitListDataBloc(values));
-
-  void addValue(TValue value) => add(AddValueDataBloc(value));
-
-  void replaceValue(TValue oldValue, TValue newValue) =>
-      add(ReplaceValueDataBloc(oldValue, newValue));
-
-  void removeValue(TValue value) => add(RemoveValueDataBloc(value));
+  void deleteAll(BuiltList<TValue> value) => add(DeleteDataBloc<BuiltList<TValue>>(value));
 
   @override
   MultiDataBlocState<TFailure, TValue>? mapEmissionToState(

@@ -130,13 +130,8 @@ abstract class DataBlocAction extends DataBlocEvent {
   List<Object?> get onProps => const [];
 }
 
-class CreateDataBloc<TValue> extends DataBlocAction {
-  final TValue value;
-
-  CreateDataBloc(this.value);
-
-  @override
-  List<Object?> get props => [value, onProps];
+class CreateDataBloc extends DataBlocAction {
+  CreateDataBloc();
 }
 
 class ReadDataBloc<TFilter> extends DataBlocAction {

@@ -57,11 +57,11 @@ abstract class DataBlocState<TFailure, TValue> extends Equatable {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper('$runtimeType')
+    return (StateToString('$runtimeType')
           ..add('isValid', hasValidData)
           ..add('isEmitting', isEmitting)
-          ..add('failure', hasFailure ? failure : null)
-          ..add('data', hasData ? data : null))
+          ..addIf('failure', hasFailure, () => failure)
+          ..addIf('data', hasData, () => data))
         .toString();
   }
 
