@@ -284,13 +284,20 @@ abstract class ListBloc<TFailure, TValue> extends DataBlocBase<TValue, TFailure,
     }
     if (event is ReplaceValueDataBloc<TValue>) {
       if (!state.hasData) return null;
+      final index = state.data.indexOf(event.currentValue);
       return state.copyWithList(
         isActionEmission: isActionEmission,
         emission: event,
         isEmitting: event.canEmitAgain ? null : false,
-        values: Some(state.data.rebuild((b) => b
-          ..remove(event.currentValue)
-          ..add(event.nextValue))),
+        values: Some(state.data.rebuild((b) {
+          if (index == -1) {
+            b.add(event.nextValue);
+          } else {
+            b
+              ..removeAt(index)
+              ..insert(index, event.nextValue);
+          }
+        })),
         failure: event.canEmitAgain ? null : None(),
       );
     }
