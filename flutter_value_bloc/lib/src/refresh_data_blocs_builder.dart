@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_value_bloc/src/views/view_provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -9,7 +10,37 @@ import 'package:value_bloc/value_bloc.dart';
 
 class RefreshGroupDataBlocBuilder<TFailure> extends StatefulWidget {
   final List<DataBloc<TFailure, dynamic, DataBlocState<TFailure, dynamic>>> dataBlocs;
+
+  // ========== SmartRefresher ====================
+
+  /// [SmartRefresher.scrollController]
+  final ScrollController? scrollController;
+
+  /// [SmartRefresher.scrollDirection]
+  final Axis? scrollDirection;
+
+  /// [SmartRefresher.reverse]
+  final bool? reverse;
+
+  /// [SmartRefresher.primary]
+  final bool? primary;
+
+  /// [SmartRefresher.physics]
+  final ScrollPhysics? physics;
+
+  /// [SmartRefresher.cacheExtent]
+  final double? cacheExtent;
+
+  /// [SmartRefresher.semanticChildCount]
+  final int? semanticChildCount;
+
+  /// [SmartRefresher.dragStartBehavior]
+  final DragStartBehavior? dragStartBehavior;
+
+  /// [SmartRefresher.onRefresh]
   final VoidCallback? onRefresh;
+
+  /// [SmartRefresher.child]
   final Widget child;
 
   const RefreshGroupDataBlocBuilder({
@@ -17,6 +48,14 @@ class RefreshGroupDataBlocBuilder<TFailure> extends StatefulWidget {
     required this.dataBlocs,
     this.onRefresh,
     required this.child,
+    this.scrollController,
+    this.scrollDirection,
+    this.reverse,
+    this.primary,
+    this.physics,
+    this.cacheExtent,
+    this.semanticChildCount,
+    this.dragStartBehavior,
   }) : super(key: key);
 
   @override
@@ -115,6 +154,14 @@ class _RefreshGroupDataBlocBuilderState<TFailure>
       controller: _controller,
       enablePullDown: (_controller.headerStatus == RefreshStatus.refreshing) || _canRefresh,
       onRefresh: refresh,
+      scrollController: widget.scrollController,
+      scrollDirection: widget.scrollDirection,
+      reverse: widget.reverse,
+      primary: widget.primary,
+      physics: widget.physics,
+      cacheExtent: widget.cacheExtent,
+      semanticChildCount: widget.semanticChildCount,
+      dragStartBehavior: widget.dragStartBehavior,
       child: widget.child,
     );
   }
