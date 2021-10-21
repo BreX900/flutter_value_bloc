@@ -9,12 +9,18 @@ class FailureDataBlocNotifier<
     TBloc extends DataBloc<TFailure, dynamic, DataBlocState<TFailure, dynamic>>,
     TFailure> extends SingleChildStatelessWidget with _ListenFailure<TFailure> {
   final TBloc? dataBloc;
+
+  /// It will call the failure handler even without having the data in the state
+  @override
+  final bool shouldListenWithData;
+
   @override
   final void Function(BuildContext context, TFailure failure)? listener;
 
   const FailureDataBlocNotifier({
     Key? key,
     this.dataBloc,
+    this.shouldListenWithData = false,
     this.listener,
     Widget? child,
   }) : super(key: key, child: child);
@@ -33,12 +39,18 @@ class FailureDataBlocNotifier<
 class FailureGroupDataBlocNotifier<TFailure> extends SingleChildStatelessWidget
     with _ListenFailure<TFailure> {
   final List<DataBloc<TFailure, dynamic, DataBlocState<TFailure, dynamic>>> blocs;
+
+  /// It will call the failure handler even without having the data in the state
+  @override
+  final bool shouldListenWithData;
+
   @override
   final void Function(BuildContext context, TFailure failure)? listener;
 
   const FailureGroupDataBlocNotifier({
     Key? key,
     required this.blocs,
+    this.shouldListenWithData = false,
     this.listener,
     Widget? child,
   }) : super(key: key, child: child);
@@ -55,6 +67,8 @@ class FailureGroupDataBlocNotifier<TFailure> extends SingleChildStatelessWidget
 }
 
 mixin _ListenFailure<TFailure> {
+  bool get shouldListenWithData;
+
   void Function(BuildContext context, TFailure failure)? get listener;
 
   bool _listenWhen(DataBlocState<TFailure, dynamic> prev, DataBlocState<TFailure, dynamic> curr) {
@@ -62,7 +76,11 @@ mixin _ListenFailure<TFailure> {
   }
 
   void _listenFailure(BuildContext context, DataBlocState<TFailure, dynamic> state) {
-    if (!(state.hasData && state.hasFailure)) return;
+    if (!state.hasFailure) return;
+
+    if (!shouldListenWithData) {
+      if (state.hasData) return;
+    }
 
     final listener = this.listener;
     if (listener != null) {
