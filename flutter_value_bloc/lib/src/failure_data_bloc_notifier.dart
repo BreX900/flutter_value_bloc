@@ -12,7 +12,7 @@ class FailureDataBlocNotifier<
 
   /// It will call the failure handler even without having the data in the state
   @override
-  final bool shouldListenWithData;
+  final bool? shouldListenWithData;
 
   @override
   final void Function(BuildContext context, TFailure failure)? listener;
@@ -20,7 +20,7 @@ class FailureDataBlocNotifier<
   const FailureDataBlocNotifier({
     Key? key,
     this.dataBloc,
-    this.shouldListenWithData = false,
+    this.shouldListenWithData = true,
     this.listener,
     Widget? child,
   }) : super(key: key, child: child);
@@ -42,7 +42,7 @@ class FailureGroupDataBlocNotifier<TFailure> extends SingleChildStatelessWidget
 
   /// It will call the failure handler even without having the data in the state
   @override
-  final bool shouldListenWithData;
+  final bool? shouldListenWithData;
 
   @override
   final void Function(BuildContext context, TFailure failure)? listener;
@@ -50,7 +50,7 @@ class FailureGroupDataBlocNotifier<TFailure> extends SingleChildStatelessWidget
   const FailureGroupDataBlocNotifier({
     Key? key,
     required this.blocs,
-    this.shouldListenWithData = false,
+    this.shouldListenWithData = true,
     this.listener,
     Widget? child,
   }) : super(key: key, child: child);
@@ -67,7 +67,7 @@ class FailureGroupDataBlocNotifier<TFailure> extends SingleChildStatelessWidget
 }
 
 mixin _ListenFailure<TFailure> {
-  bool get shouldListenWithData;
+  bool? get shouldListenWithData;
 
   void Function(BuildContext context, TFailure failure)? get listener;
 
@@ -78,9 +78,8 @@ mixin _ListenFailure<TFailure> {
   void _listenFailure(BuildContext context, DataBlocState<TFailure, dynamic> state) {
     if (!state.hasFailure) return;
 
-    if (!shouldListenWithData) {
-      if (state.hasData) return;
-    }
+    if (shouldListenWithData == true && !state.hasData) return;
+    if (shouldListenWithData == false && state.hasData) return;
 
     final listener = this.listener;
     if (listener != null) {
