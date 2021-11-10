@@ -3,7 +3,6 @@
 library lib;
 
 export 'package:bloc/bloc.dart';
-export 'package:built_collection/built_collection.dart';
 
 export 'src/data_blocs.dart';
 export 'src/utils/disposer.dart';

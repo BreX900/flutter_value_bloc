@@ -80,7 +80,9 @@ class _BlocGroupBuilderState<TBloc extends Bloc<dynamic, TState>, TState>
   }
 
   void _initStatesListener() {
-    _statesSub = Rx.combineLatestList(widget.blocs.map((bloc) => bloc.stream)).listen((states) {
+    _statesSub = Rx.combineLatestList(widget.blocs.map((bloc) {
+      return bloc.stream.startWith(bloc.state);
+    })).listen((states) {
       setState(() {
         _states = states;
       });

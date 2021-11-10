@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 
 enum ConcurrencyType { concurrent, restartable, sequential }
@@ -108,20 +109,19 @@ class StateToString {
   }
 
   void add(String field, Object? value) {
-    if (value != null) {
-      _buffer!
-        ..write(' ' * _indentingIndent)
-        ..write(field)
-        ..write('=')
-        ..write(value)
-        ..write(',\n');
-    }
+    if (value != null) addNull(field, value);
   }
 
-  void addIf(String field, bool condition, Object? Function() fn) {
-    if (!condition) return;
-    add(field, fn() ?? 'null');
+  void addNull(String field, Object? value) {
+    _buffer!
+      ..write(' ' * _indentingIndent)
+      ..write(field)
+      ..write('=')
+      ..write(value)
+      ..write(',\n');
   }
+
+  StateToString? check(bool condition) => condition ? this : null;
 
   @override
   String toString() {
@@ -133,4 +133,62 @@ class StateToString {
     _buffer = null;
     return stringResult;
   }
+}
+
+typedef Equals<T> = bool Function(T a, T b);
+
+class SimpleEquality<T> implements Equality<T> {
+  final Equals<T> _equals;
+
+  SimpleEquality(Equals<T> equals) : _equals = equals;
+
+  @override
+  bool equals(T e1, T e2) => _equals(e1, e2);
+
+  @override
+  int hash(T e) => e.hashCode;
+
+  @override
+  bool isValidKey(Object? o) => true;
+}
+
+extension EqualityExtension<T> on Equality<T> {
+  T replace(T current, T next) => equals(current, next) ? next : current;
+
+  Iterable<T> addAllIfAbsent(List<T> current, List<T> next) {
+    return [...current, ...whereNotContainsAll(next, current)];
+  }
+
+  Iterable<T> updateAll(List<T> current, List<T> next) {
+    return current.map((cvl) => next.firstWhere((nvl) => equals(cvl, nvl), orElse: () => cvl));
+  }
+
+  Iterable<T> replaceAll(List<T> current, Map<T, T> next) {
+    return current.map((cvl) => next.containsKey(cvl) ? next[cvl] as T : cvl);
+  }
+
+  Iterable<T> whereNotContainsAll(List<T> current, List<T> bad) {
+    return current.where((cvl) => !bad.any((bvl) => equals(cvl, bvl)));
+  }
+
+  bool contains(List<T> values, T value) {
+    for (final vl in values) {
+      final hasHit = equals(value, vl);
+      if (hasHit) return true;
+    }
+    return false;
+  }
+}
+
+class Param<T> {
+  final T value;
+
+  const Param(this.value);
+
+  // ignore: prefer_void_to_null
+  static const Param<Null> none = Param(null);
+}
+
+extension IterableExtension<T> on Iterable<T> {
+  Iterable<T> whereNot(bool Function(T e) test) => where((e) => !test(e));
 }

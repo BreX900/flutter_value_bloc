@@ -2,8 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:built_collection/built_collection.dart';
-import 'package:dartz/dartz.dart';
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 import 'package:value_bloc/src/utils/_utils.dart';
@@ -19,11 +18,15 @@ typedef ActionHandler<T extends DataBlocAction> = FutureOr<void> Function(
 
 /// If BLoC is empty or has invalid data you can actuate create or read actions
 /// If BLoC has data and data is valid you can actuate create/read/update/delete actions
-abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure, TValue>>
-    extends Bloc<DataBlocEvent, TState> with BlocDisposer {
+abstract class DataBloc<TFailure extends Object, TValue,
+        TState extends DataBlocState<TValue, TFailure>> extends Bloc<DataBlocEvent, TState>
+    with BlocDisposer {
   //
   static Duration readDebounceTime = const Duration();
   final Duration _readDebounceTime;
+
+  static Equals<Object?> defaultEquals = _equals;
+  static bool _equals(Object? a, Object? b) => a == b;
 
   DataBloc({
     required Duration? readDebounceTime,
@@ -94,7 +97,7 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
   ) async {
     // Cancel operation if another action is already executing
     // If the previous read action is blocked before completed, continues to perform this action
-    if (state.isEmitting && !_previousIsAsync) return;
+    if (state.isUpdating && !_previousIsAsync) return;
 
     // If filter is equal to previous and not force reload block read action
     if (state.hasValidData && _previousFilter == event.filter && !event.canForce) return;
@@ -106,7 +109,7 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
       _previousIsAsync = true;
     }
 
-    emit(state.copyWith(isEmitting: true) as TState);
+    emit(state.copyWith(isUpdating: true) as TState);
     await handler(event, EventEmitter(emit, (event) => mapEmissionToState(event, true)));
 
     _previousFilter = event.filter;
@@ -127,7 +130,7 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     // If another action is already executing cancel current action
     if (state.isEmitting) return;
 
-    emit(state.copyWith(isEmitting: true) as TState);
+    emit(state.copyWith(isUpdating: true) as TState);
 
     await handler(event, EventEmitter(emit, (event) => mapEmissionToState(event, true)));
   }
@@ -137,178 +140,155 @@ abstract class DataBloc<TFailure, TValue, TState extends DataBlocState<TFailure,
     if (event is InvalidateDataBloc) {
       if (!state.hasData) return null;
       return state.copyWith(
-        isActionEmission: isActionEmission,
-        emission: event,
-        hasValidData: false,
+        dataStatus: DataBlocStatus.invalid,
       ) as TState;
     }
     if (event is EmitEmittingDataBloc) {
       return state.copyWith(
-        isEmitting: event.value,
+        isUpdating: event.value,
       ) as TState;
     }
     if (event is EmitFailureDataBloc<TFailure>) {
       return state.copyWith(
-        isEmitting: false,
-        failure: Some(event.failure),
+        isUpdating: false,
+        failure: Param(event.failure),
       ) as TState;
     }
     throw 'Not support $DataBlocEmission<$TFailure, $TValue>\n$event';
   }
 }
 
-abstract class DataBlocBase<TEventValue, TFailure, TValue,
-    TState extends DataBlocState<TFailure, TValue>> extends DataBloc<TFailure, TValue, TState> {
+abstract class DataBlocBase<TEventValue, TFailure extends Object, TValue,
+    TState extends DataBlocState<TValue, TFailure>> extends DataBloc<TFailure, TValue, TState> {
   DataBlocBase({
     required Duration? readDebounceTime,
     required TState initialState,
-  }) : super(readDebounceTime: readDebounceTime, initialState: initialState) {}
+  }) : super(readDebounceTime: readDebounceTime, initialState: initialState);
 
   // ==================== PUBLIC METHODS ====================
 
   void delete(TEventValue value) => add(DeleteDataBloc<TEventValue>(value));
 }
 
-abstract class ValueBloc<TFailure, TValue>
-    extends DataBlocBase<TValue, TFailure, TValue?, SingleDataBlocState<TFailure, TValue?>> {
+abstract class ValueBloc<TFailure extends Object, TValue>
+    extends DataBlocBase<TValue, TFailure, TValue?, ValueBlocState<TValue?, TFailure>> {
+  final Equality<TValue?> _equality;
+
   ValueBloc({
-    Option<TValue> value = const None(),
+    Equals<TValue?>? equals,
+    bool isUpdating = false,
+    TValue? value,
     Duration? readDebounceTime,
-  }) : super(
+  })  : _equality = SimpleEquality(equals ?? DataBloc.defaultEquals),
+        super(
             readDebounceTime: readDebounceTime,
-            initialState: SingleDataBlocState(
-              isActionEmission: false,
-              emission: null,
-              hasValidData: true,
-              isEmitting: false,
-              failure: None(),
-              value: value,
+            initialState: ValueBlocState(
+              equals: equals,
+              isUpdating: isUpdating,
+              data: value,
             ));
 
   @protected
   @override
-  SingleDataBlocState<TFailure, TValue?>? mapEmissionToState(
+  ValueBlocState<TValue?, TFailure>? mapEmissionToState(
     DataBlocEmission event,
     bool isActionEmission,
   ) {
-    if (event is EmitValueDataBloc) {
+    Equals;
+    Equality;
+    if (event is EmitValueDataBloc<TValue?>) {
       return state.copyWith(
-        isActionEmission: isActionEmission,
-        emission: event,
-        hasValidData: true,
-        isEmitting: false,
-        value: Some(event.value),
-        failure: None(),
+        isUpdating: false,
+        dataStatus: DataBlocStatus.present,
+        data: Param(event.value),
+        failure: Param(null),
       );
     }
     if (event is UpdateValueDataBloc<TValue>) {
       if (!state.hasData || state.data != event.value) return null;
       return state.copyWith(
-        isActionEmission: isActionEmission,
-        emission: event,
-        isEmitting: event.canEmitAgain ? null : false,
-        value: Some(event.value),
-        failure: event.canEmitAgain ? null : None(),
+        isUpdating: event.canEmitAgain ? null : false,
+        data: Param(event.value),
+        failure: event.canEmitAgain ? null : const Param(null),
       );
     }
     if (event is ReplaceValueDataBloc<TValue>) {
       if (!state.hasData || state.data != event.currentValue) return null;
       return state.copyWith(
-        isActionEmission: isActionEmission,
-        emission: event,
-        isEmitting: event.canEmitAgain ? null : false,
-        value: Some(event.nextValue),
-        failure: event.canEmitAgain ? null : None(),
+        isUpdating: event.canEmitAgain ? null : false,
+        data: Param(event.nextValue),
+        failure: event.canEmitAgain ? null : Param.none,
       );
     }
     return super.mapEmissionToState(event, isActionEmission);
   }
 }
 
-abstract class ListBloc<TFailure, TValue> extends DataBlocBase<TValue, TFailure, BuiltList<TValue>,
-    MultiDataBlocState<TFailure, TValue>> {
+abstract class ListBloc<TFailure extends Object, TValue>
+    extends DataBlocBase<TValue, TFailure, List<TValue>, ListBlocState<TValue, TFailure>> {
+  final Equality<TValue?> _equality;
+
   ListBloc({
-    Option<Iterable<TValue>> values = const None(),
+    Equals<TValue?>? equals,
+    bool isUpdating = false,
+    Iterable<TValue>? values,
     Duration? readDebounceTime,
-  }) : super(
+  })  : _equality = SimpleEquality(equals ?? DataBloc.defaultEquals),
+        super(
             readDebounceTime: readDebounceTime,
-            initialState: MultiDataBlocState(
-              isActionEmission: false,
-              emission: null,
-              isValid: true,
-              isEmitting: false,
-              failure: None(),
-              values: values.map((a) => a.toBuiltList().asMap().build()),
+            initialState: ListBlocState(
+              equals: equals,
+              isUpdating: isUpdating,
+              data: values,
             ));
 
   // ==================== PUBLIC METHODS ====================
 
-  void deleteAll(BuiltList<TValue> value) => add(DeleteDataBloc<BuiltList<TValue>>(value));
+  void deleteAll(Iterable<TValue> value) => add(DeleteDataBloc<Iterable<TValue>>(value));
 
   @override
-  MultiDataBlocState<TFailure, TValue>? mapEmissionToState(
+  ListBlocState<TValue, TFailure>? mapEmissionToState(
     DataBlocEmission event,
     bool isActionEmission,
   ) {
     if (event is EmitListDataBloc<TValue>) {
-      return state.copyWithList(
-        isActionEmission: isActionEmission,
-        emission: event,
-        isValid: true,
-        isEmitting: false,
-        values: Some(event.values.toBuiltList()),
-        failure: None(),
+      return state.copyWith(
+        isUpdating: false,
+        failure: Param.none,
+        dataStatus: DataBlocStatus.present,
+        data: event.values,
       );
     }
     if (event is AddValueDataBloc<TValue>) {
       if (!state.hasData) return null;
-      return state.copyWithList(
-        isActionEmission: isActionEmission,
-        emission: event,
-        isEmitting: event.canEmitAgain ? null : false,
-        values: Some(state.data.rebuild((b) => b.add(event.value))),
-        failure: event.canEmitAgain ? null : None(),
+      return state.copyWith(
+        isUpdating: event.canEmitAgain ? null : false,
+        data: state.add([event.value]),
+        failure: event.canEmitAgain ? null : const Param(null),
       );
     }
     if (event is UpdateValueDataBloc<TValue>) {
       if (!state.hasData) return null;
-      return state.copyWithList(
-        isActionEmission: isActionEmission,
-        emission: event,
-        isEmitting: event.canEmitAgain ? null : false,
-        values: Some(state.data.rebuild((b) => b
-          ..remove(event.value)
-          ..add(event.value))),
-        failure: event.canEmitAgain ? null : None(),
+      return state.copyWith(
+        isUpdating: event.canEmitAgain ? null : false,
+        data: state.update([event.value]),
+        failure: event.canEmitAgain ? null : const Param(null),
       );
     }
     if (event is ReplaceValueDataBloc<TValue>) {
       if (!state.hasData) return null;
-      final index = state.data.indexOf(event.currentValue);
-      return state.copyWithList(
-        isActionEmission: isActionEmission,
-        emission: event,
-        isEmitting: event.canEmitAgain ? null : false,
-        values: Some(state.data.rebuild((b) {
-          if (index == -1) {
-            b.add(event.nextValue);
-          } else {
-            b
-              ..removeAt(index)
-              ..insert(index, event.nextValue);
-          }
-        })),
-        failure: event.canEmitAgain ? null : None(),
+      return state.copyWith(
+        isUpdating: event.canEmitAgain ? null : false,
+        data: state.replace({event.currentValue: event.nextValue}),
+        failure: event.canEmitAgain ? null : const Param(null),
       );
     }
     if (event is RemoveValueDataBloc<TValue>) {
       if (!state.hasData) return null;
-      return state.copyWithList(
-        isActionEmission: isActionEmission,
-        emission: event,
-        isEmitting: event.canEmitAgain ? null : false,
-        values: Some(state.data.rebuild((b) => b.remove(event.value))),
-        failure: event.canEmitAgain ? null : None(),
+      return state.copyWith(
+        isUpdating: event.canEmitAgain ? null : false,
+        data: state.remove([event.value]),
+        failure: event.canEmitAgain ? null : const Param(null),
       );
     }
     return super.mapEmissionToState(event, isActionEmission);

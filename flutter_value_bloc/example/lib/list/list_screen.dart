@@ -22,7 +22,7 @@ class PersonsBloc extends ListBloc<String, Person> {
 
   Future<void> _onReading(ReadDataBloc event, Emitter<DataBlocEmission> emit) async {
     await Future.delayed(const Duration(seconds: 1));
-    emit(event.toEmitList(personList.take(10).toBuiltList()));
+    emit(event.toEmitList(personList.take(10)));
   }
 
   Future<void> _onCreating(CreatePersonDataBloc event, Emitter<DataBlocEmission> emit) async {
@@ -43,7 +43,7 @@ class ListScreen extends StatelessWidget {
           title: const Text('List with ListValueCubit'),
           actions: [
             const RefreshIconButton<PersonsBloc>(),
-            ActionDataBlocBuilder<PersonsBloc, String, BuiltList<Person>>(
+            ActionDataBlocBuilder<PersonsBloc, String, List<Person>>(
               builder: (context, state, canPerform) {
                 return PopupMenuButton(
                   enabled: canPerform,
@@ -78,7 +78,7 @@ class ListScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: ViewDataBlocBuilder<PersonsBloc, String, BuiltList<Person>>(
+        body: ViewDataBlocBuilder<PersonsBloc, String, List<Person>>(
           builder: (context, persons) {
             return RefreshGroupDataBlocBuilder(
               dataBlocs: [context.read<PersonsBloc>()],

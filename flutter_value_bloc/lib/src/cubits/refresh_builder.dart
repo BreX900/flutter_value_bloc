@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_value_bloc/src/views/view_provider.dart';
+import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:value_bloc/value_bloc.dart';
 
-class RefreshGroupDataBlocBuilder<TFailure extends Object> extends StatefulWidget {
-  final List<DataBloc<TFailure, dynamic, DataBlocState<dynamic, TFailure>>> dataBlocs;
+class RefreshBuilder<TFailure extends Object> extends StatefulWidget {
+  final List<BlocBase<DataBlocState<dynamic, TFailure>>> blocs;
 
   // ========== SmartRefresher ====================
 
@@ -38,16 +37,14 @@ class RefreshGroupDataBlocBuilder<TFailure extends Object> extends StatefulWidge
   final DragStartBehavior? dragStartBehavior;
 
   /// [SmartRefresher.onRefresh]
-  final VoidCallback? onRefresh;
+  final VoidCallback onRefresh;
 
   /// [SmartRefresher.child]
   final Widget child;
 
-  const RefreshGroupDataBlocBuilder({
+  const RefreshBuilder({
     Key? key,
-    required this.dataBlocs,
-    this.onRefresh,
-    required this.child,
+    required this.blocs,
     this.scrollController,
     this.scrollDirection,
     this.reverse,
@@ -56,33 +53,36 @@ class RefreshGroupDataBlocBuilder<TFailure extends Object> extends StatefulWidge
     this.cacheExtent,
     this.semanticChildCount,
     this.dragStartBehavior,
+    required this.onRefresh,
+    required this.child,
   }) : super(key: key);
 
   @override
-  _RefreshGroupDataBlocBuilderState<TFailure> createState() => _RefreshGroupDataBlocBuilderState();
+  _RefreshBuilderState<TFailure> createState() => _RefreshBuilderState();
 }
 
-class _RefreshGroupDataBlocBuilderState<TFailure extends Object>
-    extends State<RefreshGroupDataBlocBuilder<TFailure>> {
-  late RefreshController _controller;
+class _RefreshBuilderState<TFailure extends Object> extends State<RefreshBuilder<TFailure>> {
+  final _controller = RefreshController();
 
-  late final StreamSubscription _canRefreshSub;
+  bool _isRefreshing = false;
   late bool _canRefresh;
+  late final StreamSubscription _canRefreshSub;
 
   StreamSubscription? _refreshResultSub;
+
+  bool get _enablePullDown => _isRefreshing || _canRefresh;
 
   @override
   void initState() {
     super.initState();
-    _controller = RefreshController();
-    _canRefresh = _checkCanRefresh(widget.dataBlocs.map((bloc) => bloc.state));
+    _canRefresh = _checkCanRefresh(widget.blocs.map((bloc) => bloc.state));
     _initCanRefreshListener();
   }
 
   @override
-  void didUpdateWidget(covariant RefreshGroupDataBlocBuilder<TFailure> oldWidget) {
+  void didUpdateWidget(covariant RefreshBuilder<TFailure> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    assert(listEquals(widget.dataBlocs, oldWidget.dataBlocs), 'Not change data blocs list');
+    assert(listEquals(widget.blocs, oldWidget.blocs), 'Not change blocs list');
   }
 
   @override
@@ -95,28 +95,25 @@ class _RefreshGroupDataBlocBuilderState<TFailure extends Object>
 
   bool _checkCanRefresh(Iterable<DataBlocState<dynamic, TFailure>> states) {
     return states.every((state) {
-      if (state.isEmitting) return false;
+      if (state.isUpdating) return false;
       return state.hasFailure || state.hasData;
     });
   }
 
   void _initCanRefreshListener() {
-    _canRefreshSub = Rx.combineLatestList(widget.dataBlocs.map((bloc) {
+    _canRefreshSub = Rx.combineLatestList(widget.blocs.map((bloc) {
       // Cast is required
       return bloc.stream.cast<DataBlocState<dynamic, TFailure>>().startWith(bloc.state);
     })).listen((states) {
       final canRefresh = _checkCanRefresh(states);
-      if (_canRefresh == canRefresh) return;
-      setState(() {
-        _canRefresh = canRefresh;
-      });
+      _update(canRefresh: canRefresh);
     });
   }
 
   void _initRefreshResultListener() {
     // Catch only states with value or failure without emitting state
-    _refreshResultSub = Rx.combineLatestList(widget.dataBlocs.map((bloc) {
-      return bloc.stream.where((state) => !state.isEmitting);
+    _refreshResultSub = Rx.combineLatestList(widget.blocs.map((bloc) {
+      return bloc.stream.where((state) => !state.isUpdating);
     })).where((states) {
       return states.every((state) => state.hasFailure || state.hasData);
     }).listen((states) {
@@ -136,15 +133,21 @@ class _RefreshGroupDataBlocBuilderState<TFailure extends Object>
         }
       }
       _refreshResultSub?.cancel();
+      _update(isRefreshing: false);
     });
   }
 
-  void refresh() {
-    for (final dataBloc in widget.dataBlocs) {
-      dataBloc.read(canForce: true);
-    }
+  void _refresh() {
+    _update(isRefreshing: true);
     _initRefreshResultListener();
-    widget.onRefresh?.call();
+    widget.onRefresh();
+  }
+
+  void _update({bool? isRefreshing, bool? canRefresh}) {
+    final enablePullDown = _enablePullDown;
+    _isRefreshing = isRefreshing ?? _isRefreshing;
+    _canRefresh = canRefresh ?? _canRefresh;
+    if (enablePullDown != _enablePullDown) setState(() {});
   }
 
   @override
@@ -152,8 +155,8 @@ class _RefreshGroupDataBlocBuilderState<TFailure extends Object>
     // TODO: Not use SmartRefresher on desktop platform
     return SmartRefresher(
       controller: _controller,
-      enablePullDown: (_controller.headerStatus == RefreshStatus.refreshing) || _canRefresh,
-      onRefresh: refresh,
+      enablePullDown: _enablePullDown,
+      onRefresh: _refresh,
       scrollController: widget.scrollController,
       scrollDirection: widget.scrollDirection,
       reverse: widget.reverse,

@@ -5,12 +5,12 @@ abstract class DataBlocEvent with EquatableMixin {
 
   DataBlocEmission toEmitting() => EmitEmittingDataBloc();
 
-  EmitFailureDataBloc<TFailure> toEmitFailure<TFailure>(TFailure failure) =>
+  EmitFailureDataBloc<TFailure> toEmitFailure<TFailure extends Object>(TFailure failure) =>
       EmitFailureDataBloc(failure);
 
   EmitValueDataBloc<TValue> toEmitValue<TValue>(TValue value) => EmitValueDataBloc(value);
 
-  EmitListDataBloc<TValue> toEmitList<TValue>(BuiltList<TValue> values) => EmitListDataBloc(values);
+  EmitListDataBloc<TValue> toEmitList<TValue>(Iterable<TValue> values) => EmitListDataBloc(values);
 
   AddValueDataBloc<TValue> toAddValue<TValue>(TValue value) => AddValueDataBloc(value);
 
@@ -46,7 +46,7 @@ class EmitEmittingDataBloc extends DataBlocEmission {
   List<Object?> get props => [value];
 }
 
-class EmitFailureDataBloc<TFailure> extends DataBlocEmission {
+class EmitFailureDataBloc<TFailure extends Object> extends DataBlocEmission {
   final TFailure failure;
 
   EmitFailureDataBloc(this.failure);

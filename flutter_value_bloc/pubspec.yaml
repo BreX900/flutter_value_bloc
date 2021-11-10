@@ -15,9 +15,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # wait null safety
-  built_collection: ^5.1.1
-
   flutter_bloc: ^7.3.0
 
 #  value_bloc: ^1.2.0-dev

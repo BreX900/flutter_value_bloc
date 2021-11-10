@@ -1,166 +1,284 @@
 part of 'data_blocs.dart';
 
-abstract class DataBlocState<TFailure, TValue> extends Equatable {
-  final bool isActionEmission;
-  final DataBlocEmission? emission;
+enum DataBlocStatus { none, present, invalid }
 
-  /// [data] is valid
-  final bool hasValidData;
-  final bool isEmitting;
-  final Option<TFailure> _failure;
-  final Option<TValue> _data;
+abstract class DataBlocState<TData, TFailure extends Object> with EquatableMixin {
+  final bool isUpdating;
 
-  bool get hasFailure => _failure.isSome();
-  TFailure get failure => _failure.getOrElse(() => throw 'Not has failure! $this');
-  TFailure? get failureOrNull => _failure.fold(() => null, (a) => a);
+  bool get hasFailure => failure != null;
+  final TFailure? failure;
 
-  bool get hasData => _data.isSome();
-  TValue get data => _data.getOrElse(() => throw 'Not has value! $this');
+  final DataBlocStatus dataStatus;
+  TData get data;
+
+  const DataBlocState({
+    required this.isUpdating,
+    required this.failure,
+    required this.dataStatus,
+  });
+
+  bool get hasData => dataStatus == DataBlocStatus.present;
+  bool get hasValidData => dataStatus != DataBlocStatus.invalid;
+
+  bool get isEmpty => !hasFailure && !hasData;
+
+  bool get isEmptyIdle => !isUpdating && !hasFailure && !hasData;
+
+  bool get isSuccessfullyIdle => !isUpdating && !hasFailure && hasData;
+  bool get isFailedIdle => !isUpdating && hasFailure;
+
+  bool get isIdle => !isUpdating;
 
   /// You can call read and create
   bool get canInitialize {
-    if (isEmitting) return false;
+    if (isUpdating) return false;
     if (hasFailure) return false;
     return !(hasData && hasValidData);
   }
 
-  bool get isInitialized {
-    if (isEmitting) return true;
-    if (hasFailure) return true;
-    return hasData && hasValidData;
-  }
+  /// DEPRECATED
+  bool get isEmitting => isUpdating;
 
-  bool get canPerformAction => !isEmitting;
-
-  bool get canPerformDataAction {
-    if (isEmitting) return false;
-    return hasValidData && hasData;
-  }
-
-  DataBlocState({
-    required this.isActionEmission,
-    required this.emission,
-    required this.hasValidData,
-    required this.isEmitting,
-    required Option<TFailure> failure,
-    required Option<TValue> data,
-  })  : _failure = failure,
-        _data = data;
-
-  DataBlocState<TFailure, TValue> copyWith({
-    bool? isActionEmission,
-    DataBlocEmission? emission,
-    bool? hasValidData,
-    bool? isEmitting,
-    Option<TFailure>? failure,
+  DataBlocState<TData, TFailure> copyWith({
+    bool? isUpdating,
+    Param<TFailure?>? failure,
+    DataBlocStatus? dataStatus,
   });
 
   @override
   String toString() {
     return (StateToString('$runtimeType')
-          ..add('isValid', hasValidData)
-          ..add('isEmitting', isEmitting)
-          ..addIf('failure', hasFailure, () => failure)
-          ..addIf('data', hasData, () => data))
+          ..check(hasFailure)?.addNull('failure', failure)
+          ..addNull('dataStatus', dataStatus)
+          ..check(hasData)?.addNull('data', data))
         .toString();
   }
-
-  @override
-  List<Object?> get props =>
-      [isActionEmission, emission, hasValidData, isEmitting, _failure, _data];
 }
 
-class SingleDataBlocState<TFailure, TValue> extends DataBlocState<TFailure, TValue> {
-  SingleDataBlocState({
-    required bool isActionEmission,
-    required DataBlocEmission? emission,
-    required bool hasValidData,
-    required bool isEmitting,
-    required Option<TFailure> failure,
-    required Option<TValue> value,
-  }) : super(
-          isActionEmission: isActionEmission,
-          emission: emission,
-          hasValidData: hasValidData,
-          isEmitting: isEmitting,
-          failure: failure,
-          data: value,
-        );
-
+class ValueBlocState<TData, TFailure extends Object> extends DataBlocState<TData, TFailure> {
+  final Equality<TData> _equality;
   @override
-  SingleDataBlocState<TFailure, TValue> copyWith({
-    bool? isActionEmission,
-    DataBlocEmission? emission,
-    bool? hasValidData,
-    bool? isEmitting,
-    Option<TFailure>? failure,
-    Option<TValue>? value,
+  final TData data;
+
+  factory ValueBlocState({
+    Equals<TData>? equals,
+    bool isUpdating = false,
+    bool? hasData,
+    required TData data,
   }) {
-    return SingleDataBlocState(
-      isActionEmission: isActionEmission ?? this.isActionEmission,
-      emission: emission ?? this.emission,
-      hasValidData: hasValidData ?? this.hasValidData,
-      isEmitting: isEmitting ?? this.isEmitting,
-      failure: failure ?? _failure,
-      value: value ?? _data,
+    return ValueBlocState.raw(
+      equality: SimpleEquality(equals ?? DataBloc.defaultEquals),
+      isUpdating: isUpdating,
+      failure: null,
+      dataStatus: (hasData ?? data != null) ? DataBlocStatus.present : DataBlocStatus.none,
+      data: data,
     );
   }
-}
 
-class MultiDataBlocState<TFailure, TValue> extends DataBlocState<TFailure, BuiltList<TValue>> {
-  final Option<BuiltMap<int, TValue>> _allData;
-
-  MultiDataBlocState({
-    required bool isActionEmission,
-    required DataBlocEmission? emission,
-    required bool isValid,
-    required bool isEmitting,
-    required Option<TFailure> failure,
-    required Option<BuiltMap<int, TValue>> values,
-  })  : _allData = values,
+  ValueBlocState.raw({
+    required Equality<TData> equality,
+    required bool isUpdating,
+    required TFailure? failure,
+    required DataBlocStatus dataStatus,
+    required this.data,
+  })  : _equality = equality,
         super(
-          isActionEmission: isActionEmission,
-          emission: emission,
-          hasValidData: isValid,
-          isEmitting: isEmitting,
+          isUpdating: isUpdating,
           failure: failure,
-          data: values.map((allData) => allData.values.toBuiltList()),
+          dataStatus: dataStatus,
         );
 
   @override
-  MultiDataBlocState<TFailure, TValue> copyWith({
-    bool? isActionEmission,
-    DataBlocEmission? emission,
-    bool? hasValidData,
-    bool? isEmitting,
-    Option<TFailure>? failure,
-    Option<BuiltMap<int, TValue>>? values,
+  ValueBlocState<TData, TFailure> copyWith({
+    bool? isUpdating,
+    Param<TFailure?>? failure,
+    DataBlocStatus? dataStatus,
+    Param<TData>? data,
   }) {
-    return MultiDataBlocState(
-      isActionEmission: isActionEmission ?? this.isActionEmission,
-      emission: emission ?? this.emission,
-      isValid: hasValidData ?? this.hasValidData,
-      isEmitting: isEmitting ?? this.isEmitting,
-      failure: failure ?? _failure,
-      values: values ?? _allData,
+    return ValueBlocState.raw(
+      equality: _equality,
+      isUpdating: isUpdating ?? this.isUpdating,
+      failure: failure == null ? this.failure : failure.value,
+      dataStatus: dataStatus ?? this.dataStatus,
+      data: data == null ? this.data : data.value,
     );
   }
 
-  MultiDataBlocState<TFailure, TValue> copyWithList({
-    bool? isActionEmission,
-    DataBlocEmission? emission,
-    bool? isValid,
-    bool? isEmitting,
-    Option<TFailure>? failure,
-    Option<BuiltList<TValue>>? values,
-  }) {
+  ValueBlocState<TData, TFailure> toFailed(TFailure failure) {
     return copyWith(
-      isActionEmission: isActionEmission,
-      emission: emission,
-      hasValidData: isValid,
-      isEmitting: isEmitting,
-      failure: failure,
-      values: values?.map((a) => a.asMap().build()),
+      isUpdating: false,
+      failure: Param(failure),
+    );
+  }
+
+  ValueBlocState<TData, TFailure> toUpdating() {
+    return copyWith(
+      isUpdating: true,
+      failure: const Param(null),
+    );
+  }
+
+  TData replace(TData data) {
+    if (!hasData) return this.data;
+    return _equality.replace(this.data, data);
+  }
+
+  ValueBlocState<TData, TFailure> toUpdated(TData data) {
+    return copyWith(
+      isUpdating: false,
+      dataStatus: DataBlocStatus.present,
+      data: Param(data),
+    );
+  }
+
+  ValueBlocState<TData, TFailure> toCleaned() {
+    return copyWith(
+      isUpdating: false,
+      dataStatus: DataBlocStatus.none,
+    );
+  }
+
+  @override
+  List<Object?> get props => [isUpdating, failure, hasData, data];
+}
+
+abstract class MultiBlocState<TState extends MultiBlocState<TState, TData, TFailure>, TData,
+    TFailure extends Object> extends DataBlocState<List<TData>, TFailure> {
+  @override
+  List<TData> get data;
+
+  Map<int, TData> get indexedData;
+
+  MultiBlocState({
+    required bool isUpdating,
+    required TFailure? failure,
+    required DataBlocStatus dataStatus,
+  }) : super(
+          isUpdating: isUpdating,
+          failure: failure,
+          dataStatus: dataStatus,
+        );
+
+  @override
+  TState copyWith({
+    bool? isUpdating,
+    Param<TFailure?>? failure,
+    DataBlocStatus? dataStatus,
+  });
+
+  TState toFailed(TFailure failure) {
+    return copyWith(
+      isUpdating: false,
+      failure: Param(failure),
+    );
+  }
+
+  TState toUpdating() {
+    return copyWith(
+      isUpdating: true,
+      failure: const Param(null),
+    );
+  }
+
+  TState toCleaned() {
+    return copyWith(
+      isUpdating: false,
+      dataStatus: DataBlocStatus.none,
+      failure: const Param(null),
     );
   }
 }
+
+class ListBlocState<TData, TFailure extends Object>
+    extends MultiBlocState<ListBlocState<TData, TFailure>, TData, TFailure> {
+  final Equality<TData> _equality;
+  @override
+  final List<TData> data;
+  Map<int, TData>? _indexedData;
+  @override
+  Map<int, TData> get indexedData => _indexedData ??= data.asMap();
+
+  factory ListBlocState({
+    Equals<TData>? equals,
+    bool isUpdating = false,
+    Iterable<TData>? data,
+  }) {
+    return ListBlocState.raw(
+      equality: SimpleEquality(equals ?? DataBloc.defaultEquals),
+      isUpdating: isUpdating,
+      failure: null,
+      dataStatus: data != null ? DataBlocStatus.present : DataBlocStatus.none,
+      data: data ?? <TData>[],
+    );
+  }
+
+  ListBlocState.raw({
+    required Equality<TData> equality,
+    required bool isUpdating,
+    required TFailure? failure,
+    required DataBlocStatus dataStatus,
+    required Iterable<TData> data,
+  })  : _equality = equality,
+        data = List.unmodifiable(data),
+        super(
+          isUpdating: isUpdating,
+          failure: failure,
+          dataStatus: dataStatus,
+        );
+
+  @override
+  ListBlocState<TData, TFailure> copyWith({
+    bool? isUpdating,
+    Param<TFailure?>? failure,
+    DataBlocStatus? dataStatus,
+    Iterable<TData>? data,
+  }) {
+    return ListBlocState.raw(
+      equality: _equality,
+      isUpdating: isUpdating ?? this.isUpdating,
+      failure: failure == null ? this.failure : failure.value,
+      dataStatus: dataStatus ?? this.dataStatus,
+      data: data ?? this.data,
+    );
+  }
+
+  ListBlocState<TData, TFailure> toUpdated(List<TData> data) {
+    return copyWith(
+      isUpdating: false,
+      dataStatus: DataBlocStatus.present,
+      data: List.unmodifiable(data),
+    );
+  }
+
+  Iterable<TData> add(List<TData> values) {
+    if (!hasData) return data;
+    return [...data, ...values];
+  }
+
+  Iterable<TData> addIfAbsent(List<TData> values) {
+    if (!hasData) return data;
+    return _equality.addAllIfAbsent(data, values);
+  }
+
+  Iterable<TData> update(List<TData> values) {
+    if (!hasData) return data;
+    return _equality.updateAll(data, values);
+  }
+
+  Iterable<TData> replace(Map<TData, TData> values) {
+    if (!hasData) return data;
+    return _equality.replaceAll(data, values);
+  }
+
+  Iterable<TData> remove(List<TData> values) {
+    if (!hasData) return data;
+    return _equality.whereNotContainsAll(data, values);
+  }
+
+  @override
+  List<Object?> get props => [isUpdating, failure, hasData, data];
+}
+
+// class IndexedState {
+//   final Ring<TData?> _ring;
+// }

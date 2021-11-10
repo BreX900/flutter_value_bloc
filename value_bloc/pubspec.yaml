@@ -13,11 +13,7 @@ dependencies:
   rxdart: ^0.27.2
 
   equatable: ^2.0.3
-  quiver: ^3.0.1
   collection: ^1.15.0
-  built_collection: ^5.1.1
-
-  dartz: ^0.10.0
 
   bloc: ^7.2.1
   bloc_concurrency: ^0.1.0

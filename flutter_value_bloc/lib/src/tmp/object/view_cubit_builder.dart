@@ -3,7 +3,7 @@
 // import 'package:flutter_value_bloc/src/cubit_views/cubit_views.dart';
 // import 'package:flutter_value_bloc/src/cubit_views/value_view_builder.dart';
 // import 'package:flutter_value_bloc/src/_utils.dart';
-// import 'package:flutter_value_bloc/src/utils.dart';
+// import 'package:flutter_value_bloc/src/_utils.dart';
 // import 'package:value_bloc/value_bloc.dart';
 //
 // class ViewCubitBuilder<Value> extends StatelessWidget {
