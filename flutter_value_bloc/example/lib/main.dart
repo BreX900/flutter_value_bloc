@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_value_bloc/flutter_value_bloc.dart';
 
 void main() {
-  Bloc.observer = _BlocObserver();
-  runApp(const MyApp());
+  BlocOverrides.runZoned(() => runApp(const MyApp()), blocObserver: _BlocObserver());
 }
 
 class MyApp extends StatelessWidget {
