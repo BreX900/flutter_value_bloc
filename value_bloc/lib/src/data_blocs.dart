@@ -8,7 +8,6 @@ import 'package:meta/meta.dart';
 import 'package:value_bloc/src/utils/_utils.dart';
 import 'package:value_bloc/src/utils/disposer.dart';
 import 'package:value_bloc/src/utils/emitter.dart';
-import 'package:value_bloc/value_bloc.dart';
 
 part '_data_events.dart';
 part '_data_states.dart';

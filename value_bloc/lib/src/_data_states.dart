@@ -17,7 +17,7 @@ abstract class DataBlocState<TData, TFailure extends Object> with EquatableMixin
     required this.dataStatus,
   });
 
-  bool get hasData => dataStatus == DataBlocStatus.present;
+  bool get hasData => dataStatus != DataBlocStatus.none;
   bool get hasValidData => dataStatus != DataBlocStatus.invalid;
 
   bool get isEmpty => !hasFailure && !hasData;
