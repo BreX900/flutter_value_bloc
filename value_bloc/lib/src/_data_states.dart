@@ -139,7 +139,7 @@ class ValueBlocState<TData, TFailure extends Object> extends DataBlocState<TData
   }
 
   @override
-  List<Object?> get props => [isUpdating, failure, hasData, data];
+  List<Object?> get props => [isUpdating, failure, dataStatus, data];
 }
 
 abstract class MultiBlocState<TState extends MultiBlocState<TState, TData, TFailure>, TData,
@@ -276,7 +276,7 @@ class ListBlocState<TData, TFailure extends Object>
   }
 
   @override
-  List<Object?> get props => [isUpdating, failure, hasData, data];
+  List<Object?> get props => [isUpdating, failure, dataStatus, data];
 }
 
 // class IndexedState {
