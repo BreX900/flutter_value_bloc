@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_value_bloc/src/widgets.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class ActionDataBlocBuilder<TBloc extends DataBloc<TFailure, TData, DataBlocState<TData, TFailure>>,
-    TFailure extends Object, TData> extends StatelessWidget {
+class ActionDataBlocBuilder<TBloc extends BlocBase<DataBlocState<TData, TFailure>>, TData,
+    TFailure extends Object> extends StatelessWidget {
   final TBloc? dataBloc;
   final bool isDataAction;
 
@@ -32,8 +32,8 @@ class ActionDataBlocBuilder<TBloc extends DataBloc<TFailure, TData, DataBlocStat
   }
 }
 
-class ActionGroupDataBlocBuilder<TFailure extends Object, TData> extends StatelessWidget {
-  final List<DataBloc<TFailure, TData, DataBlocState<TData, TFailure>>> dataBlocs;
+class ActionGroupDataBlocBuilder<TData, TFailure extends Object> extends StatelessWidget {
+  final List<BlocBase<DataBlocState<TData, TFailure>>> dataBlocs;
   final bool isDataAction;
   final Widget Function(BuildContext context, bool canPerform) builder;
 
@@ -46,7 +46,7 @@ class ActionGroupDataBlocBuilder<TFailure extends Object, TData> extends Statele
 
   @override
   Widget build(BuildContext context) {
-    return BlocGroupSelector<DataBloc<TFailure, TData, DataBlocState<TData, TFailure>>,
+    return BlocGroupSelector<BlocBase<DataBlocState<TData, TFailure>>,
         DataBlocState<TData, TFailure>, bool>(
       blocs: dataBlocs,
       selector: (states) => states.every((state) => _canPerform(state, isDataAction)),

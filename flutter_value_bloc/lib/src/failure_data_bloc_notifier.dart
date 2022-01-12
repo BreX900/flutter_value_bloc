@@ -5,8 +5,7 @@ import 'package:flutter_value_bloc/src/widgets.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:value_bloc/value_bloc.dart';
 
-class FailureDataBlocNotifier<
-    TBloc extends DataBloc<TFailure, dynamic, DataBlocState<dynamic, TFailure>>,
+class FailureDataBlocNotifier<TBloc extends BlocBase<DataBlocState<dynamic, TFailure>>,
     TFailure extends Object> extends SingleChildStatelessWidget with _ListenFailure<TFailure> {
   final TBloc? dataBloc;
 
@@ -38,7 +37,7 @@ class FailureDataBlocNotifier<
 
 class FailureGroupDataBlocNotifier<TFailure extends Object> extends SingleChildStatelessWidget
     with _ListenFailure<TFailure> {
-  final List<DataBloc<TFailure, dynamic, DataBlocState<dynamic, TFailure>>> blocs;
+  final List<BlocBase<DataBlocState<dynamic, TFailure>>> blocs;
 
   /// It will call the failure handler even without having the data in the state
   @override
@@ -57,7 +56,8 @@ class FailureGroupDataBlocNotifier<TFailure extends Object> extends SingleChildS
 
   @override
   Widget buildWithChild(BuildContext context, Widget? child) {
-    return BlocGroupListener(
+    return BlocGroupListener<BlocBase<DataBlocState<dynamic, TFailure>>,
+        DataBlocState<dynamic, TFailure>>(
       blocs: blocs,
       listenWhen: _listenWhen,
       listener: _listenFailure,

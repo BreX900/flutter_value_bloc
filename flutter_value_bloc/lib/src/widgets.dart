@@ -7,8 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:rxdart/rxdart.dart';
 
-class BlocGroupListener<TBloc extends Bloc<dynamic, TState>, TState>
-    extends SingleChildStatelessWidget {
+class BlocGroupListener<TBloc extends BlocBase<TState>, TState> extends SingleChildStatelessWidget {
   final List<TBloc> blocs;
   final bool Function(TState previous, TState current)? listenWhen;
   final void Function(BuildContext context, TState state) listener;
@@ -36,7 +35,7 @@ class BlocGroupListener<TBloc extends Bloc<dynamic, TState>, TState>
   }
 }
 
-class BlocGroupBuilder<TBloc extends Bloc<dynamic, TState>, TState> extends StatefulWidget {
+class BlocGroupBuilder<TBloc extends BlocBase<TState>, TState> extends StatefulWidget {
   final List<TBloc> blocs;
   final bool Function(List<TState> previous, List<TState> current)? buildWhen;
   final Widget Function(BuildContext context, List<TState> states) builder;
@@ -52,7 +51,7 @@ class BlocGroupBuilder<TBloc extends Bloc<dynamic, TState>, TState> extends Stat
   _BlocGroupBuilderState<TBloc, TState> createState() => _BlocGroupBuilderState();
 }
 
-class _BlocGroupBuilderState<TBloc extends Bloc<dynamic, TState>, TState>
+class _BlocGroupBuilderState<TBloc extends BlocBase<TState>, TState>
     extends State<BlocGroupBuilder<TBloc, TState>> {
   late StreamSubscription _statesSub;
   late List<TState> _states;
@@ -93,8 +92,7 @@ class _BlocGroupBuilderState<TBloc extends Bloc<dynamic, TState>, TState>
   Widget build(BuildContext context) => widget.builder(context, List.unmodifiable(_states));
 }
 
-class BlocGroupSelector<TBloc extends Bloc<dynamic, TState>, TState, TValue>
-    extends StatefulWidget {
+class BlocGroupSelector<TBloc extends BlocBase<TState>, TState, TValue> extends StatefulWidget {
   final List<TBloc> blocs;
   final TValue Function(List<TState> states) selector;
   final Widget Function(BuildContext context, TValue value) builder;
@@ -110,7 +108,7 @@ class BlocGroupSelector<TBloc extends Bloc<dynamic, TState>, TState, TValue>
   _BlocGroupSelectorState<TBloc, TState, TValue> createState() => _BlocGroupSelectorState();
 }
 
-class _BlocGroupSelectorState<TBloc extends Bloc<dynamic, TState>, TState, TValue>
+class _BlocGroupSelectorState<TBloc extends BlocBase<TState>, TState, TValue>
     extends State<BlocGroupSelector<TBloc, TState, TValue>> {
   late StreamSubscription _statesSub;
   late TValue _value;

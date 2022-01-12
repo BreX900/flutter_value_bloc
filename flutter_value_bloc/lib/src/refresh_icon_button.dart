@@ -9,7 +9,7 @@ class RefreshIconButton<TBloc extends DataBloc<Object, dynamic, DataBlocState<dy
 
   @override
   Widget build(BuildContext context) {
-    return ActionDataBlocBuilder<TBloc, Object, dynamic>(
+    return ActionDataBlocBuilder<TBloc, dynamic, Object>(
       builder: (context, state, canPerform) => IconButton(
         onPressed: canPerform ? () => context.read<TBloc>().read(canForce: true) : null,
         icon: const Icon(Icons.refresh),

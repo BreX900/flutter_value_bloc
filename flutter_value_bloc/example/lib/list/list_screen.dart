@@ -43,7 +43,7 @@ class ListScreen extends StatelessWidget {
           title: const Text('List with ListValueCubit'),
           actions: [
             const RefreshIconButton<PersonsBloc>(),
-            ActionDataBlocBuilder<PersonsBloc, String, List<Person>>(
+            ActionDataBlocBuilder<PersonsBloc, List<Person>, String>(
               builder: (context, state, canPerform) {
                 return PopupMenuButton(
                   enabled: canPerform,
