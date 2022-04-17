@@ -33,7 +33,10 @@ void main() {
         final bloc = TestableBloc(mockFetcher);
         var state = bloc.state;
 
-        final expectedState = LoadingData<String>();
+        final expectedState = FetchingData<String>(
+          hasData: false,
+          data: null,
+        );
         expect(bloc.state, expectedState);
 
         final expectedStates = [
@@ -50,7 +53,10 @@ void main() {
         final bloc = TestableBloc(mockFetcher);
         var state = bloc.state;
 
-        final expectedState = LoadingData<String>();
+        final expectedState = FetchingData<String>(
+          hasData: false,
+          data: null,
+        );
         expect(bloc.state, expectedState);
 
         final expectedStates = [

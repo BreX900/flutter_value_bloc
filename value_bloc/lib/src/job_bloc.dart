@@ -133,6 +133,8 @@ abstract class JobBloc<TData, TSuccess> extends Cubit<Job<TSuccess>> {
       emit(state.toSuccess(result));
       return result;
     } catch (error, stackTrace) {
+      onError(error, stackTrace);
+
       emit(state.toError(error, stackTrace));
       rethrow;
     }

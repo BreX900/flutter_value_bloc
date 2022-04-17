@@ -8,15 +8,22 @@ part 'fetch_bloc.g.dart';
 
 @DataClass()
 abstract class DataState<TSuccess> with _$DataState<TSuccess> {
-  bool get isLoaded => hasData || hasError;
+  bool get hasError => false;
+  Object? get error => null;
+  StackTrace? get stackTrace => null;
 
-  bool get hasError;
-
-  bool get hasData;
-  TSuccess get data => hasData ? dataOrNull as TSuccess : throw 'Missing data';
-  TSuccess? get dataOrNull;
+  bool get hasData => false;
+  TSuccess? get data => null;
+  TSuccess get requiredData => hasData ? data as TSuccess : throw 'Missing data';
 
   const DataState();
+
+  bool get isFetching => this is FetchingData<TSuccess>;
+  bool get isFailed => this is FailedFetchData<TSuccess>;
+  bool get isFetched => this is FetchedData<TSuccess>;
+
+  bool get isLoading => !(hasData || hasError);
+  bool get isLoaded => hasData || hasError;
 
   R map<R>({
     required R Function() loading,
@@ -40,56 +47,39 @@ abstract class DataState<TSuccess> with _$DataState<TSuccess> {
   }
 
   DataState<TSuccess> toLoading() {
-    final state = this;
-    if (state is ErrorData<TSuccess>) {
-      return ErrorData(
-        isLoading: true,
-        error: state.error,
-        stackTrace: state.stackTrace,
-        hasData: hasData,
-        dataOrNull: dataOrNull,
-      );
-    } else if (state is SuccessData<TSuccess>) {
-      return SuccessData(
-        isLoading: true,
-        error: null,
-        stackTrace: null,
-        data: state.data,
-      );
-    }
-    return LoadingData();
+    return FetchingData(
+      hasData: hasData,
+      data: data,
+    );
   }
 
   DataState<TSuccess> toError(Object error, StackTrace stackTrace) {
-    return ErrorData(
-      isLoading: false,
+    return FailedFetchData(
       error: error,
       stackTrace: stackTrace,
       hasData: hasData,
-      dataOrNull: dataOrNull,
+      data: data,
     );
   }
 
   DataState<TSuccess> toSuccess(TSuccess data) {
-    return SuccessData(
-      isLoading: false,
-      error: null,
-      stackTrace: null,
+    return FetchedData(
       data: data,
     );
   }
 }
 
 @DataClass()
-class LoadingData<TSuccess> extends DataState<TSuccess> with _$LoadingData<TSuccess> {
+class FetchingData<TSuccess> extends DataState<TSuccess> with _$FetchingData<TSuccess> {
   @override
-  bool get hasError => false;
+  final bool hasData;
   @override
-  bool get hasData => false;
-  @override
-  TSuccess? get dataOrNull => null;
+  final TSuccess? data;
 
-  const LoadingData();
+  const FetchingData({
+    required this.hasData,
+    required this.data,
+  });
 
   @override
   R map<R>({
@@ -102,8 +92,7 @@ class LoadingData<TSuccess> extends DataState<TSuccess> with _$LoadingData<TSucc
 }
 
 @DataClass()
-class ErrorData<TSuccess> extends DataState<TSuccess> with _$ErrorData<TSuccess> {
-  final bool isLoading;
+class FailedFetchData<TSuccess> extends DataState<TSuccess> with _$FailedFetchData<TSuccess> {
   @override
   bool get hasError => true;
 
@@ -113,14 +102,13 @@ class ErrorData<TSuccess> extends DataState<TSuccess> with _$ErrorData<TSuccess>
   @override
   final bool hasData;
   @override
-  final TSuccess? dataOrNull;
+  final TSuccess? data;
 
-  const ErrorData({
-    required this.isLoading,
+  const FailedFetchData({
     required this.error,
     required this.stackTrace,
     required this.hasData,
-    required this.dataOrNull,
+    required this.data,
   });
 
   @override
@@ -134,25 +122,15 @@ class ErrorData<TSuccess> extends DataState<TSuccess> with _$ErrorData<TSuccess>
 }
 
 @DataClass()
-class SuccessData<TSuccess> extends DataState<TSuccess> with _$SuccessData<TSuccess> {
-  final bool isLoading;
-  @override
-  bool get hasError => error != null;
-
-  final Object? error;
-  final StackTrace? stackTrace;
-
+class FetchedData<TSuccess> extends DataState<TSuccess> with _$FetchedData<TSuccess> {
   @override
   bool get hasData => true;
   @override
-  final TSuccess dataOrNull;
+  final TSuccess data;
 
-  const SuccessData({
-    required this.isLoading,
-    required this.error,
-    required this.stackTrace,
-    required TSuccess data,
-  }) : dataOrNull = data;
+  const FetchedData({
+    required this.data,
+  });
 
   @override
   R map<R>({
@@ -160,7 +138,7 @@ class SuccessData<TSuccess> extends DataState<TSuccess> with _$SuccessData<TSucc
     required R Function(Object error, StackTrace st) error,
     required R Function(TSuccess value) success,
   }) {
-    return success(this.dataOrNull);
+    return success(this.data);
   }
 }
 
@@ -170,7 +148,7 @@ abstract class DataBloc<TSuccess> extends Cubit<DataState<TSuccess>> {
   var _key = const Object();
   Completer<TSuccess>? _result;
 
-  DataBloc() : super(LoadingData<TSuccess>()) {
+  DataBloc() : super(FetchingData<TSuccess>(hasData: false, data: null)) {
     _init();
   }
 
@@ -198,14 +176,13 @@ abstract class DataBloc<TSuccess> extends Cubit<DataState<TSuccess>> {
     try {
       result = await onFetching();
     } catch (error, stackTrace) {
+      onError(error, stackTrace);
       if (_key != key) throw _CancelledFutureException();
 
-      onError(error, stackTrace);
       emit(state.toError(error, stackTrace));
       _result!.completeError(error, stackTrace);
 
       _result = null;
-      print('My Herrir');
       rethrow;
     }
 

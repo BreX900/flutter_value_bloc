@@ -24,72 +24,70 @@ mixin _$DataState<TSuccess> {
   String toString() => (ClassToString('DataState', [TSuccess])).toString();
 }
 
-mixin _$LoadingData<TSuccess> {
-  LoadingData<TSuccess> get _self => this as LoadingData<TSuccess>;
+mixin _$FetchingData<TSuccess> {
+  FetchingData<TSuccess> get _self => this as FetchingData<TSuccess>;
 
-  Iterable<Object?> get _props sync* {}
+  Iterable<Object?> get _props sync* {
+    yield _self.hasData;
+    yield _self.data;
+  }
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$LoadingData<TSuccess> &&
+      other is _$FetchingData<TSuccess> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('LoadingData', [TSuccess])).toString();
+  String toString() => (ClassToString('FetchingData', [TSuccess])
+        ..add('hasData', _self.hasData)
+        ..add('data', _self.data))
+      .toString();
 }
 
-mixin _$ErrorData<TSuccess> {
-  ErrorData<TSuccess> get _self => this as ErrorData<TSuccess>;
+mixin _$FailedFetchData<TSuccess> {
+  FailedFetchData<TSuccess> get _self => this as FailedFetchData<TSuccess>;
 
   Iterable<Object?> get _props sync* {
-    yield _self.isLoading;
     yield _self.error;
     yield _self.stackTrace;
     yield _self.hasData;
-    yield _self.dataOrNull;
+    yield _self.data;
   }
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$ErrorData<TSuccess> &&
+      other is _$FailedFetchData<TSuccess> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('ErrorData', [TSuccess])
-        ..add('isLoading', _self.isLoading)
+  String toString() => (ClassToString('FailedFetchData', [TSuccess])
         ..add('error', _self.error)
         ..add('stackTrace', _self.stackTrace)
         ..add('hasData', _self.hasData)
-        ..add('dataOrNull', _self.dataOrNull))
+        ..add('data', _self.data))
       .toString();
 }
 
-mixin _$SuccessData<TSuccess> {
-  SuccessData<TSuccess> get _self => this as SuccessData<TSuccess>;
+mixin _$FetchedData<TSuccess> {
+  FetchedData<TSuccess> get _self => this as FetchedData<TSuccess>;
 
   Iterable<Object?> get _props sync* {
-    yield _self.isLoading;
-    yield _self.error;
-    yield _self.stackTrace;
-    yield _self.dataOrNull;
+    yield _self.data;
   }
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$SuccessData<TSuccess> &&
+      other is _$FetchedData<TSuccess> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('SuccessData', [TSuccess])
-        ..add('isLoading', _self.isLoading)
-        ..add('error', _self.error)
-        ..add('stackTrace', _self.stackTrace)
-        ..add('dataOrNull', _self.dataOrNull))
-      .toString();
+  String toString() =>
+      (ClassToString('FetchedData', [TSuccess])..add('data', _self.data))
+          .toString();
 }
