@@ -36,7 +36,7 @@ class Views {
 
   static Widget _buildLoading(BuildContext context, double? progress) {
     return Center(
-      child: CircularProgressIndicator(value: progress == 0.0 ? null : progress),
+      child: CircularProgressIndicator(data: progress == 0.0 ? null : progress),
     );
   }
 

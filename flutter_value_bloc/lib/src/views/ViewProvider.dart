@@ -15,7 +15,7 @@ class ViewsProvider extends Provider<Views> {
     required Views value,
     TransitionBuilder? builder,
     Widget? child,
-  }) : super.value(value: value, builder: builder, child: child);
+  }) : super.value(data: value, builder: builder, child: child);
 
   static Views of(BuildContext context) {
     return context.watch<Views>();

@@ -5,10 +5,10 @@ import 'package:value_bloc/src/fetch_bloc.dart';
 
 class FakeError {}
 
-class TestableBloc extends DataBloc<int, String> {
+class TestableBloc extends DemandBloc<int, String> {
   final Future<String> Function() _fetcher;
 
-  TestableBloc(this._fetcher) : super(initialArgs: 0);
+  TestableBloc(this._fetcher) : super(initialArg: 0);
 
   @override
   Future<String> onFetching(int args) async => await _fetcher();
@@ -33,7 +33,7 @@ void main() {
         final bloc = TestableBloc(mockFetcher);
         var state = bloc.state;
 
-        final expectedState = FetchingData<String>(
+        final expectedState = LoadingDemand<String>(
           hasData: false,
           data: null,
         );
@@ -53,7 +53,7 @@ void main() {
         final bloc = TestableBloc(mockFetcher);
         var state = bloc.state;
 
-        final expectedState = FetchingData<String>(
+        final expectedState = LoadingDemand<String>(
           hasData: false,
           data: null,
         );
@@ -67,8 +67,8 @@ void main() {
     });
 
     group('fetch', () {
-      late DataBloc<int, String> bloc;
-      late DataState<String> state;
+      late DemandBloc<int, String> bloc;
+      late DemandState<String> state;
 
       final tInitialResult = 'INITIAL_RESULT';
 

@@ -14,10 +14,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ViewsProvider.value(
-      value: Views(),
-      child: CubitViewsProvider.value(
-        value: CubitViews(),
+    return ViewsProvider.data(
+      data: Views(),
+      child: CubitViewsProvider.data(
+        data: CubitViews(),
         child: MaterialApp(
           home: HomeScreen(),
         ),

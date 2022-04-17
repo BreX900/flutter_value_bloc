@@ -53,7 +53,7 @@ class ViewCubitBuilder<Value> extends StatelessWidget {
           }
         }
 
-        return builder(context, state.value);
+        return builder(context, state.data);
       },
     );
 

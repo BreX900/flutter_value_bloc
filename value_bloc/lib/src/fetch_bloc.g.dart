@@ -8,24 +8,24 @@ part of 'fetch_bloc.dart';
 
 // ignore_for_file: annotate_overrides
 
-mixin _$DataState<TData> {
-  DataState<TData> get _self => this as DataState<TData>;
+mixin _$DemandState<TData> {
+  DemandState<TData> get _self => this as DemandState<TData>;
 
   Iterable<Object?> get _props sync* {}
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$DataState<TData> &&
+      other is _$DemandState<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('DataState', [TData])).toString();
+  String toString() => (ClassToString('DemandState', [TData])).toString();
 }
 
-mixin _$FetchingData<TData> {
-  FetchingData<TData> get _self => this as FetchingData<TData>;
+mixin _$LoadingDemand<TData> {
+  LoadingDemand<TData> get _self => this as LoadingDemand<TData>;
 
   Iterable<Object?> get _props sync* {
     yield _self.hasData;
@@ -34,20 +34,20 @@ mixin _$FetchingData<TData> {
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$FetchingData<TData> &&
+      other is _$LoadingDemand<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('FetchingData', [TData])
+  String toString() => (ClassToString('LoadingDemand', [TData])
         ..add('hasData', _self.hasData)
         ..add('data', _self.data))
       .toString();
 }
 
-mixin _$FailedFetchData<TData> {
-  FailedFetchData<TData> get _self => this as FailedFetchData<TData>;
+mixin _$FailedDemand<TData> {
+  FailedDemand<TData> get _self => this as FailedDemand<TData>;
 
   Iterable<Object?> get _props sync* {
     yield _self.error;
@@ -58,13 +58,13 @@ mixin _$FailedFetchData<TData> {
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$FailedFetchData<TData> &&
+      other is _$FailedDemand<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('FailedFetchData', [TData])
+  String toString() => (ClassToString('FailedDemand', [TData])
         ..add('error', _self.error)
         ..add('stackTrace', _self.stackTrace)
         ..add('hasData', _self.hasData)
@@ -72,8 +72,8 @@ mixin _$FailedFetchData<TData> {
       .toString();
 }
 
-mixin _$FetchedData<TData> {
-  FetchedData<TData> get _self => this as FetchedData<TData>;
+mixin _$SuccessDemand<TData> {
+  SuccessDemand<TData> get _self => this as SuccessDemand<TData>;
 
   Iterable<Object?> get _props sync* {
     yield _self.data;
@@ -81,13 +81,13 @@ mixin _$FetchedData<TData> {
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$FetchedData<TData> &&
+      other is _$SuccessDemand<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
   String toString() =>
-      (ClassToString('FetchedData', [TData])..add('data', _self.data))
+      (ClassToString('SuccessDemand', [TData])..add('data', _self.data))
           .toString();
 }

@@ -8,56 +8,56 @@ part of 'job_bloc.dart';
 
 // ignore_for_file: annotate_overrides
 
-mixin _$Job<T> {
-  Job<T> get _self => this as Job<T>;
+mixin _$MutationState<TData> {
+  MutationState<TData> get _self => this as MutationState<TData>;
 
   Iterable<Object?> get _props sync* {}
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$Job<T> &&
+      other is _$MutationState<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('Job', [T])).toString();
+  String toString() => (ClassToString('MutationState', [TData])).toString();
 }
 
-mixin _$IdleJob<T> {
-  IdleJob<T> get _self => this as IdleJob<T>;
+mixin _$IdleMutation<TData> {
+  IdleMutation<TData> get _self => this as IdleMutation<TData>;
 
   Iterable<Object?> get _props sync* {}
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$IdleJob<T> &&
+      other is _$IdleMutation<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('IdleJob', [T])).toString();
+  String toString() => (ClassToString('IdleMutation', [TData])).toString();
 }
 
-mixin _$LoadingJob<T> {
-  LoadingJob<T> get _self => this as LoadingJob<T>;
+mixin _$LoadingMutation<TData> {
+  LoadingMutation<TData> get _self => this as LoadingMutation<TData>;
 
   Iterable<Object?> get _props sync* {}
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$LoadingJob<T> &&
+      other is _$LoadingMutation<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('LoadingJob', [T])).toString();
+  String toString() => (ClassToString('LoadingMutation', [TData])).toString();
 }
 
-mixin _$ErrorJob<T> {
-  ErrorJob<T> get _self => this as ErrorJob<T>;
+mixin _$FailedMutation<TData> {
+  FailedMutation<TData> get _self => this as FailedMutation<TData>;
 
   Iterable<Object?> get _props sync* {
     yield _self.error;
@@ -66,33 +66,34 @@ mixin _$ErrorJob<T> {
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$ErrorJob<T> &&
+      other is _$FailedMutation<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
-  String toString() => (ClassToString('ErrorJob', [T])
+  String toString() => (ClassToString('FailedMutation', [TData])
         ..add('error', _self.error)
         ..add('stackTrace', _self.stackTrace))
       .toString();
 }
 
-mixin _$SuccessJob<T> {
-  SuccessJob<T> get _self => this as SuccessJob<T>;
+mixin _$SuccessMutation<TData> {
+  SuccessMutation<TData> get _self => this as SuccessMutation<TData>;
 
   Iterable<Object?> get _props sync* {
-    yield _self.value;
+    yield _self.data;
   }
 
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is _$SuccessJob<T> &&
+      other is _$SuccessMutation<TData> &&
           runtimeType == other.runtimeType &&
           DataClass.$equals(_props, other._props);
 
   int get hashCode => Object.hashAll(_props);
 
   String toString() =>
-      (ClassToString('SuccessJob', [T])..add('value', _self.value)).toString();
+      (ClassToString('SuccessMutation', [TData])..add('data', _self.data))
+          .toString();
 }

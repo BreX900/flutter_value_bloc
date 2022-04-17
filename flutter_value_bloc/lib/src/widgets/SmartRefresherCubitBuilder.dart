@@ -78,7 +78,7 @@ class _SmartRefresherSingleCubitBuilderState extends State<_SmartRefresherSingle
   }
 
   void updateStatus(ObjectCubitState<Object, Object> state) {
-    _refreshController.headerMode!.value = _getRefreshStatus(state);
+    _refreshController.headerMode!.data = _getRefreshStatus(state);
   }
 
   RefreshStatus _getRefreshStatus(ObjectCubitState<Object, Object> state) {
@@ -123,7 +123,7 @@ class _SmartRefresherMultiCubitBuilder extends SmartRefresherCubitBuilder {
     bool isEnabledPullDown = true,
     bool isEnabledPullUp = false,
     required Widget child,
-  })   : valuesPerScroll = valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll,
+  })  : valuesPerScroll = valuesPerScroll ?? SmartRefresherCubitBuilder.defaultValuesPerScroll,
         super._(
           key: key,
           isEnabledPullDown: isEnabledPullDown,
@@ -164,8 +164,8 @@ class _SmartRefresherMultiCubitBuilderState extends State<_SmartRefresherMultiCu
   }
 
   void updateSmartRefresherController(IterableCubitState<Object, Object> state) {
-    _refreshController.headerMode!.value = _getRefreshStatus(state);
-    _refreshController.footerMode!.value = _getLoadStatus(state);
+    _refreshController.headerMode!.data = _getRefreshStatus(state);
+    _refreshController.footerMode!.data = _getLoadStatus(state);
   }
 
   RefreshStatus _getRefreshStatus(IterableCubitState<Object, Object> state) {

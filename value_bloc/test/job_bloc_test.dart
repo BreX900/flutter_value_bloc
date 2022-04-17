@@ -5,20 +5,20 @@ import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 import 'package:value_bloc/src/job_bloc.dart';
 
-class _TestableJobBloc extends JobBloc<bool, String> {
+class _TestableJobBloc extends MutationBloc<bool, String> {
   final _Worker<bool, String> _worker;
 
   _TestableJobBloc(this._worker);
 
   @override
-  FutureOr<String> onWorking(bool data) => _worker(data);
+  FutureOr<String> onMutating(bool data) => _worker(data);
 }
 
 void main() {
   late _Worker<bool, String> mockWorker;
 
-  late JobBloc<bool, String> bloc;
-  late Job<String> state;
+  late MutationBloc<bool, String> bloc;
+  late MutationState<String> state;
 
   setUp(() {
     mockWorker = MockWorker();
@@ -35,7 +35,7 @@ void main() {
 
     group('constructor', () {
       test('initial state', () {
-        final expectedState = IdleJob<String>();
+        final expectedState = IdleMutation<String>();
         expect(state, expectedState);
       });
     });
@@ -50,7 +50,7 @@ void main() {
         ];
         await Future.wait([
           expectLater(bloc.stream, emitsInOrder(expectedStates)),
-          expectLater(bloc.work(tData), completion(tResult)),
+          expectLater(bloc.mutate(tData), completion(tResult)),
         ]);
       });
 
@@ -59,7 +59,7 @@ void main() {
           return Future.error(tError, tStackTrace);
         });
 
-        act() => bloc.work(tData);
+        act() => bloc.mutate(tData);
 
         final expectedStates = [
           state = state.toLoading(),
@@ -74,7 +74,7 @@ void main() {
       test('throw an error if you start working while you are already working', () async {
         bloc.emit(state = state.toLoading());
 
-        await expectLater(() => bloc.work(tData), throwsA(isA<AlreadyWorkingError>()));
+        await expectLater(() => bloc.mutate(tData), throwsA(isA<AlreadyMutatingError>()));
       });
     });
   });

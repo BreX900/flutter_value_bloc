@@ -15,7 +15,7 @@ class CubitViewsProvider extends Provider<CubitViews> {
     required CubitViews value,
     TransitionBuilder? builder,
     Widget? child,
-  }) : super.value(value: value, builder: builder, child: child);
+  }) : super.value(data: value, builder: builder, child: child);
 
   static CubitViews of(BuildContext context) => context.watch<CubitViews>();
 
