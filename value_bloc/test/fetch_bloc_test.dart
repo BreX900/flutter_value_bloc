@@ -5,13 +5,13 @@ import 'package:value_bloc/src/fetch_bloc.dart';
 
 class FakeError {}
 
-class TestableBloc extends DataBloc<String> {
+class TestableBloc extends DataBloc<int, String> {
   final Future<String> Function() _fetcher;
 
-  TestableBloc(this._fetcher);
+  TestableBloc(this._fetcher) : super(initialArgs: 0);
 
   @override
-  Future<String> onFetching() async => await _fetcher();
+  Future<String> onFetching(int args) async => await _fetcher();
 }
 
 void main() {
@@ -40,7 +40,7 @@ void main() {
         expect(bloc.state, expectedState);
 
         final expectedStates = [
-          state = state.toSuccess(tResult),
+          state = state.toFetched(tResult),
         ];
         await expectLater(bloc.stream, emitsInOrder(expectedStates));
       });
@@ -60,18 +60,20 @@ void main() {
         expect(bloc.state, expectedState);
 
         final expectedStates = [
-          state = state.toError(tError, tStackTrace),
+          state = state.toFetchFailed(tError, tStackTrace),
         ];
         await expectLater(bloc.stream, emitsInOrder(expectedStates));
       });
     });
 
     group('fetch', () {
-      late DataBloc<String> bloc;
+      late DataBloc<int, String> bloc;
       late DataState<String> state;
 
+      final tInitialResult = 'INITIAL_RESULT';
+
       setUp(() async {
-        when(() => mockFetcher()).thenAnswer((_) async => '');
+        when(() => mockFetcher()).thenAnswer((_) async => tInitialResult);
         bloc = TestableBloc(mockFetcher);
         await bloc.stream.firstWhere((state) => state.hasData);
         state = bloc.state;
@@ -81,12 +83,12 @@ void main() {
         when(() => mockFetcher()).thenAnswer((_) async => tResult);
 
         final expectedStates = [
-          state = state.toLoading(),
-          state = state.toSuccess(tResult),
+          state = state.toFetching(),
+          state = state.toFetched(tResult),
         ];
         await Future.wait([
           expectLater(bloc.stream, emitsInOrder(expectedStates)),
-          expectLater(bloc.fetch(), completion(tResult)),
+          expectLater(bloc.fetch(1), completion(tResult)),
         ]);
       });
 
@@ -96,12 +98,36 @@ void main() {
         });
 
         final expectedStates = [
-          state = state.toLoading(),
-          state = state.toError(tError, tStackTrace),
+          state = state.toFetching(),
+          state = state.toFetchFailed(tError, tStackTrace),
         ];
         await Future.wait([
           expectLater(bloc.stream, emitsInOrder(expectedStates)),
-          expectLater(() => bloc.fetch(), throwsA(tError)),
+          expectLater(() => bloc.fetch(1), throwsA(tError)),
+        ]);
+      });
+
+      test('Not fetch already fetched args', () async {
+        final expectedStates = [
+          emitsDone,
+        ];
+        await Future.wait<void>([
+          expectLater(bloc.stream, emitsInOrder(expectedStates)),
+          expectLater(bloc.fetch(0), completion(tInitialResult)),
+          Future.delayed(const Duration(milliseconds: 1)).whenComplete(bloc.close),
+        ]);
+      });
+
+      test('Fetch already fetched args if force is true', () async {
+        when(() => mockFetcher()).thenAnswer((_) async => tResult);
+
+        final expectedStates = [
+          state = state.toFetching(),
+          state = state.toFetched(tResult),
+        ];
+        await Future.wait([
+          expectLater(bloc.stream, emitsInOrder(expectedStates)),
+          expectLater(bloc.fetch(0, force: true), completion(tResult)),
         ]);
       });
 
@@ -114,13 +140,13 @@ void main() {
         });
 
         final expectedStates = [
-          state = state.toLoading(),
-          state = state.toSuccess(tResult),
+          state = state.toFetching(),
+          state = state.toFetched(tResult),
         ];
         await Future.wait([
           expectLater(bloc.stream, emitsInOrder(expectedStates)),
-          expectLater(bloc.fetch(), completion(tResult)),
-          expectLater(bloc.fetch(), completion(tResult)),
+          expectLater(bloc.fetch(1, force: true), completion(tResult)),
+          expectLater(bloc.fetch(1, force: true), completion(tResult)),
         ]);
       });
 
@@ -132,13 +158,13 @@ void main() {
         });
 
         final expectedStates = [
-          state = state.toLoading(),
-          state = state.toSuccess(tResult),
+          state = state.toFetching(),
+          state = state.toFetched(tResult),
         ];
         await Future.wait([
           expectLater(bloc.stream, emitsInOrder(expectedStates)),
-          expectLater(bloc.fetch(), completion(tResult)),
-          expectLater(bloc.fetch(), completion(tResult)),
+          expectLater(bloc.fetch(1, force: true), completion(tResult)),
+          expectLater(bloc.fetch(1, force: true), completion(tResult)),
         ]);
       });
 
@@ -150,21 +176,17 @@ void main() {
         });
 
         final expectedStates = [
-          state = state.toLoading(),
-          state = state.toError(tError, tStackTrace),
+          state = state.toFetching(),
+          state = state.toFetchFailed(tError, tStackTrace),
         ];
         await Future.wait([
           expectLater(bloc.stream, emitsInOrder(expectedStates)),
-          expectLater(() => bloc.fetch(), throwsA(tError)),
-          expectLater(() => bloc.fetch(), throwsA(tError)),
+          expectLater(() => bloc.fetch(1, force: true), throwsA(tError)),
+          expectLater(() => bloc.fetch(1, force: true), throwsA(tError)),
         ]);
       });
     });
   });
-
-  // when(() => mockFetcher()).thenAnswer((_) async {
-  //   return _.positionalArguments[0] ? tResult : throw tError;
-  // });
 }
 
 abstract class _Fetcher<R> {

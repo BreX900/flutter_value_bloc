@@ -115,6 +115,10 @@ class SuccessJob<T> extends Job<T> with _$SuccessJob<T> {
 abstract class JobBloc<TData, TSuccess> extends Cubit<Job<TSuccess>> {
   JobBloc() : super(IdleJob<TSuccess>());
 
+  factory JobBloc.inline(
+    Future<TSuccess> Function(TData args) worker,
+  ) = _InlineJobBloc<TData, TSuccess>;
+
   Future<TSuccess?> tryWork(TData data) async {
     try {
       return await work(data);
@@ -142,6 +146,15 @@ abstract class JobBloc<TData, TSuccess> extends Cubit<Job<TSuccess>> {
 
   @protected
   FutureOr<TSuccess> onWorking(TData data);
+}
+
+class _InlineJobBloc<TArgs, TData> extends JobBloc<TArgs, TData> {
+  final Future<TData> Function(TArgs args) worker;
+
+  _InlineJobBloc(this.worker) : super();
+
+  @override
+  Future<TData> onWorking(TArgs args) => worker(args);
 }
 
 class AlreadyWorkingError extends Error {

@@ -7,53 +7,81 @@ import 'package:meta/meta.dart';
 part 'fetch_bloc.g.dart';
 
 @DataClass()
-abstract class DataState<TSuccess> with _$DataState<TSuccess> {
+abstract class DataState<TData> with _$DataState<TData> {
   bool get hasError => false;
   Object? get error => null;
+  Object get requiredError => hasError ? error as Object : throw 'Missing error';
   StackTrace? get stackTrace => null;
 
   bool get hasData => false;
-  TSuccess? get data => null;
-  TSuccess get requiredData => hasData ? data as TSuccess : throw 'Missing data';
+  TData? get data => null;
+  TData get requiredData => hasData ? data as TData : throw 'Missing data';
 
   const DataState();
 
-  bool get isFetching => this is FetchingData<TSuccess>;
-  bool get isFailed => this is FailedFetchData<TSuccess>;
-  bool get isFetched => this is FetchedData<TSuccess>;
+  bool get isFetching => this is FetchingData<TData>;
+  bool get isFailed => this is FailedFetchData<TData>;
+  bool get isFetched => this is FetchedData<TData>;
 
   bool get isLoading => !(hasData || hasError);
   bool get isLoaded => hasData || hasError;
 
-  R map<R>({
+  R mapStatus<R>({
     required R Function() loading,
-    required R Function(Object error, StackTrace st) error,
-    required R Function(TSuccess value) success,
-  });
+    required R Function(Object error) error,
+    required R Function(TData data) data,
+  }) {
+    if (hasData) {
+      return data(this.requiredData);
+    } else if (hasError) {
+      return error(this.requiredError);
+    } else {
+      return loading();
+    }
+  }
 
-  R maybeMap<R>({
+  R maybeMapStatus<R>({
     R Function()? loading,
-    R Function(Object error, StackTrace st)? error,
-    R Function(TSuccess value)? success,
+    R Function(Object error)? error,
+    R Function(TData data)? data,
     required R Function() orElse,
   }) {
-    return map(loading: () {
-      return (loading ?? orElse)();
-    }, error: (e, st) {
-      return error != null ? error(e, st) : orElse();
-    }, success: (data) {
-      return success != null ? success(data) : orElse();
+    return mapStatus(loading: () {
+      return loading != null ? loading() : orElse();
+    }, error: (e) {
+      return error != null ? error(e) : orElse();
+    }, data: (d) {
+      return data != null ? data(d) : orElse();
     });
   }
 
-  DataState<TSuccess> toLoading() {
+  R map<R>({
+    required R Function(FetchingData<TData> state) fetching,
+    required R Function(FailedFetchData<TData> state) failedFetch,
+    required R Function(FetchedData<TData> state) fetched,
+  });
+
+  R maybeMap<R>({
+    R Function(FetchingData<TData> state)? fetching,
+    R Function(FailedFetchData<TData> state)? failedFetch,
+    R Function(FetchedData<TData> state)? fetched,
+    required R Function(DataState<TData> state) orElse,
+  }) {
+    return map(
+      fetching: fetching ?? orElse,
+      failedFetch: failedFetch ?? orElse,
+      fetched: fetched ?? orElse,
+    );
+  }
+
+  DataState<TData> toFetching() {
     return FetchingData(
       hasData: hasData,
       data: data,
     );
   }
 
-  DataState<TSuccess> toError(Object error, StackTrace stackTrace) {
+  DataState<TData> toFetchFailed(Object error, StackTrace stackTrace) {
     return FailedFetchData(
       error: error,
       stackTrace: stackTrace,
@@ -62,7 +90,7 @@ abstract class DataState<TSuccess> with _$DataState<TSuccess> {
     );
   }
 
-  DataState<TSuccess> toSuccess(TSuccess data) {
+  DataState<TData> toFetched(TData data) {
     return FetchedData(
       data: data,
     );
@@ -70,11 +98,11 @@ abstract class DataState<TSuccess> with _$DataState<TSuccess> {
 }
 
 @DataClass()
-class FetchingData<TSuccess> extends DataState<TSuccess> with _$FetchingData<TSuccess> {
+class FetchingData<TData> extends DataState<TData> with _$FetchingData<TData> {
   @override
   final bool hasData;
   @override
-  final TSuccess? data;
+  final TData? data;
 
   const FetchingData({
     required this.hasData,
@@ -83,16 +111,16 @@ class FetchingData<TSuccess> extends DataState<TSuccess> with _$FetchingData<TSu
 
   @override
   R map<R>({
-    required R Function() loading,
-    required R Function(Object error, StackTrace st) error,
-    required R Function(TSuccess value) success,
+    required R Function(FetchingData<TData> state) fetching,
+    required R Function(FailedFetchData<TData> state) failedFetch,
+    required R Function(FetchedData<TData> state) fetched,
   }) {
-    return loading();
+    return fetching(this);
   }
 }
 
 @DataClass()
-class FailedFetchData<TSuccess> extends DataState<TSuccess> with _$FailedFetchData<TSuccess> {
+class FailedFetchData<TData> extends DataState<TData> with _$FailedFetchData<TData> {
   @override
   bool get hasError => true;
 
@@ -102,7 +130,7 @@ class FailedFetchData<TSuccess> extends DataState<TSuccess> with _$FailedFetchDa
   @override
   final bool hasData;
   @override
-  final TSuccess? data;
+  final TData? data;
 
   const FailedFetchData({
     required this.error,
@@ -113,20 +141,20 @@ class FailedFetchData<TSuccess> extends DataState<TSuccess> with _$FailedFetchDa
 
   @override
   R map<R>({
-    required R Function() loading,
-    required R Function(Object error, StackTrace st) error,
-    required R Function(TSuccess value) success,
+    required R Function(FetchingData<TData> state) fetching,
+    required R Function(FailedFetchData<TData> state) failedFetch,
+    required R Function(FetchedData<TData> state) fetched,
   }) {
-    return error(this.error, this.stackTrace);
+    return failedFetch(this);
   }
 }
 
 @DataClass()
-class FetchedData<TSuccess> extends DataState<TSuccess> with _$FetchedData<TSuccess> {
+class FetchedData<TData> extends DataState<TData> with _$FetchedData<TData> {
   @override
   bool get hasData => true;
   @override
-  final TSuccess data;
+  final TData data;
 
   const FetchedData({
     required this.data,
@@ -134,52 +162,88 @@ class FetchedData<TSuccess> extends DataState<TSuccess> with _$FetchedData<TSucc
 
   @override
   R map<R>({
-    required R Function() loading,
-    required R Function(Object error, StackTrace st) error,
-    required R Function(TSuccess value) success,
+    required R Function(FetchingData<TData> state) fetching,
+    required R Function(FailedFetchData<TData> state) failedFetch,
+    required R Function(FetchedData<TData> state) fetched,
   }) {
-    return success(this.data);
+    return fetched(this);
   }
+}
+
+class Param<T> {
+  final T value;
+
+  Param(this.value);
 }
 
 class _CancelledFutureException implements Exception {}
 
-abstract class DataBloc<TSuccess> extends Cubit<DataState<TSuccess>> {
+abstract class DataBloc<TArgs, TData> extends Cubit<DataState<TData>> {
   var _key = const Object();
-  Completer<TSuccess>? _result;
+  Completer<TData>? _result;
 
-  DataBloc() : super(FetchingData<TSuccess>(hasData: false, data: null)) {
-    _init();
+  TArgs _args;
+
+  DataBloc({
+    required TArgs initialArgs,
+    TData? initialData,
+  })  : _args = initialArgs,
+        super(FetchingData<TData>(
+          hasData: initialData != null,
+          data: initialData,
+        )) {
+    _init(initialArgs);
   }
 
-  Future<TSuccess?> tryFetch() async {
-    try {
-      return await fetch();
-    } catch (_) {
-      return null;
+  factory DataBloc.inline(
+    Future<TData> Function(TArgs args) fetcher, {
+    required TArgs initialArgs,
+    TData? initialData,
+  }) = _InlineDataBloc<TArgs, TData>;
+
+  // TODO: Split to forceFetch and tryForceFetch
+  Future<TData> fetch(TArgs args, {bool force = false}) async {
+    if (_args == args && !force) {
+      return state.map(fetching: (state) {
+        return _result!.future;
+      }, failedFetch: (state) {
+        throw Error.throwWithStackTrace(state.error, state.stackTrace);
+      }, fetched: (state) {
+        return state.data;
+      });
     }
-  }
-
-  Future<TSuccess> fetch() async {
+    emit(state.toFetching());
     _key = Object();
-    emit(state.toLoading());
+    _args = args;
     try {
-      return await _fetching(_key);
+      return await _fetching(_key, args);
     } on _CancelledFutureException {
       return await _result!.future;
     }
   }
 
-  Future<TSuccess> _fetching(Object key) async {
-    _result ??= Completer()..future.ignore(); // Ignore the error because it is thrown in the zone
-    late TSuccess result;
+  Future<TData?> tryFetch(TArgs args, {bool force = false}) async {
     try {
-      result = await onFetching();
+      return await fetch(args);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<TData> reFetch() async => await fetch(_args, force: true);
+
+  Future<TData?> tryReFetch() async => await tryFetch(_args, force: true);
+
+  Future<TData> _fetching(Object key, TArgs args) async {
+    _result ??= Completer()..future.ignore(); // Ignore the error because it is thrown in the zone
+    late TData result;
+    try {
+      result = await onFetching(args);
     } catch (error, stackTrace) {
       onError(error, stackTrace);
       if (_key != key) throw _CancelledFutureException();
 
-      emit(state.toError(error, stackTrace));
+      emit(state.toFetchFailed(error, stackTrace));
       _result!.completeError(error, stackTrace);
 
       _result = null;
@@ -188,19 +252,35 @@ abstract class DataBloc<TSuccess> extends Cubit<DataState<TSuccess>> {
 
     if (_key != key) throw _CancelledFutureException();
 
-    emit(state.toSuccess(result));
+    emit(state.toFetched(result));
     _result!.complete(result);
 
     _result = null;
     return result;
   }
 
-  void _init() async {
+  void _init(TArgs args) async {
     try {
-      await _fetching(_key);
+      await _fetching(_key, args);
     } catch (_) {}
   }
 
   @protected
-  Future<TSuccess> onFetching();
+  Future<TData> onFetching(TArgs args);
+}
+
+class _InlineDataBloc<TArgs, TData> extends DataBloc<TArgs, TData> {
+  final Future<TData> Function(TArgs args) fetcher;
+
+  _InlineDataBloc(
+    this.fetcher, {
+    required TArgs initialArgs,
+    TData? initialData,
+  }) : super(
+          initialArgs: initialArgs,
+          initialData: initialData,
+        );
+
+  @override
+  Future<TData> onFetching(TArgs args) => fetcher(args);
 }
