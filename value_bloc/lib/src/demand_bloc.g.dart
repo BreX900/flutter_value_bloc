@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fetch_bloc.dart';
+part of 'demand_bloc.dart';
 
 // **************************************************************************
 // DataClassGenerator

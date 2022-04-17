@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:mek_data_class/mek_data_class.dart';
 import 'package:meta/meta.dart';
 
-part 'job_bloc.g.dart';
+part 'mutation_bloc.g.dart';
 
 @DataClass()
 abstract class MutationState<TData> with _$MutationState<TData> {

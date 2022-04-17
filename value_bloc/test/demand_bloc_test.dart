@@ -1,7 +1,7 @@
 import 'package:mocktail/mocktail.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
-import 'package:value_bloc/src/fetch_bloc.dart';
+import 'package:value_bloc/src/demand_bloc.dart';
 
 class FakeError {}
 
@@ -21,7 +21,7 @@ void main() {
     mockFetcher = _MockFetcher();
   });
 
-  group('FetchBloc', () {
+  group('DemandBloc', () {
     final tError = FakeError();
     final tStackTrace = StackTrace.empty;
     final tResult = 'RESULT';

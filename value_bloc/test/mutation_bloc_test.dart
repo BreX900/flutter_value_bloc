@@ -3,31 +3,31 @@ import 'dart:async';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
-import 'package:value_bloc/src/job_bloc.dart';
+import 'package:value_bloc/src/mutation_bloc.dart';
 
-class _TestableJobBloc extends MutationBloc<bool, String> {
-  final _Worker<bool, String> _worker;
+class _TestableBloc extends MutationBloc<bool, String> {
+  final _Mutator<bool, String> _mutator;
 
-  _TestableJobBloc(this._worker);
+  _TestableBloc(this._mutator);
 
   @override
-  FutureOr<String> onMutating(bool data) => _worker(data);
+  FutureOr<String> onMutating(bool data) => _mutator(data);
 }
 
 void main() {
-  late _Worker<bool, String> mockWorker;
+  late _Mutator<bool, String> mockWorker;
 
   late MutationBloc<bool, String> bloc;
   late MutationState<String> state;
 
   setUp(() {
-    mockWorker = MockWorker();
+    mockWorker = MockMutator();
 
-    bloc = _TestableJobBloc(mockWorker);
+    bloc = _TestableBloc(mockWorker);
     state = bloc.state;
   });
 
-  group('JobBloc', () {
+  group('MutationBloc', () {
     final tData = true;
     final tError = 'ERROR';
     final tStackTrace = StackTrace.empty;
@@ -40,7 +40,7 @@ void main() {
       });
     });
 
-    group('work', () {
+    group('mutate', () {
       test('emits and return result', () async {
         when(() => mockWorker(any())).thenAnswer((_) async => tResult);
 
@@ -71,7 +71,7 @@ void main() {
         ]);
       });
 
-      test('throw an error if you start working while you are already working', () async {
+      test('throw an error if you start mutation while you are already mutating', () async {
         bloc.emit(state = state.toLoading());
 
         await expectLater(() => bloc.mutate(tData), throwsA(isA<AlreadyMutatingError>()));
@@ -80,13 +80,8 @@ void main() {
   });
 }
 
-abstract class _Worker<A, R> {
+abstract class _Mutator<A, R> {
   Future<R> call(A arg);
 }
 
-class MockWorker extends Mock implements _Worker<bool, String> {}
-
-void after(FutureOr<void> Function() body) async {
-  await Future.delayed(const Duration());
-  await body();
-}
+class MockMutator extends Mock implements _Mutator<bool, String> {}

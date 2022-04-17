@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:mek_data_class/mek_data_class.dart';
 import 'package:meta/meta.dart';
 
-part 'fetch_bloc.g.dart';
+part 'demand_bloc.g.dart';
 
 @DataClass()
 abstract class DemandState<TData> with _$DemandState<TData> {

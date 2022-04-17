@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'job_bloc.dart';
+part of 'mutation_bloc.dart';
 
 // **************************************************************************
 // DataClassGenerator
